@@ -9,7 +9,7 @@ draw_rects_debug = False
 class World:
     def __init__(self):
         self.player = entities.Player(50, 50)
-        self.enemies = [entities.Enemy(random.randint(0,640), random.randint(0,480)) for _ in range(0, 10)]
+        self.enemies = [entities.Enemy(random.randint(0,640-32), random.randint(0,480-32)) for _ in range(0, 10)]
         other_junk = [entities.Turret(300,200)]
         for i in range(0, 640, 32):
             other_junk.append(entities.Wall(i, 0))

@@ -93,9 +93,12 @@ class Enemy(Entity):
         self.speed = 2
         self.current_dir = (0, 0)
         self.health = 50
+        self._randint = random.randint(0,999)
+    
+    sprites = [images.BLUE_GUY, images.PURPLE_GUY, images.BROWN_GUY] 
      
     def sprite(self):
-        return images.PURPLE_GUY 
+        return Enemy.sprites[self._randint % len(Enemy.sprites)] 
         
     def sprite_offset(self):
         return (-4, -40)
@@ -105,7 +108,7 @@ class Enemy(Entity):
             self.is_alive = False
             return
             
-        # change directions every four ticks
+        # change directions approx every 30 ticks
         if random.random() < 1/30:
             if random.random() < 0.25:
                 self.current_dir = (0, 0)

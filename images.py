@@ -13,6 +13,8 @@ def r(x,y,w,h):
 
 RED_GUY = [r(0,0,1,2), r(1,0,1,2)]
 PURPLE_GUY = [r(2,0,1,2), r(3,0,1,2)]
+BLUE_GUY = [r(8,0,1,2), r(9,0,1,2)]
+BROWN_GUY = [r(10,0,1,2), r(11,0,1,2)]
 RED_TURRET = [r(4,0,1,2), r(5,0,1,2)]
 WHITE_WALL = [r(7,0,1,2)]
 
