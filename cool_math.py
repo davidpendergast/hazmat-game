@@ -12,6 +12,9 @@ def sub(v1, v2):
 def add(v1, v2):
     return (v1[0] + v2[0], v1[1] + v2[1])
     
+def neg(v):
+    return (-v[0], -v[1])
+    
 def mag(v1):
     return math.sqrt(v1[0]*v1[0] + v1[1]*v1[1])
     

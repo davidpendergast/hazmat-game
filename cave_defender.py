@@ -6,14 +6,14 @@ from inputs import InputState
 from entities import Player, Enemy
 from world import World
 import images
+import global_state as gs
 
 
 pygame.init()
 
-WIDTH = 640
-HEIGHT = 480
-
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+pygame.display.set_caption("Cavve (ooh nice, a stylish typo)", "Cavve")
+pygame.display.set_icon(images.get_window_icon())
+screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.RESIZABLE)
 
 still_running = True
 clock = pygame.time.Clock()
@@ -27,7 +27,8 @@ def stop_running():
     still_running = False
 
 def draw(screen):
-    pygame.draw.rect(screen, (120,120,120), (0,0,WIDTH,HEIGHT), 0)
+    screen_rect = (0, 0, gs.WIDTH, gs.HEIGHT)
+    pygame.draw.rect(screen, (120,120,120), screen_rect, 0)
     world.draw_all(screen)
     
 tick_counter = 0
@@ -42,9 +43,10 @@ while still_running:
         if event.type == pygame.QUIT:
             stop_running()
         elif event.type == pygame.VIDEORESIZE:
-            WIDTH = event.w
-            HEIGHT = event.h
-            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+            gs.WIDTH = event.w
+            gs.HEIGHT = event.h
+            new_size = (gs.WIDTH, gs.HEIGHT)
+            screen = pygame.display.set_mode(new_size, pygame.RESIZABLE)
         elif event.type == pygame.KEYDOWN:
             input_state.set_key(event.key, True)
             if event.key == pygame.K_RETURN:

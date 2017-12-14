@@ -30,6 +30,11 @@ def draw_animated_sprite(screen, dest_rect, sprite_rects, offset=0):
 def draw_sprite(screen, dest_rect, source_rect):
     screen.blit(sprite_sheet, dest_rect, source_rect)
     
+def get_window_icon():
+    res_surface = pygame.Surface((32, 32))
+    draw_sprite(res_surface, [0,0,32,32], [0,32,32,32]) # uhh.. hack alert lol
+    return res_surface
+    
 def reload_sheet():
     print ("Loading sprites...")
     global sprite_sheet

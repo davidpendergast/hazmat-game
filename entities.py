@@ -211,7 +211,7 @@ class Bullet(Entity):
     def draw(self, screen, offset=(0,0)):
         center = self.center()
         pos = (center[0] + offset[0], center[1] + offset[1])
-        pygame.draw.circle(screen, (255,255,255), pos, 2, 0)
+        pygame.draw.circle(screen, (200, 100, 100), pos, 4, 0)
         
     def update(self, tick_counter, input_state, world):
         if not self.target.is_alive:

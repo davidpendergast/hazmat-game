@@ -3,6 +3,8 @@ import random
 
 import images
 import entities
+import global_state
+import cool_math
 
 draw_rects_debug = False
 
@@ -34,8 +36,13 @@ class World:
         self._do_debug_stuff(input_state)
             
         still_alive = []
+        player = None
         for thing in self.stuff:
             thing.update(tick_counter, input_state, self)
+            
+            if isinstance(thing, entities.Player): # cmon yo
+                player = thing
+                
             if thing.is_alive:
                 still_alive.append(thing)
                 
@@ -44,7 +51,15 @@ class World:
         for e in self.stuff:
             if e.is_actor():
                 self.uncollide(e)
-            
+                
+        if player is not None:
+            # better not be None but ehh
+            self.recenter_camera(player.center())
+      
+    def recenter_camera(self, pos):
+        x = round(pos[0] - global_state.WIDTH/2)
+        y = round(pos[1] - global_state.HEIGHT/2)
+        self.camera = (x, y)
         
     def _do_debug_stuff(self, input_state):
         global draw_rects_debug
@@ -52,18 +67,26 @@ class World:
             draw_rects_debug = not draw_rects_debug 
     
     def draw_all(self, screen):
+        offset = cool_math.neg(self.camera)
+        num_draw_calls = 0
         for g in self.ground:
-            g.draw(screen, self.camera)
+            g.draw(screen, offset)
+            num_draw_calls += 1
             
         self.stuff.sort(key=lambda x: x.get_rect().bottomleft[1])
         for thing in self.stuff:
-            thing.draw(screen, self.camera)
+            thing.draw(screen, offset)
+            num_draw_calls += 1
             
         if draw_rects_debug:
             for thing in self.stuff:
-                pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*self.camera), 2)
+                pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
                 if isinstance(thing, entities.Turret):
-                    pygame.draw.circle(screen, images.rainbow, thing.center(), thing.radius, 2)
+                    center = cool_math.add(thing.center(), offset)
+                    pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
+            basicfont = pygame.font.SysFont(None, 16)
+            text = basicfont.render("draw calls: " + str(num_draw_calls), True, (255, 0, 0), (255, 255, 255))
+            screen.blit(text, (0, 0))
             
     def add_entity(self, entity):
         self.stuff.append(entity)
