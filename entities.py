@@ -2,6 +2,7 @@ import pygame
 import random
 import math
 
+import cool_math
 import images
 
 class Entity:
@@ -45,6 +46,12 @@ class Entity:
         self.y = y
         self.rect.y = round(y)
         
+    def set_center_x(self, x):
+        self.set_x(x - self.get_rect().width/2)
+        
+    def set_center_y(self, y):
+        self.set_y(y - self.get_rect().height/2)
+        
     def center(self):
         r = self.get_rect()
         return (int(r.x + r.width/2), int(r.y + r.height/2))   
@@ -53,6 +60,9 @@ class Entity:
         return False  
         
     def is_actor(self):
+        return False
+    
+    def is_enemy(self):
         return False
         
 class Player(Entity):
@@ -93,6 +103,7 @@ class Enemy(Entity):
         self.speed = 2
         self.current_dir = (0, 0)
         self.health = 50
+        self.max_health = 50
         self._randint = random.randint(0,999)
     
     sprites = [images.BLUE_GUY, images.PURPLE_GUY, images.BROWN_GUY] 
@@ -102,6 +113,17 @@ class Enemy(Entity):
         
     def sprite_offset(self):
         return (-4, -40)
+        
+    def draw(self, screen, offset=(0,0)):
+        Entity.draw(self, screen, offset)
+        if self.health < self.max_health:
+            health_x = self.get_rect().x + offset[0]
+            health_y = self.get_rect().y + self.sprite_offset()[1] + 6 + offset[1]
+            health_width = self.get_rect().width
+            health_rect = [health_x, health_y, health_width, 4]
+            pygame.draw.rect(screen, (255, 50, 50), health_rect, 0)
+            health_rect[2] = max(0,round(health_width * self.health / self.max_health))
+            pygame.draw.rect(screen, (50, 255, 50), health_rect, 0)
         
     def update(self, tick_counter, input_state, world):
         if self.health <= 0:
@@ -123,15 +145,20 @@ class Enemy(Entity):
         
     def is_actor(self):
         return True
+        
+    def is_enemy(self):
+        return True
                 
                 
 class Turret(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 24, 24)
-        self.color = (125,125,125)
-        self.top_color = (175,175,175)
-        self.barrel_color = (175,175,175)
-        self.turret_angle = (0, 1)
+        
+        self.radius = 32*4
+        self.cooldown = 30
+        self.current_cooldown = 0
+        
+        self.damage = 5;
     
     def sprite(self):
         return images.RED_TURRET
@@ -140,17 +167,30 @@ class Turret(Entity):
         return (-4, -40)
         
     def update(self, tick_counter, input_state, world):
-        v1, v2 = self.turret_angle
-        cos = math.cos(0.02)
-        sin = math.sin(0.02)
-        self.turret_angle = (cos*v1 + sin*v2, -sin*v1 + cos*v2)
+        if self.current_cooldown > 0:
+            self.current_cooldown -= 1
+        else:
+            target = self.choose_target(world)
+            if target != None:
+                self.shoot(world, target)
+                self.current_cooldown = self.cooldown
         
-        if random.random() < 0.05:
-            self.shoot(world)
-        
-    def shoot(self, world):
+    def choose_target(self, world):
         c = self.center()
-        bullet = Bullet(c[0], c[1], self.turret_angle, 10, 10)
+        r = [c[0] - self.radius, c[1] - self.radius, self.radius*2, self.radius*2]
+        is_shootable = lambda x: x.is_enemy() and self.in_range(x)
+        enemies = world.get_entities_in_rect(r, is_shootable)
+        if len(enemies) > 0:
+            return min(enemies, key=lambda x: x.health)
+        else:
+            return None
+        
+    def in_range(self, entity):
+        return cool_math.dist(entity.center(), self.center()) < self.radius
+        
+    def shoot(self, world, target):
+        c = self.center()
+        bullet = Bullet(c[0], c[1], target, 3, 10)
         world.add_entity(bullet)
         
     def get_rect(self):
@@ -160,13 +200,13 @@ class Turret(Entity):
         return True
         
 class Bullet(Entity):
-    def __init__(self, x, y, direction, speed, damage):
+    def __init__(self, x, y, target, speed, damage):
         Entity.__init__(self, x, y, 4, 4)
-        self.dir = direction
+        self.start = (x, y)
+        self.target = target
         self.speed = speed
         self.damage = damage
-        self.spawn_time = None
-        self.lifespan = 30
+        self.hit_target = False
         
     def draw(self, screen, offset=(0,0)):
         center = self.center()
@@ -174,22 +214,21 @@ class Bullet(Entity):
         pygame.draw.circle(screen, (255,255,255), pos, 2, 0)
         
     def update(self, tick_counter, input_state, world):
-        if self.spawn_time == None:
-            self.spawn_time = tick_counter
-        elif tick_counter - self.spawn_time > self.lifespan:
+        if not self.target.is_alive:
             self.is_alive = False
-            return
             
-        self.x += self.speed * self.dir[0]
-        self.y += self.speed * self.dir[1]
-        self.rect.x = round(self.x) % 640
-        self.rect.y = round(self.y) % 480
-    
-        is_enemy = lambda x: type(x) is Enemy
-        colliding = world.get_entities_in_rect(self.rect, is_enemy)
-        if len(colliding) > 0:
-            colliding[0].health -= self.damage
-            self.is_alive = False 
+        c = self.center()
+        t = self.target.center()
+        if cool_math.dist(c, t) <= self.speed:
+            self.target.health -= self.damage
+            self.is_alive = False
+        else:
+            v = cool_math.sub(t, c)
+            v = cool_math.set_length(v, self.speed)
+            self.x += v[0]
+            self.y += v[1]
+            self.rect.x = round(self.x) % 640
+            self.rect.y = round(self.y) % 480
             
             
 class Wall(Entity):

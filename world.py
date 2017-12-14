@@ -1,8 +1,8 @@
 import pygame
+import random
 
 import images
 import entities
-import random
 
 draw_rects_debug = False
 
@@ -48,7 +48,8 @@ class World:
         
     def _do_debug_stuff(self, input_state):
         global draw_rects_debug
-        draw_rects_debug = input_state.is_held(pygame.K_r)
+        if input_state.was_pressed(pygame.K_r):
+            draw_rects_debug = not draw_rects_debug 
     
     def draw_all(self, screen):
         for g in self.ground:
@@ -61,13 +62,15 @@ class World:
         if draw_rects_debug:
             for thing in self.stuff:
                 pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*self.camera), 2)
+                if isinstance(thing, entities.Turret):
+                    pygame.draw.circle(screen, images.rainbow, thing.center(), thing.radius, 2)
             
     def add_entity(self, entity):
         self.stuff.append(entity)
         
     def get_entities_in_rect(self, rect, cond=None):
         # TODO - slowwww
-        return [e for e in self.stuff if rect.colliderect(e.get_rect()) and (cond == None or cond(e))]
+        return [e for e in self.stuff if e.get_rect().colliderect(rect) and (cond == None or cond(e))]
         
     def uncollide(self, entity):
         e_rect = entity.get_rect()
