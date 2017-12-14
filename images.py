@@ -17,11 +17,14 @@ BLUE_GUY = [r(8,0,1,2), r(9,0,1,2)]
 BROWN_GUY = [r(10,0,1,2), r(11,0,1,2)]
 RED_TURRET = [r(4,0,1,2), r(5,0,1,2)]
 WHITE_WALL = [r(7,0,1,2)]
+SPAWNER_SKULL = [r(12,0,1,1), r(12,1,1,1)]
+SPAWNER_SKULL_OPEN = [r(13,0,1,2), r(14,0,1,2)]
 
 STONE_GROUND = [r(0,2,1,1)]
 SAND_GROUND = [r(1,2,1,1)]
 GRASS_GROUND = [r(2,2,1,1)]
 PURPLE_GROUND = [r(3,2,1,1)]
+
 
 def draw_animated_sprite(screen, dest_rect, sprite_rects, offset=0):
     frame = (tick_cnt // TICKS_PER_FRAME + offset) % len(sprite_rects)

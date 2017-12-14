@@ -11,14 +11,16 @@ draw_rects_debug = False
 class World:
     def __init__(self):
         self.player = entities.Player(50, 50)
-        self.enemies = [entities.Enemy(random.randint(0,640-32), random.randint(0,480-32)) for _ in range(0, 10)]
-        other_junk = [entities.Turret(300,200)]
+        self.enemies = []#[entities.Enemy(random.randint(0,640-32), random.randint(0,480-32)) for _ in range(0, 10)]
+        other_junk = [entities.Turret(320-96+4, 96*2+4)]
         for i in range(0, 640, 32):
             other_junk.append(entities.Wall(i, 0))
             other_junk.append(entities.Wall(i, 480-32))
         for i in range(32, 480, 32):
             other_junk.append(entities.Wall(0, i))
             other_junk.append(entities.Wall(640-32, i))
+            
+        other_junk.append(entities.Spawner(320+4,64+4, 60))
         
         self.ground = []    
         for x in range(0, 640, 32):
@@ -81,7 +83,7 @@ class World:
         if draw_rects_debug:
             for thing in self.stuff:
                 pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
-                if isinstance(thing, entities.Turret):
+                if hasattr(thing, 'radius'):
                     center = cool_math.add(thing.center(), offset)
                     pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
             basicfont = pygame.font.SysFont(None, 16)

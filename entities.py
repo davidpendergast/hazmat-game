@@ -243,16 +243,57 @@ class Wall(Entity):
     
     def update(self, tick_counter, input_state, world):
         pass
-    
-    def get_rect(self):
-        """
-        The space that this entity physically occupies
-        returns: pygame.Rect
-        """
-        return self.rect
         
     def is_wall(self):
         return True
+        
+class Spawner(Entity):
+    def __init__(self, x, y, radius):
+        Entity.__init__(self, x, y, 24, 24)
+        self.radius = radius
+        self.spawn_cooldown = 40
+        self.current_cooldown = 0
+        
+    def is_wall(self):
+        return True
+        
+    def sprite(self):
+        if self.current_cooldown > 0:
+            return images.SPAWNER_SKULL_OPEN
+        else:
+            return images.SPAWNER_SKULL
+        
+    def sprite_offset(self):
+        if self.current_cooldown > 0:
+            return (-4, -40)
+        else:
+            return (-4, -4)
+        
+    def update(self, tick_counter, input_state, world):
+        if self.current_cooldown > 0:
+            self.current_cooldown -= 1
+        else:
+            if random.random() < 1/30:
+                self.do_spawn(world)
+                
+    def create_spawned(self):
+        return Enemy(0,0)
+        
+    def do_spawn(self, world):
+        c = self.center()
+        r = random.random() * self.radius
+        angle = random.random() * 2 * math.pi
+        rand_x = round(r*math.cos(angle) + c[0])
+        rand_y = round(r*math.sin(angle) + c[1])
+        spawned = self.create_spawned()
+        spawned.set_center_x(rand_x)
+        spawned.set_center_y(rand_y)
+        
+        if len(world.get_entities_in_rect(spawned.get_rect())) == 0:
+            world.add_entity(spawned)
+        
+        self.current_cooldown = self.spawn_cooldown
+        
         
 class Ground(Entity):
     all_sprites = [images.STONE_GROUND, images.SAND_GROUND, 
@@ -263,14 +304,5 @@ class Ground(Entity):
     
     def sprite(self):
         return Ground.all_sprites[self.ground_type]
-        
-        
-    
- 
-
-        
-        
-        
-        
         
 
