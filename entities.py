@@ -18,7 +18,10 @@ class Entity:
         dest_rect = self.get_rect().move(*offset)
         if sprite != None:
             dest_rect.move_ip(*self.sprite_offset())
-            images.draw_animated_sprite(screen, dest_rect, sprite)
+            if self.is_actor():
+                images.draw_animated_sprite(screen, dest_rect, sprite, sheet_id="green_ghosts")
+            else:
+                images.draw_animated_sprite(screen, dest_rect, sprite)
         else:
             pygame.draw.rect(screen, images.rainbow, dest_rect, 0)
             
@@ -118,7 +121,7 @@ class Enemy(Entity):
         Entity.draw(self, screen, offset)
         if self.health < self.max_health:
             health_x = self.get_rect().x + offset[0]
-            health_y = self.get_rect().y + self.sprite_offset()[1] + 6 + offset[1]
+            health_y = self.get_rect().y + self.sprite_offset()[1] - 6 + offset[1]
             health_width = self.get_rect().width
             health_rect = [health_x, health_y, health_width, 4]
             pygame.draw.rect(screen, (255, 50, 50), health_rect, 0)
@@ -190,7 +193,7 @@ class Turret(Entity):
         
     def shoot(self, world, target):
         c = self.center()
-        bullet = Bullet(c[0], c[1], target, 3, 10)
+        bullet = Bullet(c[0], c[1], target, 10, 10)
         world.add_entity(bullet)
         
     def get_rect(self):
@@ -221,6 +224,8 @@ class Bullet(Entity):
         t = self.target.center()
         if cool_math.dist(c, t) <= self.speed:
             self.target.health -= self.damage
+            fire = Overlay(images.FIRE, 40, 0, 0, target=self.target)
+            world.add_entity(fire)
             self.is_alive = False
         else:
             v = cool_math.sub(t, c)
@@ -291,8 +296,35 @@ class Spawner(Entity):
         
         if len(world.get_entities_in_rect(spawned.get_rect())) == 0:
             world.add_entity(spawned)
+            sparkles = Overlay(images.SPAWN_SPARKLES, 40, rand_x, rand_y, target=spawned)
+            world.add_entity(sparkles)
         
         self.current_cooldown = self.spawn_cooldown
+        
+class Overlay(Entity):
+    def __init__(self, animation, lifespan, x, y, target=None):
+        Entity.__init__(self, x, y, 32, 32)
+        self.target = target
+        self.animation = animation
+        self.lifespan = lifespan
+        
+    def sprite(self):
+        return self.animation
+        
+    def sprite_offset(self):
+        return (0, -32)
+    
+    def update(self, tick_counter, input_state, world):
+        if self.lifespan <= 0 or self.target is not None and not self.target.is_alive:
+            self.is_alive = False
+        else:
+            self.lifespan -= 1
+            if self.target is not None:
+                pos = self.target.center()
+                self.set_center_x(pos[0])
+                self.set_center_y(pos[1])
+        
+        
         
         
 class Ground(Entity):
