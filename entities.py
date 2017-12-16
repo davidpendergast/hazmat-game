@@ -18,10 +18,7 @@ class Entity:
         dest_rect = self.get_rect().move(*offset)
         if sprite != None:
             dest_rect.move_ip(*self.sprite_offset())
-            if self.is_actor():
-                images.draw_animated_sprite(screen, dest_rect, sprite, sheet_id="green_ghosts")
-            else:
-                images.draw_animated_sprite(screen, dest_rect, sprite)
+            images.draw_animated_sprite(screen, dest_rect, sprite)
         else:
             pygame.draw.rect(screen, images.rainbow, dest_rect, 0)
             
@@ -68,6 +65,12 @@ class Entity:
     def is_enemy(self):
         return False
         
+    def is_player(self):
+        return False
+        
+    def is_ground(self):
+        return False
+        
 class Player(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 24, 24)
@@ -99,6 +102,9 @@ class Player(Entity):
         
     def is_actor(self): 
         return True
+        
+    def is_player(self):
+        return False
         
 class Enemy(Entity):
     def __init__(self, x, y):
@@ -336,5 +342,8 @@ class Ground(Entity):
     
     def sprite(self):
         return Ground.all_sprites[self.ground_type]
+        
+    def is_ground(self):
+        return True
         
 

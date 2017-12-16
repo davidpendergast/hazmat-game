@@ -10,58 +10,46 @@ draw_rects_debug = False
 
 class World:
     def __init__(self):
-        self.player = entities.Player(50, 50)
-        self.enemies = []#[entities.Enemy(random.randint(0,640-32), random.randint(0,480-32)) for _ in range(0, 10)]
-        other_junk = [entities.Turret(320-96+4, 96*2+4)]
-        for i in range(0, 640, 32):
-            other_junk.append(entities.Wall(i, 0))
-            other_junk.append(entities.Wall(i, 480-32))
-        for i in range(32, 480, 32):
-            other_junk.append(entities.Wall(0, i))
-            other_junk.append(entities.Wall(640-32, i))
-            
-        other_junk.append(entities.Spawner(320+4,64+4, 60))
         
-        self.ground = []    
-        for x in range(0, 640, 32):
-            for y in range(0, 480, 32):
-                rx = random.random() * 640
-                ry = random.random() * 480
-                n = 0 if rx < x else 2
-                n += 0 if ry < y else 1
-                self.ground.append(entities.Ground(x, y, n))
-                
-        self.stuff = [self.player] + self.enemies + other_junk
         self.camera = (0, 0)
+        self._player = None
+        self.ground = []
+        self.stuff = []
         
     def update_all(self, tick_counter, input_state):
         self._do_debug_stuff(input_state)
             
-        still_alive = []
-        player = None
         for thing in self.stuff:
             thing.update(tick_counter, input_state, self)
-            
-            if isinstance(thing, entities.Player): # cmon yo
-                player = thing
-                
-            if thing.is_alive:
-                still_alive.append(thing)
-                
-        self.stuff = still_alive
+        
+        self.stuff = self._remove_dead(self.stuff)
         
         for e in self.stuff:
             if e.is_actor():
                 self.uncollide(e)
-                
-        if player is not None:
-            # better not be None but ehh
-            self.recenter_camera(player.center())
+        
+        p = self.player()        
+        if p is not None:
+            self.recenter_camera(p.center())
       
     def recenter_camera(self, pos):
         x = round(pos[0] - global_state.WIDTH/2)
         y = round(pos[1] - global_state.HEIGHT/2)
         self.camera = (x, y)
+        
+    def _remove_dead(self, entity_list):
+        still_alive = []
+        for e in self.stuff:
+            if e.is_alive:
+                still_alive.append(e)
+            else:
+                self._prepare_to_remove(e)
+        return still_alive
+            
+    def _prepare_to_remove(self, entity):
+        entity.is_alive = False
+        if entity.is_player():
+            self._player = None
         
     def _do_debug_stuff(self, input_state):
         global draw_rects_debug
@@ -91,7 +79,22 @@ class World:
             screen.blit(text, (0, 0))
             
     def add_entity(self, entity):
-        self.stuff.append(entity)
+        if entity.is_player():
+            if self._player is not None:
+                raise ValueError("There is already a player in this world.")
+            self._player = entity
+            
+        if entity.is_ground():
+            self.ground.append(entity)
+        else:
+            self.stuff.append(entity)
+        
+    def add_all_entities(self, entity_list):
+        for x in entity_list:
+            self.add_entity(x)
+            
+    def player(self):
+        return self._player
         
     def get_entities_in_rect(self, rect, cond=None):
         # TODO - slowwww
@@ -124,8 +127,32 @@ class World:
                     entity.set_y(up_shift_y)
                 else:
                     entity.set_y(down_shift_y)
-               
                     
+    def gimme_a_sample_world():
+        world = World()
+        
+        other_junk = [entities.Player(50, 50), entities.Turret(320-96+4, 96*2+4)]
+        for i in range(0, 640, 32):
+            other_junk.append(entities.Wall(i, 0))
+            other_junk.append(entities.Wall(i, 480-32))
+        for i in range(32, 480, 32):
+            other_junk.append(entities.Wall(0, i))
+            other_junk.append(entities.Wall(640-32, i))
+            
+        other_junk.append(entities.Spawner(320+4, 64+4, 60))
+        
+        ground = []    
+        for x in range(0, 640, 32):
+            for y in range(0, 480, 32):
+                rx = random.random() * 640
+                ry = random.random() * 480
+                n = 0 if rx < x else 2
+                n += 0 if ry < y else 1
+                ground.append(entities.Ground(x, y, n))
+        
+        all_stuff = other_junk + ground
+        world.add_all_entities(all_stuff)
+        return world 
                     
         
     

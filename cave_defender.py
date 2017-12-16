@@ -11,7 +11,7 @@ import global_state as gs
 
 pygame.init()
 
-pygame.display.set_caption("Cavve (ooh nice, a stylish typo)", "Cavve")
+pygame.display.set_caption("Cave", "Cave")
 pygame.display.set_icon(images.get_window_icon())
 screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.RESIZABLE)
 
@@ -20,7 +20,7 @@ clock = pygame.time.Clock()
 FPS = 30
 
 input_state = InputState()
-world = World()
+world = World.gimme_a_sample_world()
 
 def stop_running(): 
     global still_running

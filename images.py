@@ -52,7 +52,7 @@ def reload_sheet():
     sprite_sheet = pygame.transform.scale2x(actual_size)
     sheets["normal"] = sprite_sheet
     sheets["green_ghosts"] = dye_sheet(sprite_sheet, (0,255,0), alpha=100)
-    sheets["red_ghosts"] = dye_sheet(sprite_sheet, (255,0,0), alpha=100)
+    sheets["red_ghosts"]   = dye_sheet(sprite_sheet, (255,0,0), alpha=100)
     
     print ("done.")
     
@@ -71,9 +71,9 @@ def dye_sheet(sheet, color, base_color = (0, 0, 0), alpha=255):
             if c[3] == 0:
                 continue
             val = (0.2989*c[0] + 0.5870*c[1] + 0.1140*c[2]) / 256
-            r = base_color[0] + (color[0] - base_color[0])*val
-            g = base_color[1] + (color[1] - base_color[1])*val
-            b = base_color[2] + (color[2] - base_color[2])*val
+            r = int(base_color[0] + (color[0] - base_color[0])*val)
+            g = int(base_color[1] + (color[1] - base_color[1])*val)
+            b = int(base_color[2] + (color[2] - base_color[2])*val)
             new_sheet.set_at((x, y), (r, g, b, alpha))
     return new_sheet
             
