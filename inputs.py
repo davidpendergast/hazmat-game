@@ -1,31 +1,51 @@
 class InputState:
     def __init__(self):
-        self.held_keys = {} # keycode -> time pressed
-        self.current_time = 0
+        self._held_keys = {} # keycode -> time pressed
+        self._current_time = 0
+        self._mouse_pos = (0, 0)
+        self._mouse_down_time = None
     
     def set_key(self, key, held):
-        if held and key not in self.held_keys:
-                self.held_keys[key] = self.current_time
-        elif not held and key in self.held_keys:
-            del self.held_keys[key]
+        if held and key not in self._held_keys:
+                self._held_keys[key] = self._current_time
+        elif not held and key in self._held_keys:
+            del self._held_keys[key]
+            
+    def set_mouse_down(self, down):
+        self._mouse_down_time = self._current_time if down else None 
+            
+    def set_mouse_pos(self, pos):
+        self._mouse_pos = pos
     
     def is_held(self, key):
-        return key in self.held_keys
+        return key in self._held_keys
     
     def time_held(self, key):
-        if not key in self.held_keys:
+        if not key in self._held_keys:
             return -1
         else:
-            return self.current_time - self.held_keys[key]
+            return self._current_time - self._held_keys[key]
+    
+    def mouse_is_held(self):
+        return self._mouse_down_time is not None
+            
+    def mouse_was_pressed(self):
+        return self._current_time == self._mouse_down_time
+        
+    def mouse_pos(self):
+        return self._mouse_pos
+        
+    def mouse_in_window(self):
+        return self._mouse_pos is not None    
             
     def was_pressed(self, key):
         return self.time_held(key) == 0
     
     def all_held_keys(self):
-        return self.held_keys.keys()
+        return self._held_keys.keys()
         
     def update(self, tick_counter):
-        self.current_time = tick_counter
+        self._current_time = tick_counter
         
         
         

@@ -53,8 +53,12 @@ while still_running:
                 images.reload_sheet()
         elif event.type == pygame.KEYUP:
             input_state.set_key(event.key, False)
+        elif event.type == pygame.MOUSEMOTION:
+            input_state.set_mouse_pos(event.pos)
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            pass
+            input_state.set_mouse_down(True)
+        elif event.type == pygame.MOUSEBUTTONUP:
+            input_state.set_mouse_down(False)
             
     draw(screen)
     update()
