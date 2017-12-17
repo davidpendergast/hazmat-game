@@ -13,12 +13,12 @@ class Entity:
         self.rect = pygame.Rect(x, y, w, h)
         pass
     
-    def draw(self, screen, offset=(0,0)):
+    def draw(self, screen, offset=(0,0), modifier="normal"):
         sprite = self.sprite()
         dest_rect = self.get_rect().move(*offset)
         if sprite != None:
             dest_rect.move_ip(*self.sprite_offset())
-            images.draw_animated_sprite(screen, dest_rect, sprite)
+            images.draw_animated_sprite(screen, dest_rect, sprite, modifier)
         else:
             pygame.draw.rect(screen, images.rainbow, dest_rect, 0)
             
@@ -104,7 +104,7 @@ class Player(Entity):
         return True
         
     def is_player(self):
-        return False
+        return True
         
 class Enemy(Entity):
     def __init__(self, x, y):
@@ -123,8 +123,8 @@ class Enemy(Entity):
     def sprite_offset(self):
         return (-4, -40)
         
-    def draw(self, screen, offset=(0,0)):
-        Entity.draw(self, screen, offset)
+    def draw(self, screen, offset=(0,0), modifier="normal"):
+        Entity.draw(self, screen, offset, modifier)
         if self.health < self.max_health:
             health_x = self.get_rect().x + offset[0]
             health_y = self.get_rect().y + self.sprite_offset()[1] - 6 + offset[1]
@@ -217,7 +217,7 @@ class Bullet(Entity):
         self.damage = damage
         self.hit_target = False
         
-    def draw(self, screen, offset=(0,0)):
+    def draw(self, screen, offset=(0,0), modifier="normal"):
         center = self.center()
         pos = (center[0] + offset[0], center[1] + offset[1])
         pygame.draw.circle(screen, (200, 100, 100), pos, 4, 0)

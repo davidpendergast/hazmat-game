@@ -27,6 +27,8 @@ class World:
         for e in self.stuff:
             if e.is_actor():
                 self.uncollide(e)
+                
+        self._handle_placing_item(input_state)
         
         p = self.player()        
         if p is not None:
@@ -68,6 +70,12 @@ class World:
             thing.draw(screen, offset)
             num_draw_calls += 1
             
+        to_place = global_state.selected_item_to_place
+        placeable = global_state.selected_item_placeable
+        if to_place is not None and placeable is not None:
+            mod = "green_ghosts" if placeable else "red_ghosts"    
+            global_state.selected_item_to_place.draw(screen, offset, modifier=mod)   
+            
         if draw_rects_debug:
             for thing in self.stuff:
                 pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
@@ -75,7 +83,8 @@ class World:
                     center = cool_math.add(thing.center(), offset)
                     pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
             basicfont = pygame.font.SysFont(None, 16)
-            text = basicfont.render("draw calls: " + str(num_draw_calls), True, (255, 0, 0), (255, 255, 255))
+            string_text = "draw calls: " + str(num_draw_calls)
+            text = basicfont.render(string_text, True, (255, 0, 0), (255, 255, 255))
             screen.blit(text, (0, 0))
             
     def add_entity(self, entity):
@@ -127,6 +136,31 @@ class World:
                     entity.set_y(up_shift_y)
                 else:
                     entity.set_y(down_shift_y)
+                    
+    def get_tile_at(self, x, y):
+        """returns: coordinate of center of 32x32 'tile' that contains (x, y)"""
+        x = x + self.camera[0]
+        y = y + self.camera[1]
+        cx = int(x / 32)*32 + 16
+        cy = int(y / 32)*32 + 16
+        return (cx, cy)
+        
+    def _handle_placing_item(self, input_state):
+        to_place = global_state.selected_item_to_place
+        if to_place == None or self.player() == None or not input_state.mouse_in_window():
+            global_state.selected_item_placeable = None
+        else:
+            loc = to_place.center()
+            player_loc = self.player().center()
+            dist = cool_math.dist(loc, player_loc)
+            in_range = dist <= 120
+            unblocked = len(self.get_entities_in_rect(to_place.get_rect())) == 0
+            global_state.selected_item_placeable = in_range and unblocked
+            
+            if input_state.mouse_was_pressed() and global_state.selected_item_placeable:
+                self.add_entity(to_place)
+                global_state.selected_item_placeable = None
+                global_state.selected_item_to_place = None        
                     
     def gimme_a_sample_world():
         world = World()

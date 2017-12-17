@@ -33,12 +33,18 @@ GRASS_GROUND = [r(2,2,1,1)]
 PURPLE_GROUND = [r(3,2,1,1)]
 
 
-def draw_animated_sprite(screen, dest_rect, sprite_rects, offset=0, sheet_id="normal"):
-    frame = (tick_cnt // TICKS_PER_FRAME + offset) % len(sprite_rects)
-    draw_sprite(screen, dest_rect, sprite_rects[frame], sheet_id)
+def draw_animated_sprite(screen, dest_rect, sprite_rects, modifier="normal"):
+    frame = (tick_cnt // TICKS_PER_FRAME ) % len(sprite_rects)
+    draw_sprite(screen, dest_rect, sprite_rects[frame], modifier)
 
-def draw_sprite(screen, dest_rect, source_rect, sheet_id="normal"):
-    screen.blit(sheets[sheet_id], dest_rect, source_rect)
+def draw_sprite(screen, dest_rect, source_rect, modifier="normal"):
+    screen.blit(get_sheet(modifier), dest_rect, source_rect)
+    
+def get_sheet(modifier="normal"):
+    if modifier not in sheets:
+        raise ValueError("Unrecognized sprite modifier: "+str(modifier))
+    else:
+        return sheets[modifier]
     
 def get_window_icon():
     res_surface = pygame.Surface((32, 32))
