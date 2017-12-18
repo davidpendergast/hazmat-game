@@ -15,8 +15,6 @@ class InputState:
         self._mouse_down_time = self._current_time if down else None 
             
     def set_mouse_pos(self, pos):
-        if self._mouse_pos is not None and pos is None:
-            print("Mouse left window")
         self._mouse_pos = pos
     
     def is_held(self, key):

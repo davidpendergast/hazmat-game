@@ -2,11 +2,11 @@ import pygame
 
 import random
 
-from inputs import InputState
-from entities import Player, Enemy
-from world import World
+import world
 import images
 import global_state as gs
+import huds
+import inputs
 
 
 pygame.init()
@@ -19,8 +19,10 @@ still_running = True
 clock = pygame.time.Clock()
 FPS = 30
 
-input_state = InputState()
-world = World.gimme_a_sample_world()
+input_state = inputs.InputState()
+world = world.World.gimme_a_sample_world()
+hud = huds.HUD()
+
 
 def stop_running(): 
     global still_running
@@ -35,6 +37,8 @@ tick_counter = 0
 
 def update():
     input_state.update(tick_counter)
+    
+    gs.update(input_state)
     world.update_all(tick_counter, input_state)
     
     images.update(tick_counter)
@@ -69,7 +73,7 @@ while still_running:
     
     if not pygame.mouse.get_focused():
         input_state.set_mouse_pos(None)
-            
+    
     update()
     draw(screen)
     

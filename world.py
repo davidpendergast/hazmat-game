@@ -17,8 +17,6 @@ class World:
         self.stuff = []
         
     def update_all(self, tick_counter, input_state):
-        self._do_debug_stuff(input_state)
-            
         for thing in self.stuff:
             thing.update(tick_counter, input_state, self)
         
@@ -52,11 +50,6 @@ class World:
         entity.is_alive = False
         if entity.is_player():
             self._player = None
-        
-    def _do_debug_stuff(self, input_state):
-        global draw_rects_debug
-        if input_state.was_pressed(pygame.K_r):
-            draw_rects_debug = not draw_rects_debug 
     
     def draw_all(self, screen):
         offset = cool_math.neg(self.camera)
@@ -76,7 +69,7 @@ class World:
             mod = "green_ghosts" if placeable else "red_ghosts"    
             global_state.selected_item_to_place.draw(screen, offset, modifier=mod)   
             
-        if draw_rects_debug:
+        if global_state.show_debug_rects:
             for thing in self.stuff:
                 pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
                 if hasattr(thing, 'radius'):

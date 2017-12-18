@@ -26,6 +26,7 @@ SPAWNER_SKULL = [r(12,0,1,1), r(12,1,1,1)]
 SPAWNER_SKULL_OPEN = [r(13,0,1,2), r(14,0,1,2)]
 SPAWN_SPARKLES = [r(15,0,1,2), r(16,0,1,2)]
 FIRE = [r(6,2,1,2), r(7,2,1,2)]
+HEXAGON = [r(0,4,2,2), r(3,4,2,2)]
 
 STONE_GROUND = [r(0,2,1,1)]
 SAND_GROUND = [r(1,2,1,1)]
