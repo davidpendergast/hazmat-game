@@ -20,7 +20,7 @@ def mag(v1):
     
 def normalize(v):
     if is_zero(v):
-        raise ValueError("can't normalize a vector of length 0")
+        return v
     else:
         m = mag(v)
         return (v[0] / m, v[1] / m)

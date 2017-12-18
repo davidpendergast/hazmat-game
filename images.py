@@ -5,7 +5,8 @@ mult = 32
 sheets = {
     "normal":None,
     "green_ghosts":None,
-    "red_ghosts":None
+    "red_ghosts":None,
+    "white_ghosts":None
 }
 
 tick_cnt = 0
@@ -60,6 +61,7 @@ def reload_sheet():
     sheets["normal"] = sprite_sheet
     sheets["green_ghosts"] = dye_sheet(sprite_sheet, (0,255,0), alpha=100)
     sheets["red_ghosts"]   = dye_sheet(sprite_sheet, (255,0,0), alpha=100)
+    sheets["white_ghosts"]   = dye_sheet(sprite_sheet, (255,255,255), alpha=100)
     
     print ("done.")
     

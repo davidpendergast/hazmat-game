@@ -7,6 +7,7 @@ import images
 import global_state as gs
 import huds
 import inputs
+import cool_math
 
 
 pygame.init()
@@ -32,6 +33,7 @@ def draw(screen):
     screen_rect = (0, 0, gs.WIDTH, gs.HEIGHT)
     pygame.draw.rect(screen, (120,120,120), screen_rect, 0)
     world.draw_all(screen)
+    hud.draw(screen, offset=cool_math.neg(world.get_camera()))
     
 tick_counter = 0
 
@@ -40,14 +42,9 @@ def update():
     
     gs.update(input_state)
     world.update_all(tick_counter, input_state)
+    hud.update(tick_counter, input_state, world)
     
     images.update(tick_counter)
-    if gs.selected_item_to_place is not None:
-        mouse = input_state.mouse_pos()
-        if mouse is not None:
-            c_xy = world.get_tile_at(*mouse)
-            gs.selected_item_to_place.set_center_x(c_xy[0])
-            gs.selected_item_to_place.set_center_y(c_xy[1])
     
 while still_running:
     for event in pygame.event.get():

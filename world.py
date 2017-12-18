@@ -6,8 +6,6 @@ import entities
 import global_state
 import cool_math
 
-draw_rects_debug = False
-
 class World:
     def __init__(self):
         
@@ -26,16 +24,23 @@ class World:
             if e.is_actor():
                 self.uncollide(e)
                 
-        self._handle_placing_item(input_state)
+        
         
         p = self.player()        
         if p is not None:
+            is_enemy = lambda x: x.is_enemy()
+            for e in self.get_entities_in_rect(p.get_rect(), is_enemy):
+                e.touched_player(p, self)
+                    
             self.recenter_camera(p.center())
       
     def recenter_camera(self, pos):
         x = round(pos[0] - global_state.WIDTH/2)
         y = round(pos[1] - global_state.HEIGHT/2)
         self.camera = (x, y)
+        
+    def get_camera(self):
+        return self.camera
         
     def _remove_dead(self, entity_list):
         still_alive = []
@@ -62,12 +67,6 @@ class World:
         for thing in self.stuff:
             thing.draw(screen, offset)
             num_draw_calls += 1
-            
-        to_place = global_state.selected_item_to_place
-        placeable = global_state.selected_item_placeable
-        if to_place is not None and placeable is not None:
-            mod = "green_ghosts" if placeable else "red_ghosts"    
-            global_state.selected_item_to_place.draw(screen, offset, modifier=mod)   
             
         if global_state.show_debug_rects:
             for thing in self.stuff:
@@ -97,6 +96,12 @@ class World:
             
     def player(self):
         return self._player
+        
+    def get_entities_in_circle(self, center, radius, cond=None):
+        rect = [center[0]-radius, center[1]-radius, radius*2, center[1]*2]
+        in_circle = lambda x: cool_math.dist(x.center(), center) <= radius
+        rect_search_cond = lambda x: in_circle(x) and (cond==None or cond(x))
+        return self.get_entities_in_rect(rect, cond=rect_search_cond)
         
     def get_entities_in_rect(self, rect, cond=None):
         # TODO - slowwww
@@ -136,24 +141,7 @@ class World:
         y = y + self.camera[1]
         cx = int(x / 32)*32 + 16
         cy = int(y / 32)*32 + 16
-        return (cx, cy)
-        
-    def _handle_placing_item(self, input_state):
-        to_place = global_state.selected_item_to_place
-        if to_place == None or self.player() == None or not input_state.mouse_in_window():
-            global_state.selected_item_placeable = None
-        else:
-            loc = to_place.center()
-            player_loc = self.player().center()
-            dist = cool_math.dist(loc, player_loc)
-            in_range = dist <= 120
-            unblocked = len(self.get_entities_in_rect(to_place.get_rect())) == 0
-            global_state.selected_item_placeable = in_range and unblocked
-            
-            if input_state.mouse_was_pressed() and global_state.selected_item_placeable:
-                self.add_entity(to_place)
-                global_state.selected_item_placeable = None
-                global_state.selected_item_to_place = None        
+        return (cx, cy)       
                     
     def gimme_a_sample_world():
         world = World()

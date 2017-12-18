@@ -13,7 +13,8 @@ class Entity:
         self.rect = pygame.Rect(x, y, w, h)
         pass
     
-    def draw(self, screen, offset=(0,0), modifier="normal"):
+    def draw(self, screen, offset=(0,0), modifier=None):
+        modifier = self.sprite_modifier() if modifier == None else modifier
         sprite = self.sprite()
         dest_rect = self.get_rect().move(*offset)
         if sprite != None:
@@ -27,6 +28,9 @@ class Entity:
         
     def sprite(self):
         return None
+        
+    def sprite_modifier(self):
+        return "normal"
     
     def update(self, tick_counter, input_state, world):
         pass
@@ -75,6 +79,12 @@ class Player(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 24, 24)
         self.speed = 5
+        
+        self.max_health = 50
+        self.health = 50
+        self.max_dmg_cooldown = 30 # frames of invincibility/inactivity
+        self.current_dmg_cooldown = 0
+        self.deflect_vector = None
      
     def sprite(self):
         return images.RED_GUY
@@ -84,27 +94,55 @@ class Player(Entity):
         
     def update(self, tick_counter, input_state, world):
         v = [0, 0]
-        if input_state.is_held(pygame.K_a):
-            v[0] -= 1
-        if input_state.is_held(pygame.K_s):
-            v[1] += 1
-        if input_state.is_held(pygame.K_d):
-            v[0] += 1  
-        if input_state.is_held(pygame.K_w):
-            v[1] -= 1
-        if abs(v[0] + v[1]) == 2:
-            v[0] *= 0.7071 # 1 over sqrt(2)
-            v[1] *= 0.7071
-        self.x += self.speed * v[0]
-        self.y += self.speed * v[1]
+        speed = self.speed
+        
+        cur_cd = self.current_dmg_cooldown
+        max_cd = self.max_dmg_cooldown
+        if cur_cd > max_cd / 2:
+            if self.deflect_vector is not None:
+                v[0] = self.deflect_vector[0]
+                v[1] = self.deflect_vector[1]
+                speed = self.speed * 2 * (cur_cd - max_cd/2) / (max_cd/2)
+        else:    
+            if input_state.is_held(pygame.K_a):
+                v[0] -= 1
+            if input_state.is_held(pygame.K_s):
+                v[1] += 1
+            if input_state.is_held(pygame.K_d):
+                v[0] += 1  
+            if input_state.is_held(pygame.K_w):
+                v[1] -= 1
+            if abs(v[0] + v[1]) == 2:
+                v[0] *= 0.7071 # 1 over sqrt(2)
+                v[1] *= 0.7071
+                
+        if self.current_dmg_cooldown > 0:
+            self.current_dmg_cooldown -= 1
+        
+        self.x += speed * v[0]
+        self.y += speed * v[1]
         self.rect.x = round(self.x)
         self.rect.y = round(self.y)
+        
+    def sprite_modifier(self):
+        if self.current_dmg_cooldown > 0:
+            return "white_ghosts"
+        else:
+            return "normal"
         
     def is_actor(self): 
         return True
         
     def is_player(self):
         return True
+        
+    def deal_damage(self, damage, deflection_vector):
+        if self.current_dmg_cooldown > 0:
+            return
+        else:
+            self.health -= damage
+            self.current_dmg_cooldown = self.max_dmg_cooldown
+            self.deflect_vector = deflection_vector
         
 class Enemy(Entity):
     def __init__(self, x, y):
@@ -114,6 +152,7 @@ class Enemy(Entity):
         self.health = 50
         self.max_health = 50
         self._randint = random.randint(0,999)
+        self.radius = 140 # will chase player within this distance
     
     sprites = [images.BLUE_GUY, images.PURPLE_GUY, images.BROWN_GUY] 
      
@@ -123,7 +162,7 @@ class Enemy(Entity):
     def sprite_offset(self):
         return (-4, -40)
         
-    def draw(self, screen, offset=(0,0), modifier="normal"):
+    def draw(self, screen, offset=(0,0), modifier=None):
         Entity.draw(self, screen, offset, modifier)
         if self.health < self.max_health:
             health_x = self.get_rect().x + offset[0]
@@ -151,6 +190,11 @@ class Enemy(Entity):
         self.y += self.speed * self.current_dir[1]
         self.rect.x = round(self.x)
         self.rect.y = round(self.y)
+        
+    def touched_player(self, player, world):
+        v = cool_math.sub(player.center(), self.center())
+        v = cool_math.normalize(v)
+        player.deal_damage(5, v)
         
     def is_actor(self):
         return True
@@ -186,16 +230,12 @@ class Turret(Entity):
         
     def choose_target(self, world):
         c = self.center()
-        r = [c[0] - self.radius, c[1] - self.radius, self.radius*2, self.radius*2]
-        is_shootable = lambda x: x.is_enemy() and self.in_range(x)
-        enemies = world.get_entities_in_rect(r, is_shootable)
+        is_shootable = lambda x: x.is_enemy()
+        enemies = world.get_entities_in_circle(c, self.radius, is_shootable)
         if len(enemies) > 0:
             return min(enemies, key=lambda x: x.health)
         else:
             return None
-        
-    def in_range(self, entity):
-        return cool_math.dist(entity.center(), self.center()) < self.radius
         
     def shoot(self, world, target):
         c = self.center()
@@ -217,7 +257,7 @@ class Bullet(Entity):
         self.damage = damage
         self.hit_target = False
         
-    def draw(self, screen, offset=(0,0), modifier="normal"):
+    def draw(self, screen, offset=(0,0), modifier=None):
         center = self.center()
         pos = (center[0] + offset[0], center[1] + offset[1])
         pygame.draw.circle(screen, (200, 100, 100), pos, 4, 0)
