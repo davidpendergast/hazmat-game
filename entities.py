@@ -152,7 +152,9 @@ class Enemy(Entity):
         self.health = 50
         self.max_health = 50
         self._randint = random.randint(0,999)
-        self.radius = 140 # will chase player within this distance
+        self.radius = 140 # starts chasing player within this distance
+        self.forget_radius = 300 # stops chasing at this distance
+        self.is_chasing = False
     
     sprites = [images.BLUE_GUY, images.PURPLE_GUY, images.BROWN_GUY] 
      
@@ -178,13 +180,26 @@ class Enemy(Entity):
             self.is_alive = False
             return
             
-        # change directions approx every 30 ticks
-        if random.random() < 1/30:
-            if random.random() < 0.25:
-                self.current_dir = (0, 0)
-            else:
-                rads = random.random() * 2 * math.pi
-                self.current_dir = (math.cos(rads), math.sin(rads))
+        p = world.player()
+        if p is not None:
+            dist = cool_math.dist(self.center(), p.center())
+            if dist <= self.radius:
+                self.is_chasing = True
+            elif dist > self.forget_radius:
+                self.is_chasing = False
+                
+        if self.is_chasing and p is not None:
+            direction = cool_math.sub(p.center(), self.center())
+            direction = cool_math.normalize(direction)
+            self.current_dir = direction
+        else:
+            # change directions approx every 30 ticks
+            if random.random() < 1/30:
+                if random.random() < 0.25:
+                    self.current_dir = (0, 0)
+                else:
+                    rads = random.random() * 2 * math.pi
+                    self.current_dir = (math.cos(rads), math.sin(rads))
         
         self.x += self.speed * self.current_dir[0]
         self.y += self.speed * self.current_dir[1]
