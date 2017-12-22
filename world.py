@@ -8,7 +8,6 @@ import cool_math
 
 class World:
     def __init__(self):
-        
         self.camera = (0, 0)
         self._player = None
         self.ground = []
@@ -23,8 +22,7 @@ class World:
         for e in self.stuff:
             if e.is_actor():
                 self.uncollide(e)
-                
-        
+                self.set_collision_tags(e)
         
         p = self.player()        
         if p is not None:
@@ -110,21 +108,9 @@ class World:
     def uncollide(self, entity):
         e_rect = entity.get_rect()
         v_rect = e_rect.inflate(-10, 0)
-        h_rect = e_rect.inflate(0,-10)
         is_wall = lambda e: e.is_wall()
         v_collides = self.get_entities_in_rect(v_rect, is_wall)
-        h_collides = self.get_entities_in_rect(h_rect, is_wall)
         
-        for w in h_collides:
-            w_rect = w.get_rect()
-            if w_rect.colliderect(h_rect):
-                left_shift_x = w_rect.x - e_rect.width
-                right_shift_x = w_rect.x + w_rect.width
-                if abs(left_shift_x-e_rect.x) < abs(right_shift_x-e_rect.x):
-                    entity.set_x(left_shift_x)
-                else:
-                    entity.set_x(right_shift_x)
-                    
         for w in v_collides:
             w_rect = w.get_rect()
             if w_rect.colliderect(v_rect):
@@ -134,6 +120,29 @@ class World:
                     entity.set_y(up_shift_y)
                 else:
                     entity.set_y(down_shift_y)
+                entity.set_vel_y(0)
+                
+        e_rect = entity.get_rect()
+        h_rect = e_rect.inflate(0,-10)
+        h_collides = self.get_entities_in_rect(h_rect, is_wall)
+                    
+        for w in h_collides:
+            w_rect = w.get_rect()
+            if w_rect.colliderect(h_rect):
+                left_shift_x = w_rect.x - e_rect.width
+                right_shift_x = w_rect.x + w_rect.width
+                if abs(left_shift_x-e_rect.x) < abs(right_shift_x-e_rect.x):
+                    entity.set_x(left_shift_x - 1)
+                else:
+                    entity.set_x(right_shift_x + 1)
+                entity.set_vel_x(0)
+                    
+    def set_collision_tags(self, actor):
+        rect = actor.get_rect()
+        ground_rect = [rect.x, rect.y + rect.height, rect.width, 1]
+        is_wall = lambda x: x.is_wall()
+        standing_on = self.get_entities_in_rect(ground_rect, cond=is_wall)
+        actor.is_grounded = len(standing_on) > 0
                     
     def get_tile_at(self, x, y):
         """returns: coordinate of center of 32x32 'tile' that contains (x, y)"""
@@ -155,6 +164,8 @@ class World:
             other_junk.append(entities.Wall(640-32, i))
             
         other_junk.append(entities.Spawner(320+4, 64+4, 60))
+        
+        other_junk.append(entities.EnergyTank(32+4, 32+4, 200))
         
         ground = []    
         for x in range(0, 640, 32):

@@ -8,10 +8,13 @@ import images
 class Entity:
     def __init__(self, x, y, w, h):
         self.is_alive = True
+        self.has_gravity = False
+        self.is_grounded = True
+        self.max_speed = (10, 20)
         self.x = x # floating point
         self.y = y # floating point
+        self.vel = [0, 0]
         self.rect = pygame.Rect(x, y, w, h)
-        pass
     
     def draw(self, screen, offset=(0,0), modifier=None):
         modifier = self.sprite_modifier() if modifier == None else modifier
@@ -74,11 +77,49 @@ class Entity:
         
     def is_ground(self):
         return False
+    
+    def __repr__(self):
+        pos = "(%s, %s)" % (self.rect.x, self.rect.y)
+        return type(self).__name__ + pos
         
-class Player(Entity):
+class Actor(Entity):
+    gravity = 3
+    def __init__(self, x, y, w, h):
+        Entity.__init__(self, x, y, w, h)
+        self.has_gravity = True
+        self.is_grounded = False
+        self.max_speed = (10, 20)
+        self.jump_height = 64 + 16
+        
+        self.vel = [0, 0]
+    
+    def is_actor(self):
+        return True
+        
+    def get_jump_speed(self):
+        a = Actor.gravity
+        return -math.sqrt(2*a*self.jump_height)
+        
+    def apply_physics(self):
+        if self.has_gravity:
+            if not self.is_grounded:
+                self.vel[1] += Actor.gravity
+                self.vel[1] = min(self.vel[1], self.max_speed[1])        
+            
+        self.set_x(self.x + self.vel[0])
+        self.set_y(self.y + self.vel[1])
+        
+    def set_vel_x(self, vx):
+        self.vel[0] = vx
+        
+    def set_vel_y(self, vy):
+        self.vel[1] = vy
+        
+class Player(Actor):
     def __init__(self, x, y):
-        Entity.__init__(self, x, y, 24, 24)
+        Actor.__init__(self, x, y, 24, 24)
         self.speed = 5
+        self.has_gravity = True
         
         self.max_health = 50
         self.health = 50
@@ -93,45 +134,34 @@ class Player(Entity):
         return (-4, -40)
         
     def update(self, tick_counter, input_state, world):
-        v = [0, 0]
         speed = self.speed
         
         cur_cd = self.current_dmg_cooldown
         max_cd = self.max_dmg_cooldown
         if cur_cd > max_cd / 2:
             if self.deflect_vector is not None:
-                v[0] = self.deflect_vector[0]
-                v[1] = self.deflect_vector[1]
-                speed = self.speed * 2 * (cur_cd - max_cd/2) / (max_cd/2)
+                speed = self.speed * 1.5 * (cur_cd - max_cd/2) / (max_cd/2)
+                speed = -speed if self.deflect_vector[0] < 0 else speed
+                self.vel[0] = speed
         else:    
+            self.vel[0] = 0
             if input_state.is_held(pygame.K_a):
-                v[0] -= 1
-            if input_state.is_held(pygame.K_s):
-                v[1] += 1
+                self.vel[0] -= self.speed
             if input_state.is_held(pygame.K_d):
-                v[0] += 1  
-            if input_state.is_held(pygame.K_w):
-                v[1] -= 1
-            if abs(v[0] + v[1]) == 2:
-                v[0] *= 0.7071 # 1 over sqrt(2)
-                v[1] *= 0.7071
-                
+                self.vel[0] += self.speed  
+            if input_state.is_held(pygame.K_w) and self.is_grounded:
+                self.vel[1] = self.get_jump_speed()
+
         if self.current_dmg_cooldown > 0:
             self.current_dmg_cooldown -= 1
         
-        self.x += speed * v[0]
-        self.y += speed * v[1]
-        self.rect.x = round(self.x)
-        self.rect.y = round(self.y)
+        self.apply_physics()
         
     def sprite_modifier(self):
         if self.current_dmg_cooldown > 0:
             return "white_ghosts"
         else:
             return "normal"
-        
-    def is_actor(self): 
-        return True
         
     def is_player(self):
         return True
@@ -144,10 +174,10 @@ class Player(Entity):
             self.current_dmg_cooldown = self.max_dmg_cooldown
             self.deflect_vector = deflection_vector
         
-class Enemy(Entity):
+class Enemy(Actor):
     def __init__(self, x, y):
-        Entity.__init__(self, x, y, 24, 24)
-        self.speed = 2
+        Actor.__init__(self, x, y, 24, 24)
+        self.speed = 1.5 + random.random() / 2
         self.current_dir = (0, 0)
         self.health = 50
         self.max_health = 50
@@ -198,13 +228,9 @@ class Enemy(Entity):
                 if random.random() < 0.25:
                     self.current_dir = (0, 0)
                 else:
-                    rads = random.random() * 2 * math.pi
-                    self.current_dir = (math.cos(rads), math.sin(rads))
-        
-        self.x += self.speed * self.current_dir[0]
-        self.y += self.speed * self.current_dir[1]
-        self.rect.x = round(self.x)
-        self.rect.y = round(self.y)
+                    self.current_dir = cool_math.rand_direction()
+        self.set_vel_x(self.current_dir[0] * self.speed)
+        self.apply_physics()
         
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
@@ -215,14 +241,13 @@ class Enemy(Entity):
         return True
         
     def is_enemy(self):
-        return True
-                
+        return True   
                 
 class Turret(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 24, 24)
         
-        self.radius = 32*4
+        self.radius = 32*2
         self.cooldown = 30
         self.current_cooldown = 0
         
@@ -295,8 +320,7 @@ class Bullet(Entity):
             self.y += v[1]
             self.rect.x = round(self.x) % 640
             self.rect.y = round(self.y) % 480
-            
-            
+                  
 class Wall(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 32, 32)
@@ -362,6 +386,22 @@ class Spawner(Entity):
         
         self.current_cooldown = self.spawn_cooldown
         
+class EnergyTank(Entity):
+    def __init__(self, x, y, health):
+        Entity.__init__(self, x, y, 24, 24)
+        self.max_health = health
+        self.health = health
+        
+    def is_wall(self):
+        return True
+        
+    def sprite(self):
+        return images.ENERGY_TANK
+        
+    def sprite_offset(self):
+        return (-4, -40)
+        
+        
 class Overlay(Entity):
     def __init__(self, animation, lifespan, x, y, target=None):
         Entity.__init__(self, x, y, 32, 32)
@@ -384,10 +424,7 @@ class Overlay(Entity):
                 pos = self.target.center()
                 self.set_center_x(pos[0])
                 self.set_center_y(pos[1])
-        
-        
-        
-        
+
 class Ground(Entity):
     all_sprites = [images.STONE_GROUND, images.SAND_GROUND, 
             images.GRASS_GROUND, images.PURPLE_GROUND]

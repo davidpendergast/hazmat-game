@@ -1,4 +1,5 @@
 import math
+import random
 
 def dist(v1, v2):
     dx = v1[0] - v2[0]
@@ -36,6 +37,10 @@ def set_length(v, length):
    
 def intify(v):
     return (round(v[0]), round(v[1]))
+    
+def rand_direction():
+    rads = random.random() * 2 * math.pi
+    return (math.cos(rads), math.sin(rads))
     
     
      
