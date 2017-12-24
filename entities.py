@@ -8,9 +8,6 @@ import images
 class Entity:
     def __init__(self, x, y, w, h):
         self.is_alive = True
-        self.has_gravity = False
-        self.is_grounded = True
-        self.max_speed = (10, 20)
         self.x = x # floating point
         self.y = y # floating point
         self.vel = [0, 0]
@@ -83,7 +80,7 @@ class Entity:
         return type(self).__name__ + pos
         
 class Actor(Entity):
-    gravity = 3
+    gravity = 2.5
     def __init__(self, x, y, w, h):
         Entity.__init__(self, x, y, w, h)
         self.has_gravity = True
@@ -126,12 +123,29 @@ class Player(Actor):
         self.max_dmg_cooldown = 30 # frames of invincibility/inactivity
         self.current_dmg_cooldown = 0
         self.deflect_vector = None
+        
+        self.max_roll_cooldown = 30
+        self.roll_cooldown = 0
+        
+        self.roll_max_duration = 15
+        self.roll_duration = 0
+        
+        self.rope = None
+        
+    def is_rolling(self):
+        return self.roll_duration > 0
      
     def sprite(self):
         return images.RED_GUY
         
     def sprite_offset(self):
         return (-4, -40)
+        
+    def draw(self, screen, offset=(0,0), modifier=None):
+        if self.rope is not None:
+            self.rope.draw(screen, offset, modifier)
+        Actor.draw(self, screen, offset, modifier)
+        
         
     def update(self, tick_counter, input_state, world):
         speed = self.speed
@@ -151,11 +165,31 @@ class Player(Actor):
                 self.vel[0] += self.speed  
             if input_state.is_held(pygame.K_w) and self.is_grounded:
                 self.vel[1] = self.get_jump_speed()
-
-        if self.current_dmg_cooldown > 0:
-            self.current_dmg_cooldown -= 1
+        self._increment_cooldowns()
         
         self.apply_physics()
+        self._update_rope(tick_counter, input_state, world)
+            
+    def _update_rope(self, tick_counter, input_state, world):
+        if input_state.mouse_was_pressed():
+            if self.rope is not None:
+                self.rope = None
+            else:
+                pos = world.to_world_pos(input_state.mouse_pos())
+                self.rope = Rope(pos, self.center())
+            
+        if self.rope is not None:
+            self.rope.set_point(-1, self.center())
+            self.rope.update(tick_counter, input_state, world)
+            p = self.rope.get_point(-1)
+            self.set_center_x(p[0])
+            self.set_center_y(p[1])
+            
+    def _increment_cooldowns(self):
+        if self.current_dmg_cooldown > 0:
+            self.current_dmg_cooldown -= 1
+        if self.roll_cooldown > 0:
+            self.roll_cooldown -= 1
         
     def sprite_modifier(self):
         if self.current_dmg_cooldown > 0:
@@ -167,7 +201,7 @@ class Player(Actor):
         return True
         
     def deal_damage(self, damage, deflection_vector):
-        if self.current_dmg_cooldown > 0:
+        if self.current_dmg_cooldown > 0 or self.is_rolling():
             return
         else:
             self.health -= damage
@@ -400,7 +434,52 @@ class EnergyTank(Entity):
         
     def sprite_offset(self):
         return (-4, -40)
+
+class Rope():
+        def __init__(self, p1, p2):
+            self._points = [p1, p2]
+            self.max_length = cool_math.dist(p1, p2)
+            
+        def length(self):
+            res = 0
+            pts = self._points
+            for i in range(0, len(self._points)-1):
+                res += cool_math.dist(pts[i], pts[i+1])
+            return res
+             
+        def draw(self, screen, offset=(0,0), modifier=None):
+            color = (255,0,0) if self.length() > self.max_length else (0,0,0)
+            pygame.draw.lines(screen, color, False, self.all_points(offset), 2)
         
+        def all_points(self, offset=(0, 0)):
+            if offset == (0, 0):
+                return self._points
+            else:
+                return [cool_math.add(x, offset) for x in self._points]
+                
+        def get_point(self, idx):
+            return self._points[idx]
+            
+        def set_point(self, idx, point):
+            self._points[idx] = point
+        
+        def update(self, tick_counter, input_state, world):
+            length = self.length()
+            while length > self.max_length:
+                seg = (self.get_point(-1), self.get_point(-2))
+                seg_length = cool_math.dist(seg[0], seg[1])
+                remaining_length = length - seg_length
+                if remaining_length > self.max_length:
+                    del self._points[-1]
+                else:
+                    seg_length_new = self.max_length - remaining_length
+                    v = cool_math.sub(seg[0], seg[1])
+                    v = cool_math.set_length(v, seg_length_new)
+                    new_last_point = cool_math.add(seg[1], v)
+                    self.set_point(-1, new_last_point)
+                    return
+                length = self.length()
+                
         
 class Overlay(Entity):
     def __init__(self, animation, lifespan, x, y, target=None):

@@ -144,13 +144,18 @@ class World:
         standing_on = self.get_entities_in_rect(ground_rect, cond=is_wall)
         actor.is_grounded = len(standing_on) > 0
                     
-    def get_tile_at(self, x, y):
+    def get_tile_at(self, screen_x, screen_y):
         """returns: coordinate of center of 32x32 'tile' that contains (x, y)"""
-        x = x + self.camera[0]
-        y = y + self.camera[1]
+        x = screen_x + self.camera[0]
+        y = screen_y + self.camera[1]
         cx = int(x / 32)*32 + 16
         cy = int(y / 32)*32 + 16
         return (cx, cy)       
+        
+    def to_world_pos(self, screen_pos):
+        x = screen_pos[0] + self.camera[0]
+        y = screen_pos[1] + self.camera[1]
+        return (x, y)
                     
     def gimme_a_sample_world():
         world = World()
@@ -163,7 +168,7 @@ class World:
             other_junk.append(entities.Wall(0, i))
             other_junk.append(entities.Wall(640-32, i))
             
-        other_junk.append(entities.Spawner(320+4, 64+4, 60))
+        # other_junk.append(entities.Spawner(320+4, 64+4, 60))
         
         other_junk.append(entities.EnergyTank(32+4, 32+4, 200))
         

@@ -36,7 +36,7 @@ class InputState:
             return self._current_time - self._mouse_down_time  
     
     def mouse_was_pressed(self):
-        return self.mouse_held_time() == 1
+        return self.mouse_held_time() == 1 and self.mouse_in_window()
         
     def mouse_pos(self):
         return self._mouse_pos
