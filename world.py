@@ -22,7 +22,6 @@ class World:
         for e in self.stuff:
             if e.is_actor():
                 self.uncollide(e)
-                self.set_collision_tags(e)
         
         p = self.player()        
         if p is not None:
@@ -106,43 +105,59 @@ class World:
         return [e for e in self.stuff if e.get_rect().colliderect(rect) and (cond == None or cond(e))]
         
     def uncollide(self, entity):
-        e_rect = entity.get_rect()
-        v_rect = e_rect.inflate(-10, 0)
+        initial_rect = entity.get_rect()
+        shifted = self.uncollide_rect(entity.get_rect())
+        if shifted[1] != initial_rect.y:
+            entity.set_vel_y(0)
+        if shifted[0] != initial_rect.x:
+            entity.set_vel_x(0)
+        
+        entity.set_x(shifted[0])
+        entity.set_y(shifted[1])
+                
+    def uncollide_rect(self, rect):
+        """returns: (x, y) coordinates that rect can be shifted to so that
+            it doesn't collide with wall entities in the world. If no 'good'
+            positions can be found, returns the rect's original coordinates."""
+        rect = rect.copy()
+        res_y = rect.y
+        res_x = rect.x
+        
+        v_rect = rect.inflate(-10, 0)
         is_wall = lambda e: e.is_wall()
         v_collides = self.get_entities_in_rect(v_rect, is_wall)
         
         for w in v_collides:
             w_rect = w.get_rect()
             if w_rect.colliderect(v_rect):
-                up_shift_y = w_rect.y - e_rect.height
+                up_shift_y = w_rect.y - rect.height
                 down_shift_y = w_rect.y + w_rect.height
-                if abs(up_shift_y - e_rect.y) < abs(down_shift_y - e_rect.y):
-                    entity.set_y(up_shift_y)
+                if abs(up_shift_y - rect.y) < abs(down_shift_y - rect.y):
+                    res_y = up_shift_y
                 else:
-                    entity.set_y(down_shift_y)
-                entity.set_vel_y(0)
+                    res_y = down_shift_y
                 
-        e_rect = entity.get_rect()
-        h_rect = e_rect.inflate(0,-10)
+        rect.y = res_y
+        h_rect = rect.inflate(0,-10)
         h_collides = self.get_entities_in_rect(h_rect, is_wall)
                     
         for w in h_collides:
             w_rect = w.get_rect()
             if w_rect.colliderect(h_rect):
-                left_shift_x = w_rect.x - e_rect.width
+                left_shift_x = w_rect.x - rect.width
                 right_shift_x = w_rect.x + w_rect.width
-                if abs(left_shift_x-e_rect.x) < abs(right_shift_x-e_rect.x):
-                    entity.set_x(left_shift_x - 1)
+                if abs(left_shift_x-rect.x) < abs(right_shift_x-rect.x):
+                    res_x = left_shift_x
                 else:
-                    entity.set_x(right_shift_x + 1)
-                entity.set_vel_x(0)
+                    res_x = right_shift_x
+        return (res_x, res_y)
                     
-    def set_collision_tags(self, actor):
+    def is_grounded(self, actor):
         rect = actor.get_rect()
         ground_rect = [rect.x, rect.y + rect.height, rect.width, 1]
         is_wall = lambda x: x.is_wall()
         standing_on = self.get_entities_in_rect(ground_rect, cond=is_wall)
-        actor.is_grounded = len(standing_on) > 0
+        return len(standing_on) > 0
                     
     def get_tile_at(self, screen_x, screen_y):
         """returns: coordinate of center of 32x32 'tile' that contains (x, y)"""

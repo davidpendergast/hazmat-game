@@ -12,6 +12,7 @@ class Entity:
         self.y = y # floating point
         self.vel = [0, 0]
         self.rect = pygame.Rect(x, y, w, h)
+        self.weight = 1
     
     def draw(self, screen, offset=(0,0), modifier=None):
         modifier = self.sprite_modifier() if modifier == None else modifier
@@ -50,11 +51,19 @@ class Entity:
         self.y = y
         self.rect.y = round(y)
         
+    def set_xy(self, x, y):
+        self.set_x(x)
+        self.set_y(y)
+        
     def set_center_x(self, x):
         self.set_x(x - self.get_rect().width/2)
         
     def set_center_y(self, y):
         self.set_y(y - self.get_rect().height/2)
+        
+    def set_center(self, x, y):
+        self.set_center_x(x)
+        self.set_center_y(y)
         
     def center(self):
         r = self.get_rect()
@@ -80,7 +89,7 @@ class Entity:
         return type(self).__name__ + pos
         
 class Actor(Entity):
-    gravity = 2.5
+    gravity = 1.5
     def __init__(self, x, y, w, h):
         Entity.__init__(self, x, y, w, h)
         self.has_gravity = True
@@ -98,13 +107,14 @@ class Actor(Entity):
         return -math.sqrt(2*a*self.jump_height)
         
     def apply_physics(self):
+        self.set_x(self.x + self.vel[0])
+        self.set_y(self.y + self.vel[1])
+    
+    def apply_gravity(self):
         if self.has_gravity:
             if not self.is_grounded:
                 self.vel[1] += Actor.gravity
-                self.vel[1] = min(self.vel[1], self.max_speed[1])        
-            
-        self.set_x(self.x + self.vel[0])
-        self.set_y(self.y + self.vel[1])
+                self.vel[1] = min(self.vel[1], self.max_speed[1]) 
         
     def set_vel_x(self, vx):
         self.vel[0] = vx
@@ -120,17 +130,9 @@ class Player(Actor):
         
         self.max_health = 50
         self.health = 50
-        self.max_dmg_cooldown = 30 # frames of invincibility/inactivity
-        self.current_dmg_cooldown = 0
-        self.deflect_vector = None
-        
-        self.max_roll_cooldown = 30
-        self.roll_cooldown = 0
-        
-        self.roll_max_duration = 15
-        self.roll_duration = 0
         
         self.rope = None
+        self.is_launching_from_rope = False
         
     def is_rolling(self):
         return self.roll_duration > 0
@@ -146,34 +148,97 @@ class Player(Actor):
             self.rope.draw(screen, offset, modifier)
         Actor.draw(self, screen, offset, modifier)
         
+    def _update_status_tags(self, world):
+        self.is_grounded = world.is_grounded(self)
+        if self.is_grounded:
+            self.is_launching_from_rope = False
         
     def update(self, tick_counter, input_state, world):
-        speed = self.speed
+        self._update_status_tags(world)
         
-        cur_cd = self.current_dmg_cooldown
-        max_cd = self.max_dmg_cooldown
-        if cur_cd > max_cd / 2:
-            if self.deflect_vector is not None:
-                speed = self.speed * 1.5 * (cur_cd - max_cd/2) / (max_cd/2)
-                speed = -speed if self.deflect_vector[0] < 0 else speed
-                self.vel[0] = speed
+        keyboard_x = 0
+        if input_state.is_held(pygame.K_a):
+            keyboard_x -= 1
+        if input_state.is_held(pygame.K_d):
+            keyboard_x += 1
+            
+        keyboard_jump = input_state.is_held(pygame.K_w) and self.is_grounded
+        
+        if keyboard_x == 0:
+            fric = 1
+            # reduce friction in air when swinging on rope, or when player has 
+            # just finished swinging without hitting the ground yet.
+            if not self.is_grounded and (self.rope != None or self.is_launching_from_rope):
+                fric = 0.05
+            # friction
+            self.vel[0] = cool_math.tend_towards(0, self.vel[0], fric)
         else:    
-            self.vel[0] = 0
-            if input_state.is_held(pygame.K_a):
-                self.vel[0] -= self.speed
-            if input_state.is_held(pygame.K_d):
-                self.vel[0] += self.speed  
-            if input_state.is_held(pygame.K_w) and self.is_grounded:
-                self.vel[1] = self.get_jump_speed()
-        self._increment_cooldowns()
-        
-        self.apply_physics()
+            target_speed = keyboard_x * self.speed
+            if self.is_grounded and self.vel[0] * target_speed < 0:
+                # turn around instantly when grounded
+                self.vel[0] = 0
+            else:
+                self.vel[0] = cool_math.tend_towards(target_speed, self.vel[0], 1, only_if_increasing=True)
+            
+        if self.is_grounded and keyboard_jump:
+            self.vel[1] = self.get_jump_speed()
+
+        self.apply_gravity()
+        self._update_position(world)
         self._update_rope(tick_counter, input_state, world)
+    
+    def _update_position(self, world):
+        if self.rope == None:
+            # no rope, easy
+            self.apply_physics()
+        else:
+            # oh boy
+            start_xy = (self.x, self.y)
+            new_xy = (self.x + self.vel[0], self.y + self.vel[1])
+            new_rect = pygame.Rect(new_xy[0], new_xy[1], self.rect.width, self.rect.height)
+            uncollided = world.uncollide_rect(new_rect)
+            uncollided_center = (uncollided[0]+new_rect.width/2, uncollided[1]+new_rect.height/2)
+            horz_change = uncollided[0] != new_rect.x
+            vert_change = uncollided[1] != new_rect.y
+            rope_pivot = self.rope.get_point(0)
+            rope_r = self.rope.max_length
+            
+            if cool_math.dist(uncollided_center, rope_pivot) <= rope_r:
+                # we good, ignore rope
+                self.set_x(uncollided[0] if horz_change else new_xy[0])
+                self.set_y(uncollided[1] if vert_change else new_xy[1])
+            elif rope_r == 0:
+                pass
+            else:
+                # rope is overstretched
+                rope_v = cool_math.sub(uncollided_center, rope_pivot)
+                rope_v = cool_math.set_length(rope_v, rope_r)
+                new_center = cool_math.add(rope_pivot, rope_v)
+                
+                rope_dir = cool_math.normalize(rope_v)
+                correction = cool_math.sub(new_center, uncollided_center)
+                rope_component = cool_math.component(self.vel, rope_dir)
+                
+                if cool_math.same_direction(self.vel, rope_dir):
+                    # nuking velocity in the direction of the rope
+                    new_vel = cool_math.sub(self.vel, rope_component)
+                    # fudge in some conservation of energy
+                    y_correction = correction[1]
+                    if y_correction < 0:
+                        # add speed if moving down, else reduce speed
+                        mult = 1 if new_vel[1] < 0 else -1
+                        new_vel = cool_math.extend(new_vel, mult*y_correction / 5)
+                    self.vel[0] = new_vel[0]
+                    self.vel[1] = new_vel[1]
+                    
+                self.set_center(*new_center)
             
     def _update_rope(self, tick_counter, input_state, world):
         if input_state.mouse_was_pressed():
             if self.rope is not None:
                 self.rope = None
+                if not self.is_grounded:
+                    self.is_launching_from_rope = True
             else:
                 pos = world.to_world_pos(input_state.mouse_pos())
                 self.rope = Rope(pos, self.center())
@@ -184,18 +249,9 @@ class Player(Actor):
             p = self.rope.get_point(-1)
             self.set_center_x(p[0])
             self.set_center_y(p[1])
-            
-    def _increment_cooldowns(self):
-        if self.current_dmg_cooldown > 0:
-            self.current_dmg_cooldown -= 1
-        if self.roll_cooldown > 0:
-            self.roll_cooldown -= 1
         
     def sprite_modifier(self):
-        if self.current_dmg_cooldown > 0:
-            return "white_ghosts"
-        else:
-            return "normal"
+        return "normal"
         
     def is_player(self):
         return True
@@ -436,49 +492,83 @@ class EnergyTank(Entity):
         return (-4, -40)
 
 class Rope():
-        def __init__(self, p1, p2):
-            self._points = [p1, p2]
+    def __init__(self, p1, p2, max_length=-1):
+        """Create a new rope object.
+            p1: anchor point
+            p2: most flexible point"""
+        self._points = [p1, p2]
+        self.max_length = max_length
+        if max_length < 0:
             self.max_length = cool_math.dist(p1, p2)
-            
-        def length(self):
-            res = 0
-            pts = self._points
-            for i in range(0, len(self._points)-1):
-                res += cool_math.dist(pts[i], pts[i+1])
-            return res
-             
-        def draw(self, screen, offset=(0,0), modifier=None):
-            color = (255,0,0) if self.length() > self.max_length else (0,0,0)
-            pygame.draw.lines(screen, color, False, self.all_points(offset), 2)
         
-        def all_points(self, offset=(0, 0)):
-            if offset == (0, 0):
-                return self._points
+    def length(self, end_idx=None):
+        if end_idx == None or end_idx == -1:
+            end_idx = len(self._points) - 1
+        elif end_idx == 0:
+            return 0
+            
+        res = 0
+        pts = self._points
+        
+        for i in range(0, end_idx):
+            res += cool_math.dist(pts[i], pts[i+1])
+        return res
+         
+    def draw(self, screen, offset=(0,0), modifier=None):
+        # color = (255,0,0) if self.length() > self.max_length else (0,0,0)
+        color = (0, 0, 0)
+        pygame.draw.lines(screen, color, False, self.all_points(offset), 2)
+    
+    def all_points(self, offset=(0, 0)):
+        if offset == (0, 0):
+            return self._points
+        else:
+            return [cool_math.add(x, offset) for x in self._points]
+         
+    def num_points(self):
+        return len(self._points)     
+            
+    def get_point(self, idx):
+        return self._points[idx % self.num_points()]
+        
+    def set_point(self, idx, point):
+        self._points[idx % self.num_points()] = point
+        
+    def add_point(self, point):
+        self._points.append(point)
+    
+    def update(self, tick_counter, input_state, world):
+        return
+        length = self.length()
+        while length > self.max_length:
+            seg = (self.get_point(-1), self.get_point(-2))
+            seg_length = cool_math.dist(seg[0], seg[1])
+            remaining_length = length - seg_length
+            if remaining_length > self.max_length:
+                del self._points[-1]
             else:
-                return [cool_math.add(x, offset) for x in self._points]
-                
-        def get_point(self, idx):
-            return self._points[idx]
-            
-        def set_point(self, idx, point):
-            self._points[idx] = point
-        
-        def update(self, tick_counter, input_state, world):
+                seg_length_new = self.max_length - remaining_length
+                v = cool_math.sub(seg[0], seg[1])
+                v = cool_math.set_length(v, seg_length_new)
+                new_last_point = cool_math.add(seg[1], v)
+                self.set_point(-1, new_last_point)
+                return
             length = self.length()
-            while length > self.max_length:
-                seg = (self.get_point(-1), self.get_point(-2))
-                seg_length = cool_math.dist(seg[0], seg[1])
-                remaining_length = length - seg_length
-                if remaining_length > self.max_length:
-                    del self._points[-1]
-                else:
-                    seg_length_new = self.max_length - remaining_length
-                    v = cool_math.sub(seg[0], seg[1])
-                    v = cool_math.set_length(v, seg_length_new)
-                    new_last_point = cool_math.add(seg[1], v)
-                    self.set_point(-1, new_last_point)
-                    return
-                length = self.length()
+            
+    def get_allowable_positions(self, idx=None):
+        """returns: (x,y,radius)"""
+        if idx == None:
+            idx = -1
+        idx = idx % self.num_points()
+        length = self.length(idx-1)
+        print("get_allowable length=",length)
+        radius = max(0, self.max_length - length)
+        print("get_allowable radius=",radius)
+        pt = self.get_point(idx)
+        return (pt[0], pt[1], radius)
+            
+    def get_slack(self):
+        return max(0, self.max_length - self.length())
                 
         
 class Overlay(Entity):

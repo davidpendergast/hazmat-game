@@ -10,7 +10,7 @@ class HUD:
     def __init__(self):
         self.selected_item_to_place = None
         self.selected_item_placeable = False
-        self.items = [entities.Turret(0, 0), None, None, None] 
+        self.items = [entities.Turret(0, 0), entities.Wall(0, 0), None, None] 
         
     def update(self, tick_counter, input_state, world):
         self._handle_selecting_item(input_state)
