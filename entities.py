@@ -182,6 +182,26 @@ class Player(Actor):
             
         if self.is_grounded and keyboard_jump:
             self.vel[1] = self.get_jump_speed()
+            
+        bullet_dir = None
+        if input_state.was_pressed(pygame.K_UP):
+            bullet_dir = (0, -1)
+        elif input_state.was_pressed(pygame.K_LEFT):
+            bullet_dir = (-1, 0)
+        elif input_state.was_pressed(pygame.K_RIGHT):
+            bullet_dir = (1, 0)
+        elif input_state.was_pressed(pygame.K_DOWN):
+            bullet_dir = (0, 1)
+            
+        if bullet_dir != None:
+            if self.rope != None:
+                self.rope = None
+            else:
+                is_rope_bullet = lambda x: type(x) == RopeBullet # ehh lol
+                if len(world.get_entities_with(is_rope_bullet)) == 0:
+                    rope_bullet = RopeBullet(0, 0, bullet_dir, 10)
+                    rope_bullet.set_center(*self.center())
+                    world.add_entity(rope_bullet)
 
         self.apply_gravity()
         self._update_position(world)
@@ -410,6 +430,36 @@ class Bullet(Entity):
             self.y += v[1]
             self.rect.x = round(self.x) % 640
             self.rect.y = round(self.y) % 480
+            
+class RopeBullet(Bullet):
+    def __init__(self, x, y, direction, speed):
+        Entity.__init__(self, x, y, 4, 4)
+        self.direction = direction
+        self.speed = speed
+    
+    def draw(self, screen, offset=(0,0), modifier=None):
+        center = self.center()
+        pos = (center[0] + offset[0], center[1] + offset[1])
+        pygame.draw.circle(screen, (200, 100, 100), pos, 4, 0)
+        
+    def update(self, tick_counter, input_state, world):
+        is_wall = lambda x: x.is_wall()
+        colliding_with = world.get_entities_in_rect(self.get_rect(), is_wall)
+        
+        if len(colliding_with) > 0:
+            colliding_with.sort(key=lambda x: cool_math.dist(self.center(), x.center()))
+            wall_hit = colliding_with[0]
+            player = world.player()
+            if player != None:
+                player.rope = Rope(wall_hit.center(), player.center())
+            self.is_alive = False
+        else:
+            self.set_x(self.x + self.direction[0]*self.speed)
+            self.set_y(self.y + self.direction[1]*self.speed)
+                
+                
+        
+    
                   
 class Wall(Entity):
     def __init__(self, x, y):

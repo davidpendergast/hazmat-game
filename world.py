@@ -104,6 +104,10 @@ class World:
         # TODO - slowwww
         return [e for e in self.stuff if e.get_rect().colliderect(rect) and (cond == None or cond(e))]
         
+    def get_entities_with(self, cond):
+        # TODO - also sloooowww
+        return [e for e in self.stuff if cond(e)]
+        
     def uncollide(self, entity):
         initial_rect = entity.get_rect()
         shifted = self.uncollide_rect(entity.get_rect())
