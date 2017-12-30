@@ -94,6 +94,8 @@ class Actor(Entity):
         Entity.__init__(self, x, y, w, h)
         self.has_gravity = True
         self.is_grounded = False
+        self.is_left_walled = False
+        self.is_right_walled = False
         self.max_speed = (10, 20)
         self.jump_height = 64 + 16
         
@@ -124,34 +126,43 @@ class Actor(Entity):
         
 class Player(Actor):
     def __init__(self, x, y):
-        Actor.__init__(self, x, y, 24, 24)
+        Actor.__init__(self, x, y, 16, 64)
         self.speed = 5
-        self.has_gravity = True
         
         self.max_health = 50
         self.health = 50
         
-        self.rope = None
-        self.is_launching_from_rope = False
-        
-    def is_rolling(self):
-        return self.roll_duration > 0
+        #self.rope = None
+        #self.is_launching_from_rope = False
      
     def sprite(self):
-        return images.RED_GUY
+        if self.is_grounded:
+            if abs(self.vel[0]) > 1:
+                return images.PLAYER_RUN
+            else:
+                return images.PLAYER_IDLE
+        elif self.is_left_walled:
+            return images.PLAYER_WALLSLIDE
+        else:
+            return images.PLAYER_AIR
+        
         
     def sprite_offset(self):
-        return (-4, -40)
+        spr = self.sprite()
+        w = self.get_rect().width
+        h = self.get_rect().height
+        res = [(w - spr[0].width)/2, (h - spr[0].height)/2]
+        if spr is images.PLAYER_WALLSLIDE:
+            res[0] += 12 # needs changing if sprite is redrawn or player resized
+        return res
         
     def draw(self, screen, offset=(0,0), modifier=None):
-        if self.rope is not None:
-            self.rope.draw(screen, offset, modifier)
         Actor.draw(self, screen, offset, modifier)
         
     def _update_status_tags(self, world):
-        self.is_grounded = world.is_grounded(self)
-        if self.is_grounded:
-            self.is_launching_from_rope = False
+        self.is_grounded = world.is_touching_wall(self, (0, 1))
+        self.is_left_walled = world.is_touching_wall(self, (-1, 0))
+        self.is_right_walled = world.is_touching_wall(self, (1, 0))    
         
     def update(self, tick_counter, input_state, world):
         self._update_status_tags(world)
@@ -162,15 +173,12 @@ class Player(Actor):
         if input_state.is_held(pygame.K_d):
             keyboard_x += 1
             
-        keyboard_jump = input_state.is_held(pygame.K_w) and self.is_grounded
+        keyboard_jump = input_state.was_pressed(pygame.K_w)
         
         if keyboard_x == 0:
             fric = 1
-            # reduce friction in air when swinging on rope, or when player has 
-            # just finished swinging without hitting the ground yet.
-            if not self.is_grounded and (self.rope != None or self.is_launching_from_rope):
-                fric = 0.05
-            # friction
+            if not self.is_grounded:
+                fric = 0.25
             self.vel[0] = cool_math.tend_towards(0, self.vel[0], fric)
         else:    
             target_speed = keyboard_x * self.speed
@@ -179,96 +187,83 @@ class Player(Actor):
                 self.vel[0] = 0
             else:
                 self.vel[0] = cool_math.tend_towards(target_speed, self.vel[0], 1, only_if_increasing=True)
-            
-        if self.is_grounded and keyboard_jump:
-            self.vel[1] = self.get_jump_speed()
-            
-        bullet_dir = None
-        if input_state.was_pressed(pygame.K_UP):
-            bullet_dir = (0, -1)
-        elif input_state.was_pressed(pygame.K_LEFT):
-            bullet_dir = (-1, 0)
-        elif input_state.was_pressed(pygame.K_RIGHT):
-            bullet_dir = (1, 0)
-        elif input_state.was_pressed(pygame.K_DOWN):
-            bullet_dir = (0, 1)
-            
-        if bullet_dir != None:
-            if self.rope != None:
-                self.rope = None
-            else:
-                is_rope_bullet = lambda x: type(x) == RopeBullet # ehh lol
-                if len(world.get_entities_with(is_rope_bullet)) == 0:
-                    rope_bullet = RopeBullet(0, 0, bullet_dir, 10)
-                    rope_bullet.set_center(*self.center())
-                    world.add_entity(rope_bullet)
+        
+        if keyboard_jump:
+            if self.is_grounded:
+                self.vel[1] = self.get_jump_speed()
+            elif self.is_left_walled:
+                self.vel[1] = self.get_jump_speed()
+                self.vel[0] = self.speed
+            elif self.is_right_walled:
+                self.vel[1] = self.get_jump_speed()
+                self.vel[0] = -self.speed
 
         self.apply_gravity()
-        self._update_position(world)
-        self._update_rope(tick_counter, input_state, world)
+        self.apply_physics()
+        #self._update_rope(tick_counter, input_state, world)
     
     def _update_position(self, world):
-        if self.rope == None:
+        #if self.rope == None:
             # no rope, easy
             self.apply_physics()
-        else:
-            # oh boy
-            start_xy = (self.x, self.y)
-            new_xy = (self.x + self.vel[0], self.y + self.vel[1])
-            new_rect = pygame.Rect(new_xy[0], new_xy[1], self.rect.width, self.rect.height)
-            uncollided = world.uncollide_rect(new_rect)
-            uncollided_center = (uncollided[0]+new_rect.width/2, uncollided[1]+new_rect.height/2)
-            horz_change = uncollided[0] != new_rect.x
-            vert_change = uncollided[1] != new_rect.y
-            rope_pivot = self.rope.get_point(0)
-            rope_r = self.rope.max_length
+        #else:
+        #    # oh boy
+        #    start_xy = (self.x, self.y)
+        #    new_xy = (self.x + self.vel[0], self.y + self.vel[1])
+        #    new_rect = pygame.Rect(new_xy[0], new_xy[1], self.rect.width, self.rect.height)
+        #    uncollided = world.uncollide_rect(new_rect)
+        #    uncollided_center = (uncollided[0]+new_rect.width/2, uncollided[1]+new_rect.height/2)
+        #    horz_change = uncollided[0] != new_rect.x
+        #    vert_change = uncollided[1] != new_rect.y
+        #    rope_pivot = self.rope.get_point(0)
+        #    rope_r = self.rope.max_length
+        #    
+        #    if cool_math.dist(uncollided_center, rope_pivot) <= rope_r:
+        #        # we good, ignore rope
+        #        self.set_x(uncollided[0] if horz_change else new_xy[0])
+        #        self.set_y(uncollided[1] if vert_change else new_xy[1])
+        #    elif rope_r == 0:
+        #        pass
+        #    else:
+        #        # rope is overstretched
+        #        rope_v = cool_math.sub(uncollided_center, rope_pivot)
+        #        rope_v = cool_math.set_length(rope_v, rope_r)
+        #        new_center = cool_math.add(rope_pivot, rope_v)
+        #        
+        #        rope_dir = cool_math.normalize(rope_v)
+        #        correction = cool_math.sub(new_center, uncollided_center)
+        #        rope_component = cool_math.component(self.vel, rope_dir)
+        #        
+        #        if cool_math.same_direction(self.vel, rope_dir):
+        #            # nuking velocity in the direction of the rope
+        #            new_vel = cool_math.sub(self.vel, rope_component)
+        #            # fudge in some conservation of energy
+        #            y_correction = correction[1]
+        #            if y_correction < 0:
+        #                # add speed if moving down, else reduce speed
+        #                mult = 1 if new_vel[1] < 0 else -1
+        #                new_vel = cool_math.extend(new_vel, mult*y_correction / 5)
+         #           self.vel[0] = new_vel[0]
+         #           self.vel[1] = new_vel[1]
+         #           
+         #       self.set_center(*new_center)
             
-            if cool_math.dist(uncollided_center, rope_pivot) <= rope_r:
-                # we good, ignore rope
-                self.set_x(uncollided[0] if horz_change else new_xy[0])
-                self.set_y(uncollided[1] if vert_change else new_xy[1])
-            elif rope_r == 0:
-                pass
-            else:
-                # rope is overstretched
-                rope_v = cool_math.sub(uncollided_center, rope_pivot)
-                rope_v = cool_math.set_length(rope_v, rope_r)
-                new_center = cool_math.add(rope_pivot, rope_v)
-                
-                rope_dir = cool_math.normalize(rope_v)
-                correction = cool_math.sub(new_center, uncollided_center)
-                rope_component = cool_math.component(self.vel, rope_dir)
-                
-                if cool_math.same_direction(self.vel, rope_dir):
-                    # nuking velocity in the direction of the rope
-                    new_vel = cool_math.sub(self.vel, rope_component)
-                    # fudge in some conservation of energy
-                    y_correction = correction[1]
-                    if y_correction < 0:
-                        # add speed if moving down, else reduce speed
-                        mult = 1 if new_vel[1] < 0 else -1
-                        new_vel = cool_math.extend(new_vel, mult*y_correction / 5)
-                    self.vel[0] = new_vel[0]
-                    self.vel[1] = new_vel[1]
-                    
-                self.set_center(*new_center)
-            
-    def _update_rope(self, tick_counter, input_state, world):
-        if input_state.mouse_was_pressed():
-            if self.rope is not None:
-                self.rope = None
-                if not self.is_grounded:
-                    self.is_launching_from_rope = True
-            else:
-                pos = world.to_world_pos(input_state.mouse_pos())
-                self.rope = Rope(pos, self.center())
-            
-        if self.rope is not None:
-            self.rope.set_point(-1, self.center())
-            self.rope.update(tick_counter, input_state, world)
-            p = self.rope.get_point(-1)
-            self.set_center_x(p[0])
-            self.set_center_y(p[1])
+    #def _update_rope(self, tick_counter, input_state, world):
+    #    if input_state.mouse_was_pressed():
+    #        if self.rope is not None:
+    #            self.rope = None
+    #            if not self.is_grounded:
+    #                self.is_launching_from_rope = True
+    #        else:
+    #            pos = world.to_world_pos(input_state.mouse_pos())
+    #            self.rope = Rope(pos, self.center())
+    #        
+    #    if self.rope is not None:
+    #        self.rope.set_point(-1, self.center())
+    #        self.rope.update(tick_counter, input_state, world)
+    #        p = self.rope.get_point(-1)
+    #        self.set_center_x(p[0])
+    #        self.set_center_y(p[1])
         
     def sprite_modifier(self):
         return "normal"
@@ -353,50 +348,50 @@ class Enemy(Actor):
     def is_enemy(self):
         return True   
                 
-class Turret(Entity):
-    def __init__(self, x, y):
-        Entity.__init__(self, x, y, 24, 24)
-        
-        self.radius = 32*2
-        self.cooldown = 30
-        self.current_cooldown = 0
-        
-        self.damage = 5;
-    
-    def sprite(self):
-        return images.RED_TURRET
-        
-    def sprite_offset(self):
-        return (-4, -40)
-        
-    def update(self, tick_counter, input_state, world):
-        if self.current_cooldown > 0:
-            self.current_cooldown -= 1
-        else:
-            target = self.choose_target(world)
-            if target != None:
-                self.shoot(world, target)
-                self.current_cooldown = self.cooldown
-        
-    def choose_target(self, world):
-        c = self.center()
-        is_shootable = lambda x: x.is_enemy()
-        enemies = world.get_entities_in_circle(c, self.radius, is_shootable)
-        if len(enemies) > 0:
-            return min(enemies, key=lambda x: x.health)
-        else:
-            return None
-        
-    def shoot(self, world, target):
-        c = self.center()
-        bullet = Bullet(c[0], c[1], target, 10, 10)
-        world.add_entity(bullet)
-        
-    def get_rect(self):
-        return self.rect
-        
-    def is_wall(self):
-        return True
+#class Turret(Entity):
+#    def __init__(self, x, y):
+#        Entity.__init__(self, x, y, 24, 24)
+#        
+#        self.radius = 32*2
+#        self.cooldown = 30
+#        self.current_cooldown = 0
+#        
+#        self.damage = 5;
+#    
+#    def sprite(self):
+#        return images.RED_TURRET
+#        
+#    def sprite_offset(self):
+#        return (-4, -40)
+#        
+#    def update(self, tick_counter, input_state, world):
+#        if self.current_cooldown > 0:
+#            self.current_cooldown -= 1
+#        else:
+#            target = self.choose_target(world)
+#            if target != None:
+#                self.shoot(world, target)
+#                self.current_cooldown = self.cooldown
+#        
+#    def choose_target(self, world):
+#        c = self.center()
+#        is_shootable = lambda x: x.is_enemy()
+#        enemies = world.get_entities_in_circle(c, self.radius, is_shootable)
+#        if len(enemies) > 0:
+#            return min(enemies, key=lambda x: x.health)
+#        else:
+#            return None
+#        
+#    def shoot(self, world, target):
+#        c = self.center()
+#        bullet = Bullet(c[0], c[1], target, 10, 10)
+#        world.add_entity(bullet)
+#        
+#    def get_rect(self):
+#        return self.rect
+#        
+#    def is_wall(self):
+#        return True
         
 class Bullet(Entity):
     def __init__(self, x, y, target, speed, damage):
@@ -457,13 +452,11 @@ class RopeBullet(Bullet):
             self.set_x(self.x + self.direction[0]*self.speed)
             self.set_y(self.y + self.direction[1]*self.speed)
                 
-                
-        
-    
-                  
+               
 class Wall(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 32, 32)
+        self.draw_outline = [True] * 4 # [left, top, right, bottom]
     
     def sprite(self):
         return images.WHITE_WALL
@@ -473,6 +466,36 @@ class Wall(Entity):
     
     def update(self, tick_counter, input_state, world):
         pass
+        
+    def draw(self, screen, offset=(0,0), modifier=None):
+        Entity.draw(self, screen, offset, modifier)
+        r = self.get_rect()
+        lt = (r.x + offset[0], r.y + offset[1])
+        rb = (r.x + r.width + offset[0], r.y + r.height + offset[1])
+        rt = (r.x + r.width + offset[0], r.y + offset[1])
+        lb = (r.x + offset[0], r.y + r.height + offset[1])
+        
+        color = (0, 0, 0)
+        if self.draw_outline[0]: # left 
+            pygame.draw.rect(screen, color, [lt[0], lt[1], 2, r.height], 0)
+        if self.draw_outline[1]: # top
+            pygame.draw.rect(screen, color, [lt[0], lt[1], r.width, 2], 0)
+        if self.draw_outline[2]: # right
+            pygame.draw.rect(screen, color, [rt[0]-1, rt[1], 2, r.height], 0)
+        if self.draw_outline[3]: # bottom
+            pygame.draw.rect(screen, color, [lb[0], lb[1]-1, r.width, 2], 0)
+        
+    def update_outlines(self, world):
+        is_wall = lambda x: x.is_wall()
+        r = self.get_rect()
+        rects = [
+            cool_math.sliver_left(r),
+            cool_math.sliver_above(r),
+            cool_math.sliver_right(r),
+            cool_math.sliver_below(r)
+        ]
+        for i in range(0, 4):
+            self.draw_outline[i] = len(world.get_entities_in_rect(rects[i], is_wall)) == 0
         
     def is_wall(self):
         return True

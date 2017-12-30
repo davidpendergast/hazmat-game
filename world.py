@@ -12,12 +12,19 @@ class World:
         self._player = None
         self.ground = []
         self.stuff = []
+        self._outlines_dirty = False
         
     def update_all(self, tick_counter, input_state):
         for thing in self.stuff:
             thing.update(tick_counter, input_state, self)
         
         self.stuff = self._remove_dead(self.stuff)
+        
+        if self._outlines_dirty:
+            for e in self.stuff:
+                if e.is_wall():
+                    e.update_outlines(self)
+            self._outlines_dirty = False
         
         for e in self.stuff:
             if e.is_actor():
@@ -52,6 +59,8 @@ class World:
         entity.is_alive = False
         if entity.is_player():
             self._player = None
+        if entity.is_wall():
+            self._outlines_dirty = True
     
     def draw_all(self, screen):
         offset = cool_math.neg(self.camera)
@@ -62,8 +71,14 @@ class World:
             
         self.stuff.sort(key=lambda x: x.get_rect().bottomleft[1])
         for thing in self.stuff:
-            thing.draw(screen, offset)
-            num_draw_calls += 1
+            if not thing.is_actor():
+                thing.draw(screen, offset)
+                num_draw_calls += 1
+        
+        for thing in self.stuff:  # TODO cmon
+            if thing.is_actor():
+                thing.draw(screen, offset)
+                num_draw_calls += 1
             
         if global_state.show_debug_rects:
             for thing in self.stuff:
@@ -86,6 +101,10 @@ class World:
             self.ground.append(entity)
         else:
             self.stuff.append(entity)
+            
+        if entity.is_wall():
+            self._outlines_dirty = True
+            
         
     def add_all_entities(self, entity_list):
         for x in entity_list:
@@ -155,13 +174,13 @@ class World:
                 else:
                     res_x = right_shift_x
         return (res_x, res_y)
-                    
-    def is_grounded(self, actor):
+        
+    def is_touching_wall(self, actor, direction):
         rect = actor.get_rect()
-        ground_rect = [rect.x, rect.y + rect.height, rect.width, 1]
+        detector_rect = cool_math.sliver_adjacent(rect, direction)
         is_wall = lambda x: x.is_wall()
-        standing_on = self.get_entities_in_rect(ground_rect, cond=is_wall)
-        return len(standing_on) > 0
+        detected = self.get_entities_in_rect(detector_rect, cond=is_wall)
+        return len(detected) > 0
                     
     def get_tile_at(self, screen_x, screen_y):
         """returns: coordinate of center of 32x32 'tile' that contains (x, y)"""
@@ -179,17 +198,13 @@ class World:
     def gimme_a_sample_world():
         world = World()
         
-        other_junk = [entities.Player(50, 50), entities.Turret(320-96+4, 96*2+4)]
+        other_junk = [entities.Player(50, 50)]
         for i in range(0, 640, 32):
             other_junk.append(entities.Wall(i, 0))
             other_junk.append(entities.Wall(i, 480-32))
         for i in range(32, 480, 32):
             other_junk.append(entities.Wall(0, i))
             other_junk.append(entities.Wall(640-32, i))
-            
-        # other_junk.append(entities.Spawner(320+4, 64+4, 60))
-        
-        other_junk.append(entities.EnergyTank(32+4, 32+4, 200))
         
         ground = []    
         for x in range(0, 640, 32):
