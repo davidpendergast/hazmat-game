@@ -65,9 +65,22 @@ class Entity:
         self.set_center_x(x)
         self.set_center_y(y)
         
+    def xy(self):
+        r = self.get_rect()
+        return (r.x, r.y)
+        
     def center(self):
         r = self.get_rect()
-        return (int(r.x + r.width/2), int(r.y + r.height/2))   
+        return (int(r.x + r.width/2), int(r.y + r.height/2))  
+        
+    def width(self):
+        return self.get_rect().width
+        
+    def height(self):
+        return self.get_rect().height
+        
+    def size(self):
+        return (self.width(), self.height()) 
         
     def is_wall(self):
         return False  
@@ -412,8 +425,8 @@ class RopeBullet(Bullet):
 class Wall(Entity):
     def __init__(self, x, y, w=32, h=32, sprite=images.WHITE_WALL):
         Entity.__init__(self, x, y, w, h)
-        self.draw_outline = [True] * 4 # [left, top, right, bottom]
         self._sprite = sprite
+        self._cached_outline = None # surface
     
     def sprite(self):
         return self._sprite
@@ -426,33 +439,35 @@ class Wall(Entity):
         
     def draw(self, screen, offset=(0,0), modifier=None):
         Entity.draw(self, screen, offset, modifier)
-        r = self.get_rect()
-        lt = (r.x + offset[0], r.y + offset[1])
-        rb = (r.x + r.width + offset[0], r.y + r.height + offset[1])
-        rt = (r.x + r.width + offset[0], r.y + offset[1])
-        lb = (r.x + offset[0], r.y + r.height + offset[1])
-        
-        color = (0, 0, 0)
-        if self.draw_outline[0]: # left 
-            pygame.draw.rect(screen, color, [lt[0], lt[1], 2, r.height], 0)
-        if self.draw_outline[1]: # top
-            pygame.draw.rect(screen, color, [lt[0], lt[1], r.width, 2], 0)
-        if self.draw_outline[2]: # right
-            pygame.draw.rect(screen, color, [rt[0]-1, rt[1], 2, r.height], 0)
-        if self.draw_outline[3]: # bottom
-            pygame.draw.rect(screen, color, [lb[0], lb[1]-1, r.width, 2], 0)
+        if self._cached_outline != None:
+            screen.blit(self._cached_outline, cool_math.add(self.xy(), offset))      
         
     def update_outlines(self, world):
+        if self._cached_outline == None:
+            self._cached_outline = pygame.Surface(self.size(), pygame.SRCALPHA, 32)
+        else:
+            self._cached_outline.fill((0,0,0,0), None, 0)
+        rect = self.get_rect()
         is_wall = lambda x: x.is_wall()
-        r = self.get_rect()
-        rects = [
-            cool_math.sliver_left(r),
-            cool_math.sliver_above(r),
-            cool_math.sliver_right(r),
-            cool_math.sliver_below(r)
-        ]
-        for i in range(0, 4):
-            self.draw_outline[i] = len(world.get_entities_in_rect(rects[i], is_wall)) == 0
+        r = [0,0,2,2]
+        for x in range(0, self.width(), 2):
+            if len(world.get_entities_at_point((rect.x + x, rect.y - 1), is_wall)) == 0:
+                r[0]=x
+                r[1]=0
+                pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)
+            if len(world.get_entities_at_point((rect.x + x, rect.y + rect.height), is_wall)) == 0:
+                r[0]=x
+                r[1]=rect.height - 2
+                pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)
+        for y in range(0, self.height(), 2):
+            if len(world.get_entities_at_point((rect.x - 1, rect.y + y), is_wall)) == 0:
+                r[0]=0
+                r[1]=y
+                pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)
+            if len(world.get_entities_at_point((rect.x + rect.width, rect.y + y), is_wall)) == 0:
+                r[0]=rect.width - 2
+                r[1]=y
+                pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)
         
     def is_wall(self):
         return True

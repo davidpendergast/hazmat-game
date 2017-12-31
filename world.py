@@ -123,6 +123,9 @@ class World:
         # TODO - slowwww
         return [e for e in self.stuff if e.get_rect().colliderect(rect) and (cond == None or cond(e))]
         
+    def get_entities_at_point(self, pt, cond=None):
+        return self.get_entities_in_rect([pt[0], pt[1], 1, 1], cond)
+        
     def get_entities_with(self, cond):
         # TODO - also sloooowww
         return [e for e in self.stuff if cond(e)]
