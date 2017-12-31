@@ -14,45 +14,63 @@ rainbow = [0,0,0]
 
 TICKS_PER_FRAME = 10
 
+class Animation:
+    def __init__(self, rects, TPF=TICKS_PER_FRAME): 
+        self.rects = rects
+        self.TPF = TPF
+        
+    def num_frames(self):
+        return len(self.rects)
+        
+    def width(self):
+        return self.rects[0].width
+        
+    def height(self):
+        return self.rects[0].height
+
+def A(rects, TPF=TICKS_PER_FRAME):
+    return Animation(rects, TPF=TPF)
+
 def r(x,y,w,h):
     return pygame.Rect(x*mult,y*mult,w*mult,h*mult)
     
 def R(x,y,w,h):
     return pygame.Rect(x*2,y*2,w*2,h*2)
 
-RED_GUY = [r(0,0,1,2), r(1,0,1,2)]
-PURPLE_GUY = [r(2,0,1,2), r(3,0,1,2)]
-BLUE_GUY = [r(8,0,1,2), r(9,0,1,2)]
-BROWN_GUY = [r(10,0,1,2), r(11,0,1,2)]
-RED_TURRET = [r(4,0,1,2), r(5,0,1,2)]
-WHITE_WALL = [r(7,0,1,2)]
-SPAWNER_SKULL = [r(12,0,1,1), r(12,1,1,1)]
-SPAWNER_SKULL_OPEN = [r(13,0,1,2), r(14,0,1,2)]
-SPAWN_SPARKLES = [r(15,0,1,2), r(16,0,1,2)]
-FIRE = [r(6,2,1,2), r(7,2,1,2)]
-HEXAGON = [r(0,4,2,2), r(3,4,2,2)]
-ENERGY_TANK = [r(9,2,1,2), r(10,2,1,2)]
-ROCK = [r(6,2,1,2)]
+RED_GUY     = A([r(0,0,1,2), r(1,0,1,2)])
+PURPLE_GUY  = A([r(2,0,1,2), r(3,0,1,2)])
+BLUE_GUY    = A([r(8,0,1,2), r(9,0,1,2)])
+BROWN_GUY   = A([r(10,0,1,2), r(11,0,1,2)])
+RED_TURRET  = A([r(4,0,1,2), r(5,0,1,2)])
+WHITE_WALL  = A([r(7,0,1,2)])
+SPAWNER_SKULL = A([r(12,0,1,1), r(12,1,1,1)])
+SPAWNER_SKULL_OPEN = A([r(13,0,1,2), r(14,0,1,2)])
+SPAWN_SPARKLES = A([r(15,0,1,2), r(16,0,1,2)])
+FIRE        = A([r(6,2,1,2), r(7,2,1,2)])
+HEXAGON     = A([r(0,4,2,2), r(3,4,2,2)])
+ENERGY_TANK = A([r(9,2,1,2), r(10,2,1,2)])
+ROCK        = A([r(6,2,1,2)])
 
-PLAYER_IDLE = [R(176,32,16,32), R(192,32,16,32)]
-PLAYER_GUN = [R(208+i*32,32,24,32) for i in range(0, 3)]
-PLAYER_GUN_LEFT = [R(208+i*32,64,24,32) for i in range(0, 3)]
-PLAYER_AIR = [R(304,32,32,32), R(336,32,32,32)]
-PLAYER_AIR_LEFT = [R(304,64,32,32), R(336,64,32,32)]
-PLAYER_WALLSLIDE = [R(368,32,24,32)]
-PLAYER_WALLSLIDE_LEFT = [R(376,64,24,32)] 
-PLAYER_RUN = [R(400+32*i,32,32,32) for i in range(0, 6)] # TODO - make 7+
-PLAYER_RUN_LEFT = [R(400+32*i,64,32,32) for i in range(0, 6)] # TODO - make 7+
-PLAYER_LADDER = [R(128,64,16,32), R(144,64,16,32),R(160,64,16,32),R(144,64,16,32)]
+PLAYER_IDLE     = A([R(176,32,16,32), R(192,32,16,32)])
+PLAYER_IDLE_LEFT = A([R(176,64,16,32), R(192,64,16,32)])
+PLAYER_GUN      = A([R(208+i*32,32,24,32) for i in range(0, 3)])
+PLAYER_GUN_LEFT = A([R(208+i*32,64,24,32) for i in range(0, 3)])
+PLAYER_AIR      = A([R(304,32,32,32), R(336,32,32,32)])
+PLAYER_AIR_LEFT = A([R(304,64,32,32), R(336,64,32,32)])
+PLAYER_WALLSLIDE = A([R(368,32,24,32)])
+PLAYER_WALLSLIDE_LEFT = A([R(376,64,24,32)]) 
+PLAYER_RUN      = A([R(400+32*i,32,32,32) for i in range(0, 6)], TPF=3)
+PLAYER_RUN_LEFT = A([R(400+32*i,64,32,32) for i in range(0, 6)], TPF=3)
+PLAYER_LADDER   = A([R(128,64,16,32), R(144,64,16,32),R(160,64,16,32),R(144,64,16,32)])
 
-STONE_GROUND = [r(0,2,1,1)]
-SAND_GROUND = [r(1,2,1,1)]
-GRASS_GROUND = [r(2,2,1,1)]
-PURPLE_GROUND = [r(3,2,1,1)]
+STONE_GROUND = A([r(0,2,1,1)])
+SAND_GROUND = A([r(1,2,1,1)])
+GRASS_GROUND = A([r(2,2,1,1)])
+PURPLE_GROUND = A([r(3,2,1,1)])
 
-def draw_animated_sprite(screen, dest_rect, sprite_rects, modifier="normal"):
-    frame = (tick_cnt // TICKS_PER_FRAME ) % len(sprite_rects)
-    draw_sprite(screen, dest_rect, sprite_rects[frame], modifier)
+def draw_animated_sprite(screen, dest_rect, animation, modifier="normal"):
+    frame = (tick_cnt // animation.TPF) % len(animation.rects)
+    draw_sprite(screen, dest_rect, animation.rects[frame], modifier)
 
 def draw_sprite(screen, dest_rect, source_rect, modifier="normal"):
     screen.blit(get_sheet(modifier), dest_rect, source_rect)

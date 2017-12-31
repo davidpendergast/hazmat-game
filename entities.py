@@ -141,7 +141,7 @@ class Player(Actor):
             if abs(self.vel[0]) > 1:
                 return images.PLAYER_RUN if direction else images.PLAYER_RUN_LEFT
             else:
-                return images.PLAYER_IDLE
+                return images.PLAYER_IDLE if direction else images.PLAYER_IDLE_LEFT
         elif self.is_left_walled or self.is_right_walled:
             return images.PLAYER_WALLSLIDE if direction else images.PLAYER_WALLSLIDE_LEFT
         else:
@@ -152,7 +152,7 @@ class Player(Actor):
         spr = self.sprite()
         w = self.get_rect().width
         h = self.get_rect().height
-        res = [(w - spr[0].width)/2, (h - spr[0].height)/2 - (64 - h)/2]
+        res = [(w - spr.width())/2, (h - spr.height())/2 - (64 - h)/2]
         if spr is images.PLAYER_WALLSLIDE:
             res[0] += 12 # needs changing if sprite is redrawn or player resized
         elif spr is images.PLAYER_WALLSLIDE_LEFT:
