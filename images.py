@@ -18,9 +18,17 @@ class Animation:
     def __init__(self, rects, TPF=TICKS_PER_FRAME): 
         self.rects = rects
         self.TPF = TPF
+        self._subanimations = [None] * len(rects)
         
     def num_frames(self):
         return len(self.rects)
+        
+    def single_frame(self, idx):
+        idx = idx % self.num_frames()
+        if self._subanimations[idx] == None:
+            self._subanimations[idx] = Animation([self.rects[idx]], self.TPF)
+
+        return self._subanimations[idx]
         
     def width(self):
         return self.rects[0].width
@@ -53,8 +61,8 @@ ROCK        = A([r(6,2,1,2)])
 
 PLAYER_IDLE     = A([R(176,32,16,32), R(192,32,16,32)])
 PLAYER_IDLE_LEFT = A([R(176,64,16,32), R(192,64,16,32)])
-PLAYER_GUN      = A([R(208+i*32,32,24,32) for i in range(0, 3)])
-PLAYER_GUN_LEFT = A([R(208+i*32,64,24,32) for i in range(0, 3)])
+PLAYER_GUN      = A([R(208+i*32,32,24,32) for i in range(0, 3)], TPF=5)
+PLAYER_GUN_LEFT = A([R(208+i*32,64,24,32) for i in range(0, 3)], TPF=5)
 PLAYER_AIR      = A([R(304,32,32,32), R(336,32,32,32)])
 PLAYER_AIR_LEFT = A([R(304,64,32,32), R(336,64,32,32)])
 PLAYER_WALLSLIDE = A([R(368,32,24,32)])
@@ -69,8 +77,12 @@ GRASS_GROUND = A([r(2,2,1,1)])
 PURPLE_GROUND = A([r(3,2,1,1)])
 
 def draw_animated_sprite(screen, dest_rect, animation, modifier="normal"):
-    frame = (tick_cnt // animation.TPF) % len(animation.rects)
-    draw_sprite(screen, dest_rect, animation.rects[frame], modifier)
+    """animation: either an Animation or a Rect"""
+    if type(animation) is Animation:
+        frame = (tick_cnt // animation.TPF) % len(animation.rects)
+        draw_sprite(screen, dest_rect, animation.rects[frame], modifier)
+    else:
+        draw_sprite(screen, dest_rect, animation, modifier)
 
 def draw_sprite(screen, dest_rect, source_rect, modifier="normal"):
     screen.blit(get_sheet(modifier), dest_rect, source_rect)

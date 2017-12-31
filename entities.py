@@ -134,10 +134,18 @@ class Player(Actor):
         
         self.facing_right = True
         self.max_slide_speed = 1.5
+        
+        self.shoot_cooldown = 0
+        self.shoot_max_cooldown = 15
+        self.active_bullet = None # rect where bullet is
     
     def sprite(self):
         direction = self.facing_right
-        if self.is_grounded:
+        if self._is_shooting():
+            frm = (self.shoot_max_cooldown - self.shoot_cooldown) // 5 # lol
+            anim = images.PLAYER_GUN if direction else images.PLAYER_GUN_LEFT
+            return anim.single_frame(frm)
+        elif self.is_grounded:
             if abs(self.vel[0]) > 1:
                 return images.PLAYER_RUN if direction else images.PLAYER_RUN_LEFT
             else:
@@ -146,7 +154,6 @@ class Player(Actor):
             return images.PLAYER_WALLSLIDE if direction else images.PLAYER_WALLSLIDE_LEFT
         else:
             return images.PLAYER_AIR if direction else images.PLAYER_AIR_LEFT
-        
         
     def sprite_offset(self):
         spr = self.sprite()
@@ -160,6 +167,8 @@ class Player(Actor):
         return res
         
     def draw(self, screen, offset=(0,0), modifier=None):
+        if self.active_bullet is not None:
+            pygame.draw.rect(screen, (255,255,255), self.active_bullet.move(*offset), 0)
         Actor.draw(self, screen, offset, modifier)
         
     def _update_status_tags(self, world):
@@ -173,16 +182,18 @@ class Player(Actor):
         
     def update(self, tick_counter, input_state, world):
         self._update_status_tags(world)
+        self._handle_shooting()
         
         keyboard_x = 0
         if input_state.is_held(pygame.K_a):
             keyboard_x -= 1
         if input_state.is_held(pygame.K_d):
             keyboard_x += 1
-            
-        keyboard_jump = input_state.was_pressed(pygame.K_w)
         
-        if keyboard_x == 0:
+        keyboard_jump = input_state.was_pressed(pygame.K_w) and not self._is_shooting()
+        keyboard_shoot = input_state.was_pressed(pygame.K_j) and not self._is_shooting()
+        
+        if keyboard_x == 0 or self._is_shooting():
             fric = 1
             if not self.is_grounded:
                 fric = 0.25
@@ -205,12 +216,33 @@ class Player(Actor):
                 self.vel[1] = self.get_jump_speed()
                 self.vel[0] = -self.speed
                 
+        if keyboard_shoot and not keyboard_jump and self.is_grounded:
+            self.shoot_cooldown = self.shoot_max_cooldown
+                
         if self.is_left_walled or self.is_right_walled:
             if self.vel[1] > self.max_slide_speed:
                 self.vel[1] = cool_math.tend_towards(self.max_slide_speed, self.vel[1], 2)
 
         self.apply_gravity()
         self.apply_physics()
+        
+    def _is_shooting(self):
+        return self.shoot_cooldown > 0
+        
+    def _handle_shooting(self):
+        if not self.is_grounded:
+            self.shoot_cooldown = 0
+        elif self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
+            if self.shoot_cooldown == 10: # loll cmon
+                rect = self.get_rect()
+                bullet_y = rect.y + rect.height - 26*2
+                bullet_w = 300
+                bullet_x = rect.x + rect.width if self.facing_right else rect.x - bullet_w
+                self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, 4)
+                    
+        if self.shoot_cooldown < 8 or self.shoot_cooldown > 10:
+            self.active_bullet = None
         
     def sprite_modifier(self):
         return "normal"
@@ -294,51 +326,6 @@ class Enemy(Actor):
         
     def is_enemy(self):
         return True   
-                
-#class Turret(Entity):
-#    def __init__(self, x, y):
-#        Entity.__init__(self, x, y, 24, 24)
-#        
-#        self.radius = 32*2
-#        self.cooldown = 30
-#        self.current_cooldown = 0
-#        
-#        self.damage = 5;
-#    
-#    def sprite(self):
-#        return images.RED_TURRET
-#        
-#    def sprite_offset(self):
-#        return (-4, -40)
-#        
-#    def update(self, tick_counter, input_state, world):
-#        if self.current_cooldown > 0:
-#            self.current_cooldown -= 1
-#        else:
-#            target = self.choose_target(world)
-#            if target != None:
-#                self.shoot(world, target)
-#                self.current_cooldown = self.cooldown
-#        
-#    def choose_target(self, world):
-#        c = self.center()
-#        is_shootable = lambda x: x.is_enemy()
-#        enemies = world.get_entities_in_circle(c, self.radius, is_shootable)
-#        if len(enemies) > 0:
-#            return min(enemies, key=lambda x: x.health)
-#        else:
-#            return None
-#        
-#    def shoot(self, world, target):
-#        c = self.center()
-#        bullet = Bullet(c[0], c[1], target, 10, 10)
-#        world.add_entity(bullet)
-#        
-#    def get_rect(self):
-#        return self.rect
-#        
-#    def is_wall(self):
-#        return True
         
 class Bullet(Entity):
     def __init__(self, x, y, target, speed, damage):
