@@ -12,7 +12,7 @@ import cool_math
 
 pygame.init()
 
-pygame.display.set_caption("Cave", "Cave")
+pygame.display.set_caption("Hazardous Materials", "HAZMAT")
 pygame.display.set_icon(images.get_window_icon())
 screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.RESIZABLE)
 
