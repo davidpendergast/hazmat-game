@@ -690,6 +690,16 @@ class Overlay(Entity):
                 pos = self.target.center()
                 self.set_center_x(pos[0])
                 self.set_center_y(pos[1])
+                
+class Ladder(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, x, y, 24, 32)
+        
+    def sprite_offset(self):
+        return (-4, 0)
+        
+    def sprite(self):
+        return images.LADDER
 
 class Ground(Entity):
     all_sprites = [images.STONE_GROUND, images.SAND_GROUND, 

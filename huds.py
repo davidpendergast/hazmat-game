@@ -14,8 +14,10 @@ class HUD:
         self.items = [
             entities.Wall(0, 0), 
             entities.Wall(0,0,16,16,images.CHAIN_SMOL), 
-            entities.Door(0,0,"test_door2", "test_door1"), 
-            entities.Door(0,0,"test_door1", "test_door2")
+            entities.Wall(0,0,16,16,images.WHITE_WALL_SMOL),
+            entities.Ladder(0,0), 
+            entities.Door(0,0,"test_door1", "test_door2"),
+            entities.Enemy(0,0)
         ] 
         
     def update(self, tick_counter, input_state, world):
@@ -30,18 +32,21 @@ class HUD:
             to_place.draw(screen, offset, modifier=mod)   
         
     def _get_item_to_place(self, index):
-        return self.items[index]
-        
+        if index >= len(self.items):
+            return None
+        else:
+            return self.items[index]
+    
+    KEYS = [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
+             pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0]
+    
     def _handle_selecting_item(self, input_state):
         idx = None
-        if input_state.was_pressed(pygame.K_1):
-            idx = 0
-        elif input_state.was_pressed(pygame.K_2):
-            idx = 1
-        elif input_state.was_pressed(pygame.K_3):
-            idx = 2
-        elif input_state.was_pressed(pygame.K_4):
-            idx = 3
+        keys = HUD.KEYS
+        for i in range(0, len(keys)):
+            if input_state.was_pressed(keys[i]):
+                idx = i
+                break
         
         if idx is not None:
             item = self._get_item_to_place(idx)
@@ -59,8 +64,16 @@ class HUD:
         if to_place is not None:
             mouse = input_state.mouse_pos()
             if mouse is not None:
-                size = to_place.get_rect().size
-                c_xy = world.get_tile_at(*mouse, tilesize=size)
+                w,h = to_place.get_rect().size
+                if w <= 16:
+                    w = 16
+                elif w <= 32:
+                    w = 32
+                if h <= 16:
+                    h = 16
+                elif h <= 32:
+                    h = 32
+                c_xy = world.get_tile_at(*mouse, tilesize=(w,h))
                 to_place.set_center_x(c_xy[0])
                 to_place.set_center_y(c_xy[1])
         
