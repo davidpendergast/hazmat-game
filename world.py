@@ -127,6 +127,16 @@ class World:
         # TODO - also sloooowww
         return [e for e in self.stuff if cond(e)]
         
+    def get_door(self, door_id):
+        is_my_door = lambda x: x.is_door() and x.door_id == door_id
+        matches = self.get_entities_with(is_my_door)
+        if len(matches) == 0:
+            return None
+        elif len(matches) > 0:
+            print("Multiple doors in world with id=", door_id)
+            random.shuffle(matches)
+        return matches[0]
+        
     def uncollide(self, entity):
         initial_rect = entity.get_rect()
         shifted = self.uncollide_rect(entity.get_rect())

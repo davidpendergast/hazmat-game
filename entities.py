@@ -83,6 +83,15 @@ class Entity:
         
     def is_ground(self):
         return False
+        
+    def is_door(self):
+        return False
+        
+    def is_interactable(self):
+        return False
+        
+    def interact(self):
+        pass
     
     def __repr__(self):
         pos = "(%s, %s)" % (self.rect.x, self.rect.y)
@@ -138,6 +147,8 @@ class Player(Actor):
         self.shoot_cooldown = 0
         self.shoot_max_cooldown = 15
         self.active_bullet = None # rect where bullet is
+        
+        self.interact_radius = 32
     
     def sprite(self):
         direction = self.facing_right
@@ -192,6 +203,7 @@ class Player(Actor):
         
         keyboard_jump = input_state.was_pressed(pygame.K_w) and not self._is_shooting()
         keyboard_shoot = input_state.was_pressed(pygame.K_j) and not self._is_shooting()
+        keyboard_interact = input_state.was_pressed(pygame.K_k)
         
         if keyboard_x == 0 or self._is_shooting():
             fric = 1
@@ -218,6 +230,16 @@ class Player(Actor):
                 
         if keyboard_shoot and not keyboard_jump and self.is_grounded:
             self.shoot_cooldown = self.shoot_max_cooldown
+            
+        if keyboard_interact and not self._is_shooting():
+            is_interactable = lambda x: x.is_interactable()
+            box = self.get_rect().inflate((self.interact_radius,0))
+            interactables = world.get_entities_in_rect(box, is_interactable)
+            cntr = self.center()
+            if len(interactables) > 0:
+                interactables.sort(key=lambda x: cool_math.dist(cntr, x.center()))
+                interactables[0].interact()
+                print("interacted with: ", interactables[0])
                 
         if self.is_left_walled or self.is_right_walled:
             if self.vel[1] > self.max_slide_speed:
@@ -577,6 +599,56 @@ class Rope():
             
     def get_slack(self):
         return max(0, self.max_length - self.length())
+        
+class Door(Entity):
+    def __init__(self, x, y, door_id, dest_id, locked=False):
+        Entity.__init__(self, x, y, 32, 64) 
+        self.door_id = door_id
+        self.dest_id = dest_id
+        self.locked = locked
+        
+        # Cooldown behavior:
+        #   0: door is closed. 
+        #   1: player is teleported to reciever door.
+        #   >1: door is opening.
+        #   <0: door is closing
+        self.open_cooldown = 0
+        self.open_max_cooldown = 20
+        
+    def sprite(self):
+        if self.open_cooldown > 0:
+            return images.DOOR_OPENING
+        elif self.open_cooldown < 0:
+            return images.DOOR_CLOSING
+        else:
+            if self.locked:
+                return images.DOOR_LOCKED
+            else:
+                return images.DOOR_UNLOCKED
+    
+    def update(self, tick_counter, input_state, world):
+        if self.open_cooldown == 1:
+            player = world.player()
+            dest_door = world.get_door(self.dest_id)
+            if player != None and dest_door != None:
+                player.set_center(*dest_door.center())
+                dest_door.open_cooldown = -dest_door.open_max_cooldown
+        
+        if self.open_cooldown > 0:
+            self.open_cooldown -= 1
+        if self.open_cooldown < 0:
+            self.open_cooldown += 1
+            
+    def is_interactable(self):
+        # can't interact after it's already been interacted with
+        return not self.locked and self.open_cooldown == 0
+        
+    def interact(self):
+        if not self.locked:
+            self.open_cooldown = self.open_max_cooldown
+            
+    def is_door(self):
+        return True
                 
         
 class Overlay(Entity):

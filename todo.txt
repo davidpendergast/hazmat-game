@@ -1,0 +1,10 @@
+
+
+Game Mechanics
+    crouching
+    ladders
+    
+Optimizations
+    use chunks for collisions
+    cache drawing of static entities    
+

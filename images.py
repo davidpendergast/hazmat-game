@@ -30,6 +30,9 @@ class Animation:
 
         return self._subanimations[idx]
         
+    def _reversify(self):
+        return Animation(list(reversed(self.rects)), self.TPF)
+        
     def width(self):
         return self.rects[0].width
         
@@ -60,6 +63,10 @@ FIRE        = A([r(6,2,1,2), r(7,2,1,2)])
 HEXAGON     = A([r(0,4,2,2), r(3,4,2,2)])
 ENERGY_TANK = A([r(9,2,1,2), r(10,2,1,2)])
 ROCK        = A([r(6,2,1,2)])
+DOOR_LOCKED = A([R(0,96,16,32)])
+DOOR_UNLOCKED = A([R(16,96,16,32)])
+DOOR_OPENING = A([R(16+16*i,96,16,32) for i in range(0, 5)], TPF=5)
+DOOR_CLOSING = DOOR_OPENING._reversify()
 
 PLAYER_IDLE     = A([R(176,32,16,32), R(192,32,16,32)])
 PLAYER_IDLE_LEFT = A([R(176,64,16,32), R(192,64,16,32)])

@@ -14,8 +14,8 @@ class HUD:
         self.items = [
             entities.Wall(0, 0), 
             entities.Wall(0,0,16,16,images.CHAIN_SMOL), 
-            entities.Wall(0,0,16,16,images.WHITE_WALL_SMOL), 
-            None
+            entities.Door(0,0,"test_door2", "test_door1"), 
+            entities.Door(0,0,"test_door1", "test_door2")
         ] 
         
     def update(self, tick_counter, input_state, world):
