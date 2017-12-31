@@ -218,6 +218,8 @@ class World:
         for i in range(32, 480, 32):
             other_junk.append(entities.Wall(0, i))
             other_junk.append(entities.Wall(640-32, i))
+            
+        other_junk.append(entities.Enemy(300,200))
         
         ground = []    
         for x in range(0, 640, 32):

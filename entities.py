@@ -120,6 +120,8 @@ class Actor(Entity):
         self.is_right_walled = False
         self.max_speed = (10, 20)
         self.jump_height = 64 + 32
+        self.max_health = 50
+        self.health = 50
         
         self.vel = [0, 0]
     
@@ -146,13 +148,14 @@ class Actor(Entity):
     def set_vel_y(self, vy):
         self.vel[1] = vy
         
+    def deal_damage(self, damage, direction=None):
+        self.health -= damage
+        print(self, " was damaged by ", damage)
+        
 class Player(Actor):
     def __init__(self, x, y):
         Actor.__init__(self, x, y, 16, 48)
         self.speed = 5
-        
-        self.max_health = 50
-        self.health = 50
         
         self.facing_right = True
         self.max_slide_speed = 1.5
@@ -206,7 +209,7 @@ class Player(Actor):
         
     def update(self, tick_counter, input_state, world):
         self._update_status_tags(world)
-        self._handle_shooting()
+        self._handle_shooting(world)
         
         keyboard_x = 0
         if input_state.is_held(pygame.K_a):
@@ -264,7 +267,7 @@ class Player(Actor):
     def _is_shooting(self):
         return self.shoot_cooldown > 0
         
-    def _handle_shooting(self):
+    def _handle_shooting(self, world):
         if not self.is_grounded:
             self.shoot_cooldown = 0
         elif self.shoot_cooldown > 0:
@@ -275,6 +278,11 @@ class Player(Actor):
                 bullet_w = 300
                 bullet_x = rect.x + rect.width if self.facing_right else rect.x - bullet_w
                 self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, 4)
+                bullet_hitbox = self.active_bullet.inflate(0, 8)
+                is_enemy = lambda x: x.is_enemy()
+                direction = (1, 0) if self.facing_right else (-1, 0)
+                for e in world.get_entities_in_rect(bullet_hitbox, is_enemy):
+                    e.deal_damage(10, direction)
                     
         if self.shoot_cooldown < 8 or self.shoot_cooldown > 10:
             self.active_bullet = None
@@ -285,21 +293,11 @@ class Player(Actor):
     def is_player(self):
         return True
         
-    def deal_damage(self, damage, deflection_vector):
-        if self.current_dmg_cooldown > 0 or self.is_rolling():
-            return
-        else:
-            self.health -= damage
-            self.current_dmg_cooldown = self.max_dmg_cooldown
-            self.deflect_vector = deflection_vector
-        
 class Enemy(Actor):
     def __init__(self, x, y):
-        Actor.__init__(self, x, y, 24, 24)
+        Actor.__init__(self, x, y, 16, 48)
         self.speed = 1.5 + random.random() / 2
         self.current_dir = (0, 0)
-        self.health = 50
-        self.max_health = 50
         self._randint = random.randint(0,999)
         self.radius = 140 # starts chasing player within this distance
         self.forget_radius = 300 # stops chasing at this distance
@@ -311,7 +309,10 @@ class Enemy(Actor):
         return Enemy.sprites[self._randint % len(Enemy.sprites)] 
         
     def sprite_offset(self):
-        return (-4, -40)
+        spr = self.sprite()
+        w = self.get_rect().width
+        h = self.get_rect().height
+        return [(w - spr.width())/2, (h - spr.height())/2 - (64 - h)/2]
         
     def draw(self, screen, offset=(0,0), modifier=None):
         Entity.draw(self, screen, offset, modifier)
@@ -349,6 +350,7 @@ class Enemy(Actor):
                 else:
                     self.current_dir = cool_math.rand_direction()
         self.set_vel_x(self.current_dir[0] * self.speed)
+        self.apply_gravity()
         self.apply_physics()
         
     def touched_player(self, player, world):
