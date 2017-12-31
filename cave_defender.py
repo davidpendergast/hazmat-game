@@ -24,7 +24,6 @@ input_state = inputs.InputState()
 world = world.World.gimme_a_sample_world()
 hud = huds.HUD()
 
-
 def stop_running(): 
     global still_running
     still_running = False
@@ -59,6 +58,9 @@ while still_running:
             input_state.set_key(event.key, True)
             if event.key == pygame.K_RETURN:
                 images.reload_sheet()
+            elif event.key == pygame.K_F2:
+                pygame.image.save(screen, "screenshots/screenshot.png")
+                print("saved screenshot: screenshot.png")
         elif event.type == pygame.KEYUP:
             input_state.set_key(event.key, False)
         elif event.type == pygame.MOUSEMOTION:
