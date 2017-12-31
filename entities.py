@@ -388,15 +388,16 @@ class RopeBullet(Bullet):
                 
                
 class Wall(Entity):
-    def __init__(self, x, y):
-        Entity.__init__(self, x, y, 32, 32)
+    def __init__(self, x, y, w=32, h=32, sprite=images.WHITE_WALL):
+        Entity.__init__(self, x, y, w, h)
         self.draw_outline = [True] * 4 # [left, top, right, bottom]
+        self._sprite = sprite
     
     def sprite(self):
-        return images.WHITE_WALL
+        return self._sprite
         
     def sprite_offset(self):
-        return (0, -32)
+        return (0, 0)
     
     def update(self, tick_counter, input_state, world):
         pass

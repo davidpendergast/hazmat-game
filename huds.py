@@ -5,12 +5,18 @@ import copy
 import entities
 import global_state
 import cool_math
+import images
 
 class HUD:
     def __init__(self):
         self.selected_item_to_place = None
         self.selected_item_placeable = False
-        self.items = [entities.Wall(0, 0), None, None, None] 
+        self.items = [
+            entities.Wall(0, 0), 
+            entities.Wall(0,0,16,16,images.CHAIN_SMOL), 
+            entities.Wall(0,0,16,16,images.WHITE_WALL_SMOL), 
+            None
+        ] 
         
     def update(self, tick_counter, input_state, world):
         self._handle_selecting_item(input_state)
@@ -53,7 +59,8 @@ class HUD:
         if to_place is not None:
             mouse = input_state.mouse_pos()
             if mouse is not None:
-                c_xy = world.get_tile_at(*mouse)
+                size = to_place.get_rect().size
+                c_xy = world.get_tile_at(*mouse, tilesize=size)
                 to_place.set_center_x(c_xy[0])
                 to_place.set_center_y(c_xy[1])
         

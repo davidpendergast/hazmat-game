@@ -182,12 +182,12 @@ class World:
         detected = self.get_entities_in_rect(detector_rect, cond=is_wall)
         return len(detected) > 0
                     
-    def get_tile_at(self, screen_x, screen_y):
-        """returns: coordinate of center of 32x32 'tile' that contains (x, y)"""
+    def get_tile_at(self, screen_x, screen_y, tilesize=(32,32)):
+        """returns: coordinate of center of 'tile' that contains (x, y)"""
         x = screen_x + self.camera[0]
         y = screen_y + self.camera[1]
-        cx = int(x / 32)*32 + 16
-        cy = int(y / 32)*32 + 16
+        cx = int(x / tilesize[0])*tilesize[0] + tilesize[0]/2
+        cy = int(y / tilesize[1])*tilesize[1] + tilesize[1]/2
         return (cx, cy)       
         
     def to_world_pos(self, screen_pos):
