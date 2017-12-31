@@ -97,7 +97,7 @@ class Actor(Entity):
         self.is_left_walled = False
         self.is_right_walled = False
         self.max_speed = (10, 20)
-        self.jump_height = 64 + 16
+        self.jump_height = 64 + 32
         
         self.vel = [0, 0]
     
@@ -126,34 +126,37 @@ class Actor(Entity):
         
 class Player(Actor):
     def __init__(self, x, y):
-        Actor.__init__(self, x, y, 16, 64)
+        Actor.__init__(self, x, y, 16, 48)
         self.speed = 5
         
         self.max_health = 50
         self.health = 50
         
-        #self.rope = None
-        #self.is_launching_from_rope = False
-     
+        self.facing_right = True
+        self.max_slide_speed = 1.5
+    
     def sprite(self):
+        direction = self.facing_right
         if self.is_grounded:
             if abs(self.vel[0]) > 1:
-                return images.PLAYER_RUN
+                return images.PLAYER_RUN if direction else images.PLAYER_RUN_LEFT
             else:
                 return images.PLAYER_IDLE
-        elif self.is_left_walled:
-            return images.PLAYER_WALLSLIDE
+        elif self.is_left_walled or self.is_right_walled:
+            return images.PLAYER_WALLSLIDE if direction else images.PLAYER_WALLSLIDE_LEFT
         else:
-            return images.PLAYER_AIR
+            return images.PLAYER_AIR if direction else images.PLAYER_AIR_LEFT
         
         
     def sprite_offset(self):
         spr = self.sprite()
         w = self.get_rect().width
         h = self.get_rect().height
-        res = [(w - spr[0].width)/2, (h - spr[0].height)/2]
+        res = [(w - spr[0].width)/2, (h - spr[0].height)/2 - (64 - h)/2]
         if spr is images.PLAYER_WALLSLIDE:
             res[0] += 12 # needs changing if sprite is redrawn or player resized
+        elif spr is images.PLAYER_WALLSLIDE_LEFT:
+            res[0] -= 12
         return res
         
     def draw(self, screen, offset=(0,0), modifier=None):
@@ -163,6 +166,10 @@ class Player(Actor):
         self.is_grounded = world.is_touching_wall(self, (0, 1))
         self.is_left_walled = world.is_touching_wall(self, (-1, 0))
         self.is_right_walled = world.is_touching_wall(self, (1, 0))    
+        if self.is_left_walled or self.vel[0] > 0:
+            self.facing_right = True
+        if self.is_right_walled or self.vel[0] < 0:
+            self.facing_right = False
         
     def update(self, tick_counter, input_state, world):
         self._update_status_tags(world)
@@ -197,73 +204,13 @@ class Player(Actor):
             elif self.is_right_walled:
                 self.vel[1] = self.get_jump_speed()
                 self.vel[0] = -self.speed
+                
+        if self.is_left_walled or self.is_right_walled:
+            if self.vel[1] > self.max_slide_speed:
+                self.vel[1] = cool_math.tend_towards(self.max_slide_speed, self.vel[1], 2)
 
         self.apply_gravity()
         self.apply_physics()
-        #self._update_rope(tick_counter, input_state, world)
-    
-    def _update_position(self, world):
-        #if self.rope == None:
-            # no rope, easy
-            self.apply_physics()
-        #else:
-        #    # oh boy
-        #    start_xy = (self.x, self.y)
-        #    new_xy = (self.x + self.vel[0], self.y + self.vel[1])
-        #    new_rect = pygame.Rect(new_xy[0], new_xy[1], self.rect.width, self.rect.height)
-        #    uncollided = world.uncollide_rect(new_rect)
-        #    uncollided_center = (uncollided[0]+new_rect.width/2, uncollided[1]+new_rect.height/2)
-        #    horz_change = uncollided[0] != new_rect.x
-        #    vert_change = uncollided[1] != new_rect.y
-        #    rope_pivot = self.rope.get_point(0)
-        #    rope_r = self.rope.max_length
-        #    
-        #    if cool_math.dist(uncollided_center, rope_pivot) <= rope_r:
-        #        # we good, ignore rope
-        #        self.set_x(uncollided[0] if horz_change else new_xy[0])
-        #        self.set_y(uncollided[1] if vert_change else new_xy[1])
-        #    elif rope_r == 0:
-        #        pass
-        #    else:
-        #        # rope is overstretched
-        #        rope_v = cool_math.sub(uncollided_center, rope_pivot)
-        #        rope_v = cool_math.set_length(rope_v, rope_r)
-        #        new_center = cool_math.add(rope_pivot, rope_v)
-        #        
-        #        rope_dir = cool_math.normalize(rope_v)
-        #        correction = cool_math.sub(new_center, uncollided_center)
-        #        rope_component = cool_math.component(self.vel, rope_dir)
-        #        
-        #        if cool_math.same_direction(self.vel, rope_dir):
-        #            # nuking velocity in the direction of the rope
-        #            new_vel = cool_math.sub(self.vel, rope_component)
-        #            # fudge in some conservation of energy
-        #            y_correction = correction[1]
-        #            if y_correction < 0:
-        #                # add speed if moving down, else reduce speed
-        #                mult = 1 if new_vel[1] < 0 else -1
-        #                new_vel = cool_math.extend(new_vel, mult*y_correction / 5)
-         #           self.vel[0] = new_vel[0]
-         #           self.vel[1] = new_vel[1]
-         #           
-         #       self.set_center(*new_center)
-            
-    #def _update_rope(self, tick_counter, input_state, world):
-    #    if input_state.mouse_was_pressed():
-    #        if self.rope is not None:
-    #            self.rope = None
-    #            if not self.is_grounded:
-    #                self.is_launching_from_rope = True
-    #        else:
-    #            pos = world.to_world_pos(input_state.mouse_pos())
-    #            self.rope = Rope(pos, self.center())
-    #        
-    #    if self.rope is not None:
-    #        self.rope.set_point(-1, self.center())
-    #        self.rope.update(tick_counter, input_state, world)
-    #        p = self.rope.get_point(-1)
-    #        self.set_center_x(p[0])
-    #        self.set_center_y(p[1])
         
     def sprite_modifier(self):
         return "normal"
