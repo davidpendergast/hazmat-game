@@ -19,26 +19,31 @@ class Chunk:
     def size(self):
         return self.rect.size()
     
-    def draw(self, screen, offset):
+    def draw_nonactors(self, screen, offset):
         for g in self.entities.get_all(category="ground"):
             g.draw(screen, offset)
             
         for e in self.entities.get_all(not_category=["ground","actor"]):
             e.draw(screen, offset)
         
+    def draw_actors(self, screen, offset):
+        # Actor sprites can overflow out of their rects on the left or above,
+        # so they need to be drawn after everything else (to prevent issues at
+        # chunk borders). TODO - fix this?     
         for e in self.entities.get_all(category="actor"):
             e.draw(screen, offset)
-                 
-        #if global_state.show_debug_rects:
-        #    for thing in self.stuff:
-        #        pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
-        #        if hasattr(thing, 'radius'):
-        #            center = cool_math.add(thing.center(), offset)
-        #            pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
-        #    basicfont = pygame.font.SysFont(None, 16)
-        #    string_text = "draw calls: " + str(num_draw_calls)
-        #    text = basicfont.render(string_text, True, (255, 0, 0), (255, 255, 255))
-        #    screen.blit(text, (0, 0))
+                    
+    def draw_darkness(self, screen, offset):
+        pass
+    
+    def draw_debug_stuff(self, screen, offset):
+        if global_state.show_debug_rects:
+            pygame.draw.rect(screen, (0,0,0), self.get_rect().move(*offset), 1)
+            for thing in self.entities.get_all(not_category="ground"):
+                pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
+                if hasattr(thing, 'radius'):
+                    center = cool_math.add(thing.center(), offset)
+                    pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
         
     def __contains__(self, entity):
         return entity in self.entities
@@ -123,8 +128,18 @@ class World:
     
     def draw_all(self, screen):
         offset = cool_math.neg(self.camera)
-        for chunk in self.chunks.values():
-            chunk.draw(screen, offset)
+        sortkey = lambda chunk: chunk.get_rect().x + chunk.get_rect().y
+        chunks_to_draw = sorted(self.chunks.values(), key=sortkey) # TODO - onscreen only
+        
+        for chunk in chunks_to_draw:
+            chunk.draw_nonactors(screen, offset)
+            
+        for chunk in chunks_to_draw:
+            chunk.draw_actors(screen, offset)
+            
+        for chunk in chunks_to_draw:
+            chunk.draw_darkness(screen, offset)
+            chunk.draw_debug_stuff(screen, offset)
             
     def add_entity(self, entity):
         if entity.is_player():
