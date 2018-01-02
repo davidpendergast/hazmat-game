@@ -105,6 +105,9 @@ class Entity:
         
     def interact(self):
         pass
+        
+    def is_decoration(self):
+        return False
     
     def __repr__(self):
         pos = "(%s, %s)" % (self.rect.x, self.rect.y)
@@ -691,6 +694,24 @@ class Overlay(Entity):
                 self.set_center_x(pos[0])
                 self.set_center_y(pos[1])
                 
+class Decoration(Entity):
+    """Just a noninteractive piece of art basically. Can emit light.
+    for performance reasons, shouldn't ever move if it's a light source."""
+    def __init__(self, x, y, animation, luminosity=0, light_radius=64):
+        Entity.__init__(self, x, y, animation.width(), animation.height())
+        self.animation = animation
+        self.luminosity = 0
+        self.light_radius = light_radius
+        
+    def sprite(self):
+        return self.animation
+        
+    def sprite_offset(self):
+        return (0, 0)
+        
+    def is_decoration(self):
+        return True
+                
 class Ladder(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 24, 32)
@@ -701,17 +722,110 @@ class Ladder(Entity):
     def sprite(self):
         return images.LADDER
 
-class Ground(Entity):
+class Ground(Decoration):
     all_sprites = [images.STONE_GROUND, images.SAND_GROUND, 
             images.GRASS_GROUND, images.PURPLE_GROUND]
+            
     def __init__(self, x, y, ground_type):
-        Entity.__init__(self, x, y, 32, 32)
-        self.ground_type = ground_type
-    
-    def sprite(self):
-        return Ground.all_sprites[self.ground_type]
+        Decoration.__init__(self, x, y, Ground.all_sprites[ground_type])
         
     def is_ground(self):
         return True
+        
+class EntityCollection:
+    def __init__(self, entities=[]):
+        self.all_stuff = []
+        self.categories = { # category -> (test, entities)
+            "actor":        (lambda x: x.is_actor(), set()),
+            "enemy":        (lambda x: x.is_enemy(), set()),
+            "player":       (lambda x: x.is_player(), set()),
+            "ground":       (lambda x: x.is_ground(), set()),
+            "door":         (lambda x: x.is_door(), set()),
+            "interactable": (lambda x: x.is_interactable(), set()),
+            "wall":         (lambda x: x.is_wall(), set()),
+            "decoration":   (lambda x: x.is_decoration(), set()),
+        }
+        
+        for e in entities:
+            self.add(e)
+        
+    def add(self, entity):
+        self.all_stuff.append(entity)
+        cats = self._get_categories(entity)
+        for catkey in cats:
+            self.categories[catkey][1].add(entity)
+        
+    def remove(self, entity):
+        EntityCollection._safe_remove(entity, self.all_stuff, True)
+        cats = self._get_categories(entity)
+        for catkey in cats:
+            EntityCollection._safe_remove(entity, self.categories[catkey][1]) 
+                
+    def get_all(self, category=None, not_category=[], rect=None, cond=None):
+        """
+            category: Single category or a list of categories from which the 
+                results must belong. If null, all categories are allowed.
+            
+            not_category: Single category or a list of categories from which
+                the results may not belong. Overpowers the category parameter.
+            
+            rect: if given, all returned entities must intersect this rect.
+            
+            cond: boolean lambda. if given, entities must satisfy the condition.   
+                      
+        """
+        res_set = set()
+        
+        # listify single elements
+        if isinstance(not_category, str):
+            not_category = [not_category]
+        
+        if category != None and isinstance(category, str):
+            category = [category]
+        
+        to_test = None
+        if category == None:
+            to_test = self.all_stuff
+        else:
+            to_test = set()
+            for cat in category:
+                for x in self.categories[cat][1]:
+                    to_test.add(x)
+            
+        for e in to_test:
+            accept = True
+            for not_cat in not_category:
+                if self.categories[not_cat][0](e):
+                    accept = False
+                    break
+            accept = accept and (rect==None or e.get_rect().colliderect(rect))
+            accept = accept and (cond==None or cond(e))
+            if accept:
+                res_set.add(e)
+        
+        return list(res_set)    
+        
+    def all_categories(self):
+        return self.categories.keys()     
+            
+    def _safe_remove(item, collection, print_err=False):
+        try:
+            collection.remove(item)
+        except:
+            if print_err:
+                print("cannot remove ", item,", probably because it's not in the collection")
+           
+    def _get_categories(self, entity):
+        return [x for x in self.categories if self.categories[x][0](entity)]       
+        
+    def __contains__(self, key):
+        return key in self.all_stuff # TODO ehh
+        
+    def __len__(self):
+        return len(self.all_stuff)
+        
+    def __iter__(self):
+        return iter(self.all_stuff)
+        
         
 

@@ -89,28 +89,16 @@ def same_direction(v1, v2):
         return False
     else:
         return angle_between(v1, v2) <= math.pi / 2
-        
-def sliver_above(rect):
-    return (rect.x, rect.y-1, rect.width, 1)
-    
-def sliver_below(rect):
-    return (rect.x, rect.y+rect.height, rect.width, 1)
-    
-def sliver_left(rect):
-    return (rect.x-1, rect.y, 1, rect.height)
-    
-def sliver_right(rect):
-    return (rect.x+rect.width, rect.y, 1, rect.height)
     
 def sliver_adjacent(rect, direction):
     if direction[0] < 0:
-        return sliver_left(rect)
+        return (rect.x-1, rect.y, 1, rect.height)
     elif direction[0] > 0:
-        return sliver_right(rect)
+        return (rect.x+rect.width, rect.y, 1, rect.height)
     elif direction[1] < 0:
-        return sliver_above(rect)
+        return (rect.x, rect.y-1, rect.width, 1)
     else:
-        return sliver_below(rect)
+        return (rect.x, rect.y+rect.height, rect.width, 1)
         
         
     

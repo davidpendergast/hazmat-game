@@ -6,28 +6,96 @@ import entities
 import global_state
 import cool_math
 
+CHUNK_SIZE = 8*32
+
+class Chunk:
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, CHUNK_SIZE, CHUNK_SIZE)
+        self.entities = entities.EntityCollection()
+        
+    def get_rect(self):
+        return self.rect
+        
+    def size(self):
+        return self.rect.size()
+    
+    def draw(self, screen, offset):
+        for g in self.entities.get_all(category="ground"):
+            g.draw(screen, offset)
+            
+        for e in self.entities.get_all(not_category=["ground","actor"]):
+            e.draw(screen, offset)
+        
+        for e in self.entities.get_all(category="actor"):
+            e.draw(screen, offset)
+                 
+        #if global_state.show_debug_rects:
+        #    for thing in self.stuff:
+        #        pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
+        #        if hasattr(thing, 'radius'):
+        #            center = cool_math.add(thing.center(), offset)
+        #            pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
+        #    basicfont = pygame.font.SysFont(None, 16)
+        #    string_text = "draw calls: " + str(num_draw_calls)
+        #    text = basicfont.render(string_text, True, (255, 0, 0), (255, 255, 255))
+        #    screen.blit(text, (0, 0))
+        
+    def __contains__(self, entity):
+        return entity in self.entities
+
 class World:
     def __init__(self):
         self.camera = (0, 0)
         self._player = None
-        self.ground = []
-        self.stuff = []
+        self.chunks = {} 
         self._outlines_dirty = False
         
-    def update_all(self, tick_counter, input_state):
-        for thing in self.stuff:
-            thing.update(tick_counter, input_state, self)
+    def get_chunk(self, x, y):
+        key = (x -(x % CHUNK_SIZE), y - (y % CHUNK_SIZE))
+        if key in self.chunks:
+            return self.chunks[key]
+        else:
+            return None
+            
+    def get_chunks_in_rect(self, rect):
+        return self.chunks.values() # TODO fix
+    
+    def get_or_create_chunk(self, x, y):
+        key = (int(x -(x % CHUNK_SIZE)), int(y - (y % CHUNK_SIZE)))
+        if key not in self.chunks:
+            self.chunks[key] = Chunk(key[0], key[1])
+        return self.chunks[key]
         
-        self.stuff = self._remove_dead(self.stuff)
+    def update_all(self, tick_counter, input_state):
+        for chunk in self.chunks.values():
+            for entity in chunk.entities: # TODO only the ones who need update
+                entity.update(tick_counter, input_state, self)
+        
+        for chunk in self.chunks.values():
+            dead = []
+            moved_out = []
+            for entity in chunk.entities:
+                if not entity.is_alive:
+                    dead.append(entity)
+                elif not chunk.get_rect().collidepoint(entity.center()):
+                    moved_out.append(entity)
+            for entity in dead:
+                print(entity, " has died.")
+                self._prepare_to_remove(entity)
+                chunk.entities.remove(entity)
+            for entity in moved_out:
+                chunk.entities.remove(entity)
+                moving_to = self.get_or_create_chunk(*entity.center())
+                moving_to.entities.add(entity)
         
         if self._outlines_dirty:
-            for e in self.stuff:
-                if e.is_wall():
+            for chunk in self.chunks.values():
+                for e in chunk.entities.get_all(category="wall"):
                     e.update_outlines(self)
             self._outlines_dirty = False
         
-        for e in self.stuff:
-            if e.is_actor():
+        for chunk in self.chunks.values():
+            for e in chunk.entities.get_all(category="actor"):
                 self.uncollide(e)
         
         p = self.player()        
@@ -45,15 +113,6 @@ class World:
         
     def get_camera(self):
         return self.camera
-        
-    def _remove_dead(self, entity_list):
-        still_alive = []
-        for e in self.stuff:
-            if e.is_alive:
-                still_alive.append(e)
-            else:
-                self._prepare_to_remove(e)
-        return still_alive
             
     def _prepare_to_remove(self, entity):
         entity.is_alive = False
@@ -64,32 +123,8 @@ class World:
     
     def draw_all(self, screen):
         offset = cool_math.neg(self.camera)
-        num_draw_calls = 0
-        for g in self.ground:
-            g.draw(screen, offset)
-            num_draw_calls += 1
-            
-        self.stuff.sort(key=lambda x: x.get_rect().bottomleft[1])
-        for thing in self.stuff:
-            if not thing.is_actor():
-                thing.draw(screen, offset)
-                num_draw_calls += 1
-        
-        for thing in self.stuff:  # TODO cmon
-            if thing.is_actor():
-                thing.draw(screen, offset)
-                num_draw_calls += 1
-            
-        if global_state.show_debug_rects:
-            for thing in self.stuff:
-                pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
-                if hasattr(thing, 'radius'):
-                    center = cool_math.add(thing.center(), offset)
-                    pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
-            basicfont = pygame.font.SysFont(None, 16)
-            string_text = "draw calls: " + str(num_draw_calls)
-            text = basicfont.render(string_text, True, (255, 0, 0), (255, 255, 255))
-            screen.blit(text, (0, 0))
+        for chunk in self.chunks.values():
+            chunk.draw(screen, offset)
             
     def add_entity(self, entity):
         if entity.is_player():
@@ -97,14 +132,11 @@ class World:
                 raise ValueError("There is already a player in this world.")
             self._player = entity
             
-        if entity.is_ground():
-            self.ground.append(entity)
-        else:
-            self.stuff.append(entity)
-            
+        chunk = self.get_or_create_chunk(*entity.xy())
+        chunk.entities.add(entity) 
+        
         if entity.is_wall():
-            self._outlines_dirty = True
-            
+            self._outlines_dirty = True 
         
     def add_all_entities(self, entity_list):
         for x in entity_list:
@@ -120,15 +152,17 @@ class World:
         return self.get_entities_in_rect(rect, cond=rect_search_cond)
         
     def get_entities_in_rect(self, rect, cond=None):
-        # TODO - slowwww
-        return [e for e in self.stuff if e.get_rect().colliderect(rect) and (cond == None or cond(e))]
+        res = []
+        for chunk in self.get_chunks_in_rect(rect):
+            res.extend(chunk.entities.get_all(rect=rect, cond=cond))
+        
+        return res
         
     def get_entities_at_point(self, pt, cond=None):
         return self.get_entities_in_rect([pt[0], pt[1], 1, 1], cond)
         
     def get_entities_with(self, cond):
-        # TODO - also sloooowww
-        return [e for e in self.stuff if cond(e)]
+        return self.get_chunks_in_rect(null, cond=cond)
         
     def get_door(self, door_id):
         is_my_door = lambda x: x.is_door() and x.door_id == door_id

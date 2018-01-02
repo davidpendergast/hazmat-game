@@ -6,8 +6,11 @@ sheets = {
     "normal":None,
     "green_ghosts":None,
     "red_ghosts":None,
-    "white_ghosts":None
+    "white_ghosts":None,
 }
+
+lightmap = None
+cached_lightmaps = {} # radius -> Surface
 
 tick_cnt = 0
 rainbow = [0,0,0]
@@ -68,6 +71,8 @@ DOOR_UNLOCKED = A([R(16,96,16,32)])
 DOOR_OPENING = A([R(16+16*i,96,16,32) for i in range(0, 5)], TPF=5)
 DOOR_CLOSING = DOOR_OPENING._reversify()
 LADDER = A([R(64,80,16,16)])
+LIGHT_BULB = A([R(80,88,8,8), R(88,88,8,8)])
+WIRE_VERTICAL = A([R(80,80,8,8)])
 
 PLAYER_IDLE     = A([R(176,32,16,32), R(192,32,16,32)])
 PLAYER_IDLE_LEFT = A([R(176,64,16,32), R(192,64,16,32)])
@@ -108,9 +113,17 @@ def get_window_icon():
     draw_sprite(res_surface, [0,0,32,32], [0,32,32,32]) # uhh.. hack alert lol
     return res_surface
     
+def get_lightmap(radius):
+    if not radius in cached_lightmaps:
+        num_lightmaps = len(cached_lightmaps) + 1
+        print ("computing lightmap of radius: ", radius, " (",num_lightmaps," total)")
+        size = (radius*2 + 1, radius*2 + 1)
+        cached_lightmaps[radius] = pygame.transform.scale(lightmap, size)
+    return cached_lightmaps[radius]
+    
 def reload_sheet():
     print ("Loading sprites...")
-    global sheets
+    global sheets, light_diffusion
     actual_size = pygame.image.load("art_n_stuff.png")
     sprite_sheet = pygame.transform.scale2x(actual_size)
     sheets["normal"] = sprite_sheet
@@ -118,7 +131,12 @@ def reload_sheet():
     sheets["red_ghosts"]   = dye_sheet(sprite_sheet, (255,0,0), alpha=100)
     sheets["white_ghosts"]   = dye_sheet(sprite_sheet, (255,255,255), alpha=100)
     
+    light_diffusion = pygame.image.load("lightmap.jpg")
+    
     print ("done.")
+    
+def wipe_caches():
+    cached_lightmaps.clear()
     
 def update(tick_counter):
     global tick_cnt, rainbow
@@ -140,7 +158,24 @@ def dye_sheet(sheet, color, base_color = (0, 0, 0), alpha=255):
             b = int(base_color[2] + (color[2] - base_color[2])*val)
             new_sheet.set_at((x, y), (r, g, b, alpha))
     return new_sheet
-            
+    
+CACHED_DARKNESS_CHUNKS = {}    
+    
+def get_darkness_overlay(rect, sources, ambient_darkness):
+    """
+        rect: Rect
+        sources: list of (x, y, radius, luminosity)
+        ambient_level: number from 0 to 1, with 1 being completely dark
+    """
+    key = (rect.x, rect.y)
+    if key not in CACHED_DARKNESS_CHUNKS or CACHED_DARKNESS_CHUNKS[key] == None:
+        res = Surface(rect.width, rect.height)
+        res.fill((255,255,255,int(255)*ambient_darkness))
+        for src in sources:
+            pygame.draw.circle(res, (255,255,255,0), (src[0], src[1]), src[2], 0)
+        CACHED_DARKNESS_CHUNKS[key] = res
+    return CACHED_DARKNESS_CHUNKS[key]
+                
     
 reload_sheet()
     

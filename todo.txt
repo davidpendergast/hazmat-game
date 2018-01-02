@@ -6,5 +6,8 @@ Game Mechanics
     
 Optimizations
     use chunks for collisions
-    cache drawing of static entities    
+    cache drawing of static entities
+    
+Bugs
+    Sprites aren't always being drawn pixel perfect, not sure why    
 
