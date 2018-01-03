@@ -163,17 +163,29 @@ CACHED_DARKNESS_CHUNKS = {}
     
 def get_darkness_overlay(rect, sources, ambient_darkness):
     """
-        rect: Rect
-        sources: list of (x, y, radius, luminosity)
-        ambient_level: number from 0 to 1, with 1 being completely dark
+        rect: rectangle that determines size of result, and relative positions 
+            of light sources. 
+        
+        sources: list of tuples (x, y, luminosity, radius). If unsorted, will 
+            become sorted as a side effect of calling this method.
+             
+        ambient_darkness: number from 0 to 1, with 1 being completely dark
     """
-    key = (rect.x, rect.y)
+    # we gotta recompute light if something changes
+    # TODO - put limit on number of cached light images
+    sources.sort()
+    key = tuple([(lp[0]-rect[0], lp[1]-rect[1], lp[2], lp[3]) for lp in sources])
     if key not in CACHED_DARKNESS_CHUNKS or CACHED_DARKNESS_CHUNKS[key] == None:
-        res = Surface(rect.width, rect.height)
-        res.fill((255,255,255,int(255)*ambient_darkness))
-        for src in sources:
-            pygame.draw.circle(res, (255,255,255,0), (src[0], src[1]), src[2], 0)
+        
+        if len(CACHED_DARKNESS_CHUNKS) > 300:
+            print("Warning: there are LOTS of darkness overlays in memory...")
+            
+        res = pygame.Surface((rect[2], rect[3]), flags=pygame.SRCALPHA)
+        res.fill((0,0,0,ambient_darkness))
+        for src in key:
+            pygame.draw.circle(res, (255,255,255,255-src[2]), (src[0], src[1]), src[3], 0)
         CACHED_DARKNESS_CHUNKS[key] = res
+    
     return CACHED_DARKNESS_CHUNKS[key]
                 
     

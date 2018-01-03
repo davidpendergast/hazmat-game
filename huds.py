@@ -18,7 +18,7 @@ class HUD:
             entities.Ladder(0,0), 
             entities.Door(0,0,"test_door1","test_door2"),
             entities.Enemy(0,0),
-            entities.Decoration(0,0,images.LIGHT_BULB, luminosity=1),
+            entities.LightEmittingDecoration(0,0,images.LIGHT_BULB, luminosity=255, light_radius=64),
             entities.Decoration(0,0,images.WIRE_VERTICAL)
         ] 
         

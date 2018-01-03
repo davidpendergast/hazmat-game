@@ -6,15 +6,25 @@ import entities
 import global_state
 import cool_math
 
-CHUNK_SIZE = 4*32
+CHUNK_SIZE = 8*32
 
 class Chunk:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, CHUNK_SIZE, CHUNK_SIZE)
+        cs = CHUNK_SIZE
+        self.rect = pygame.Rect(x, y, cs, cs)
         self.entities = entities.EntityCollection()
+        
+        dirs = [(-1,-1),(0,-1),(1,-1),(-1,0),(1,0),(-1,1),(0,1),(1,1)]
+        self._neighbors = [(x + d[0]*cs, y + d[1]*cs) for d in dirs]
         
     def get_rect(self):
         return self.rect
+        
+    def center(self):
+        r = self.get_rect()
+        x = round(r.x + r.width/2)
+        y = round(r.y + r.height/2)
+        return (x, y)
         
     def size(self):
         return self.rect.size()
@@ -29,19 +39,39 @@ class Chunk:
     def draw_actors(self, screen, offset):
         # Actor sprites can overflow out of their rects on the left or above,
         # so they need to be drawn after everything else (to prevent issues at
-        # chunk borders). TODO - fix this?     
+        # chunk borders).
         for e in self.entities.get_all(category="actor"):
             e.draw(screen, offset)
                     
-    def draw_darkness(self, screen, offset):
-        pass
+    def draw_darkness(self, world, screen, offset):
+        ambient_darkness = 125
+        sources = []
+        for decoration in self.entities.get_all(category="light_source"):
+            lp = decoration.light_profile()
+            if lp != None:
+                sources.append(lp)
+        for chunk_key in self._neighbors:
+            chunk = world.get_chunk(chunk_key)
+            if chunk != None:
+                for decoration in chunk.entities.get_all(category="light_source"):
+                    lp = decoration.light_profile()
+                    if lp != None:
+                        sources.append(lp) 
+        
+        rect = self.get_rect()
+        img = images.get_darkness_overlay(rect, sources, ambient_darkness)
+        screen.blit(img, cool_math.add(rect.topleft, offset))
+        
+    _DIRS = [(-1,-1),(0,-1),(1,-1),(-1,0),(1,0),(-1,1),(0,1),(1,1)]
+    def neighbor_chunks(self):
+        return 
     
     def draw_debug_stuff(self, screen, offset):
         if global_state.show_debug_rects:
             pygame.draw.rect(screen, (0,0,0), self.get_rect().move(*offset), 1)
             for thing in self.entities.get_all(not_category="ground"):
                 pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
-                if hasattr(thing, 'radius'):
+                if hasattr(thing, 'radius') and thing.radius > 2:
                     center = cool_math.add(thing.center(), offset)
                     pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
         
@@ -64,6 +94,12 @@ class World:
         else:
             return None
             
+    def get_chunk(self, key):
+        if key in self.chunks:
+            return self.chunks[key]
+        else:
+            return None
+                        
     def get_chunks_in_rect(self, rect):
         xy_min = self.get_chunk_key_for_point(rect[0], rect[1])
         xy_max = self.get_chunk_key_for_point(rect[0] + rect[2], rect[1] + rect[3])
@@ -142,7 +178,7 @@ class World:
             chunk.draw_actors(screen, offset)
             
         for chunk in chunks_to_draw:
-            chunk.draw_darkness(screen, offset)
+            chunk.draw_darkness(self, screen, offset)
             chunk.draw_debug_stuff(screen, offset)
             
     def add_entity(self, entity):

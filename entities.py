@@ -108,6 +108,9 @@ class Entity:
         
     def is_decoration(self):
         return False
+        
+    def is_light_source(self):
+        return False
     
     def __repr__(self):
         pos = "(%s, %s)" % (self.rect.x, self.rect.y)
@@ -594,13 +597,11 @@ class Overlay(Entity):
                 self.set_center_y(pos[1])
                 
 class Decoration(Entity):
-    """Just a noninteractive piece of art basically. Can emit light.
-    for performance reasons, shouldn't ever move if it's a light source."""
-    def __init__(self, x, y, animation, luminosity=0, light_radius=64):
+    """Just a noninteractive piece of art basically."""
+    
+    def __init__(self, x, y, animation):
         Entity.__init__(self, x, y, animation.width(), animation.height())
         self.animation = animation
-        self.luminosity = 0
-        self.light_radius = light_radius
         
     def sprite(self):
         return self.animation
@@ -609,6 +610,27 @@ class Decoration(Entity):
         return (0, 0)
         
     def is_decoration(self):
+        return True
+            
+class LightEmittingDecoration(Decoration):
+    """A decoration that emits light. Should never move."""
+    
+    def __init__(self, x, y, animation, luminosity, light_radius):
+        Decoration.__init__(self, x, y, animation)
+        self._luminosity = luminosity   # brightness level from 0 to 255
+        self.radius = light_radius      # radius in pixels
+    
+    def light_profile(self):
+        """returns: integers (x, y, luminosity, radius), or None if luminosity 
+            or radius is zero
+        """
+        if self._luminosity > 0 and self.radius > 0:
+            pos = self.center()
+            return (pos[0], pos[1], self._luminosity, self.radius)
+        else:
+            return None
+    
+    def is_light_source(self):
         return True
                 
 class Ladder(Entity):
@@ -643,6 +665,7 @@ class EntityCollection:
             "interactable": (lambda x: x.is_interactable(), set()),
             "wall":         (lambda x: x.is_wall(), set()),
             "decoration":   (lambda x: x.is_decoration(), set()),
+            "light_source": (lambda x: x.is_light_source(), set())
         }
         
         for e in entities:
