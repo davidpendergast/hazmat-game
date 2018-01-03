@@ -1,6 +1,8 @@
 import pygame
 import random
 
+import global_state
+
 mult = 32
 sheets = {
     "normal":None,
@@ -12,7 +14,6 @@ sheets = {
 lightmap = None
 cached_lightmaps = {} # radius -> Surface
 
-tick_cnt = 0
 rainbow = [0,0,0]
 
 TICKS_PER_FRAME = 10
@@ -94,7 +95,7 @@ PURPLE_GROUND = A([r(3,2,1,1)])
 def draw_animated_sprite(screen, dest_rect, animation, modifier="normal"):
     """animation: either an Animation or a Rect"""
     if type(animation) is Animation:
-        frame = (tick_cnt // animation.TPF) % len(animation.rects)
+        frame = (global_state.tick_counter // animation.TPF) % len(animation.rects)
         draw_sprite(screen, dest_rect, animation.rects[frame], modifier)
     else:
         draw_sprite(screen, dest_rect, animation, modifier)
@@ -138,9 +139,8 @@ def reload_sheet():
 def wipe_caches():
     cached_lightmaps.clear()
     
-def update(tick_counter):
-    global tick_cnt, rainbow
-    tick_cnt = tick_counter
+def update():
+    global rainbow
     i = random.randint(0,2)
     rainbow[i] = (rainbow[i] + 5) % 256
     

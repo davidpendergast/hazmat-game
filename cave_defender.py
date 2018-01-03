@@ -1,6 +1,7 @@
 import pygame
 
 import random
+import time
 
 import world
 import images
@@ -33,18 +34,16 @@ def draw(screen):
     pygame.draw.rect(screen, (120,120,120), screen_rect, 0)
     world.draw_all(screen)
     hud.draw(screen, offset=cool_math.neg(world.get_camera()))
-    
-tick_counter = 0
 
 def update():
-    input_state.update(tick_counter)
+    input_state.update()
     
     gs.update(input_state)
-    world.update_all(tick_counter, input_state)
-    hud.update(tick_counter, input_state, world)
+    world.update_all(input_state)
+    hud.update(input_state, world)
     
-    images.update(tick_counter)
-    
+    images.update()
+
 while still_running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -75,8 +74,6 @@ while still_running:
     
     update()
     draw(screen)
-    
-    tick_counter += 1
 
     pygame.display.flip()
     clock.tick(FPS)

@@ -22,7 +22,7 @@ class HUD:
             entities.Decoration(0,0,images.WIRE_VERTICAL)
         ] 
         
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         self._handle_selecting_item(input_state)
         self._handle_placing_item(input_state, world)
     
@@ -32,6 +32,13 @@ class HUD:
         if to_place is not None and placeable is not None:
             mod = "green_ghosts" if placeable else "red_ghosts"    
             to_place.draw(screen, offset, modifier=mod)   
+            
+        if global_state.show_fps:
+            basicfont = pygame.font.SysFont(None, 16)
+            text = "FPS: " + str(global_state.current_fps)
+            fps_text = basicfont.render(text, True, (255, 0, 0), (255, 255, 255))
+            screen.blit(fps_text, (0, 0))
+ 
         
     def _get_item_to_place(self, index):
         if index >= len(self.items):

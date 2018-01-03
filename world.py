@@ -6,7 +6,7 @@ import entities
 import global_state
 import cool_math
 
-CHUNK_SIZE = 8*32
+CHUNK_SIZE = 4*32
 
 class Chunk:
     def __init__(self, x, y):
@@ -80,10 +80,10 @@ class World:
             self.chunks[key] = Chunk(key[0], key[1])
         return self.chunks[key]
         
-    def update_all(self, tick_counter, input_state):
+    def update_all(self, input_state):
         for chunk in self.chunks.values():
             for entity in chunk.entities:
-                entity.update(tick_counter, input_state, self)
+                entity.update(input_state, self)
         
         for chunk in self.chunks.values():
             dead = []

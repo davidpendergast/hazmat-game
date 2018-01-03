@@ -33,7 +33,7 @@ class Entity:
     def sprite_modifier(self):
         return "normal"
     
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         pass
     
     def get_rect(self):
@@ -210,7 +210,7 @@ class Player(Actor):
         if self.is_right_walled or self.vel[0] < 0:
             self.facing_right = False
         
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         self._update_status_tags(world)
         self._handle_shooting(world)
         
@@ -326,7 +326,7 @@ class Enemy(Actor):
             health_rect[2] = max(0,round(health_width * self.health / self.max_health))
             pygame.draw.rect(screen, (50, 255, 50), health_rect, 0)
         
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         if self.health <= 0:
             self.is_alive = False
             return
@@ -379,7 +379,7 @@ class Bullet(Entity):
         pos = (center[0] + offset[0], center[1] + offset[1])
         pygame.draw.circle(screen, (200, 100, 100), pos, 4, 0)
         
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         if not self.target.is_alive:
             self.is_alive = False
             
@@ -411,9 +411,6 @@ class Wall(Entity):
         
     def sprite_offset(self):
         return (0, 0)
-    
-    def update(self, tick_counter, input_state, world):
-        pass
         
     def set_outline_dirty(self, is_dirty):
         self._outline_dirty = is_dirty
@@ -423,7 +420,7 @@ class Wall(Entity):
         if self._cached_outline != None:
             screen.blit(self._cached_outline, cool_math.add(self.xy(), offset))    
             
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         if self._outline_dirty:
             self.update_outlines(world)
             self._outline_dirty = False 
@@ -480,7 +477,7 @@ class Spawner(Entity):
         else:
             return (-4, -4)
         
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         if self.current_cooldown > 0:
             self.current_cooldown -= 1
         else:
@@ -548,7 +545,7 @@ class Door(Entity):
             else:
                 return images.DOOR_UNLOCKED
     
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         if self.open_cooldown == 1:
             player = world.player()
             dest_door = world.get_door(self.dest_id)
@@ -586,7 +583,7 @@ class Overlay(Entity):
     def sprite_offset(self):
         return (0, -32)
     
-    def update(self, tick_counter, input_state, world):
+    def update(self, input_state, world):
         if self.lifespan <= 0 or self.target is not None and not self.target.is_alive:
             self.is_alive = False
         else:

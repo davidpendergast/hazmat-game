@@ -1,9 +1,11 @@
+import global_state
+
 class InputState:
     def __init__(self):
         self._held_keys = {} # keycode -> time pressed
-        self._current_time = 0
         self._mouse_pos = (0, 0)
         self._mouse_down_time = None
+        self._current_time = 0
     
     def set_key(self, key, held):
         if held and key not in self._held_keys:
@@ -50,8 +52,8 @@ class InputState:
     def all_held_keys(self):
         return self._held_keys.keys()
         
-    def update(self, tick_counter):
-        self._current_time = tick_counter
+    def update(self):
+        self._current_time = global_state.tick_counter
         
         
         
