@@ -397,32 +397,7 @@ class Bullet(Entity):
             self.y += v[1]
             self.rect.x = round(self.x) % 640
             self.rect.y = round(self.y) % 480
-            
-class RopeBullet(Bullet):
-    def __init__(self, x, y, direction, speed):
-        Entity.__init__(self, x, y, 4, 4)
-        self.direction = direction
-        self.speed = speed
-    
-    def draw(self, screen, offset=(0,0), modifier=None):
-        center = self.center()
-        pos = (center[0] + offset[0], center[1] + offset[1])
-        pygame.draw.circle(screen, (200, 100, 100), pos, 4, 0)
-        
-    def update(self, tick_counter, input_state, world):
-        colliding_with = world.get_entities_in_rect(self.get_rect(), category="wall")
-        
-        if len(colliding_with) > 0:
-            colliding_with.sort(key=lambda x: cool_math.dist(self.center(), x.center()))
-            wall_hit = colliding_with[0]
-            player = world.player()
-            if player != None:
-                player.rope = Rope(wall_hit.center(), player.center())
-            self.is_alive = False
-        else:
-            self.set_x(self.x + self.direction[0]*self.speed)
-            self.set_y(self.y + self.direction[1]*self.speed)
-                
+               
                
 class Wall(Entity):
     def __init__(self, x, y, w=32, h=32, sprite=images.WHITE_WALL):
@@ -546,85 +521,6 @@ class EnergyTank(Entity):
         
     def sprite_offset(self):
         return (-4, -40)
-
-class Rope():
-    def __init__(self, p1, p2, max_length=-1):
-        """Create a new rope object.
-            p1: anchor point
-            p2: most flexible point"""
-        self._points = [p1, p2]
-        self.max_length = max_length
-        if max_length < 0:
-            self.max_length = cool_math.dist(p1, p2)
-        
-    def length(self, end_idx=None):
-        if end_idx == None or end_idx == -1:
-            end_idx = len(self._points) - 1
-        elif end_idx == 0:
-            return 0
-            
-        res = 0
-        pts = self._points
-        
-        for i in range(0, end_idx):
-            res += cool_math.dist(pts[i], pts[i+1])
-        return res
-         
-    def draw(self, screen, offset=(0,0), modifier=None):
-        # color = (255,0,0) if self.length() > self.max_length else (0,0,0)
-        color = (0, 0, 0)
-        pygame.draw.lines(screen, color, False, self.all_points(offset), 2)
-    
-    def all_points(self, offset=(0, 0)):
-        if offset == (0, 0):
-            return self._points
-        else:
-            return [cool_math.add(x, offset) for x in self._points]
-         
-    def num_points(self):
-        return len(self._points)     
-            
-    def get_point(self, idx):
-        return self._points[idx % self.num_points()]
-        
-    def set_point(self, idx, point):
-        self._points[idx % self.num_points()] = point
-        
-    def add_point(self, point):
-        self._points.append(point)
-    
-    def update(self, tick_counter, input_state, world):
-        return
-        length = self.length()
-        while length > self.max_length:
-            seg = (self.get_point(-1), self.get_point(-2))
-            seg_length = cool_math.dist(seg[0], seg[1])
-            remaining_length = length - seg_length
-            if remaining_length > self.max_length:
-                del self._points[-1]
-            else:
-                seg_length_new = self.max_length - remaining_length
-                v = cool_math.sub(seg[0], seg[1])
-                v = cool_math.set_length(v, seg_length_new)
-                new_last_point = cool_math.add(seg[1], v)
-                self.set_point(-1, new_last_point)
-                return
-            length = self.length()
-            
-    def get_allowable_positions(self, idx=None):
-        """returns: (x,y,radius)"""
-        if idx == None:
-            idx = -1
-        idx = idx % self.num_points()
-        length = self.length(idx-1)
-        print("get_allowable length=",length)
-        radius = max(0, self.max_length - length)
-        print("get_allowable radius=",radius)
-        pt = self.get_point(idx)
-        return (pt[0], pt[1], radius)
-            
-    def get_slack(self):
-        return max(0, self.max_length - self.length())
         
 class Door(Entity):
     def __init__(self, x, y, door_id, dest_id, locked=False):
