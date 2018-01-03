@@ -53,17 +53,26 @@ class World:
         self.camera = (0, 0)
         self._player = None
         self.chunks = {} 
-        self._outlines_dirty = False
+        
+    def get_chunk_key_for_point(self, x, y):
+        return (x -(x % CHUNK_SIZE), y - (y % CHUNK_SIZE))
         
     def get_chunk(self, x, y):
-        key = (x -(x % CHUNK_SIZE), y - (y % CHUNK_SIZE))
+        key = self.get_chunk_key_for_point(x, y)
         if key in self.chunks:
             return self.chunks[key]
         else:
             return None
             
     def get_chunks_in_rect(self, rect):
-        return self.chunks.values() # TODO fix
+        xy_min = self.get_chunk_key_for_point(rect[0], rect[1])
+        xy_max = self.get_chunk_key_for_point(rect[0] + rect[2], rect[1] + rect[3])
+        res = []
+        for x in range(xy_min[0]-1, xy_max[0]+1):
+            for y in range(xy_min[1]-1, xy_max[1]+1):
+                if (x, y) in self.chunks:
+                    res.append(self.chunks[(x, y)])
+        return res
     
     def get_or_create_chunk(self, x, y):
         key = (int(x -(x % CHUNK_SIZE)), int(y - (y % CHUNK_SIZE)))
@@ -73,7 +82,7 @@ class World:
         
     def update_all(self, tick_counter, input_state):
         for chunk in self.chunks.values():
-            for entity in chunk.entities: # TODO only the ones who need update
+            for entity in chunk.entities:
                 entity.update(tick_counter, input_state, self)
         
         for chunk in self.chunks.values():
@@ -92,12 +101,6 @@ class World:
                 chunk.entities.remove(entity)
                 moving_to = self.get_or_create_chunk(*entity.center())
                 moving_to.entities.add(entity)
-        
-        if self._outlines_dirty:
-            for chunk in self.chunks.values():
-                for e in chunk.entities.get_all(category="wall"):
-                    e.update_outlines(self)
-            self._outlines_dirty = False
         
         for chunk in self.chunks.values():
             for e in chunk.entities.get_all(category="actor"):
@@ -123,7 +126,9 @@ class World:
         if entity.is_player():
             self._player = None
         if entity.is_wall():
-            self._outlines_dirty = True
+            r = entity.get_rect().inflate(2, 2)
+            for wall in self.get_entities_in_rect(r, category="wall"):
+                wall.set_outline_dirty(True)
     
     def draw_all(self, screen):
         offset = cool_math.neg(self.camera)
@@ -150,7 +155,9 @@ class World:
         chunk.entities.add(entity) 
         
         if entity.is_wall():
-            self._outlines_dirty = True 
+            r = entity.get_rect().inflate(2, 2)
+            for wall in self.get_entities_in_rect(r, category="wall"):
+                wall.set_outline_dirty(True)
         
     def add_all_entities(self, entity_list):
         for x in entity_list:

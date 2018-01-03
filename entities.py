@@ -429,6 +429,7 @@ class Wall(Entity):
         Entity.__init__(self, x, y, w, h)
         self._sprite = sprite
         self._cached_outline = None # surface
+        self._outline_dirty = True
     
     def sprite(self):
         return self._sprite
@@ -439,10 +440,18 @@ class Wall(Entity):
     def update(self, tick_counter, input_state, world):
         pass
         
+    def set_outline_dirty(self, is_dirty):
+        self._outline_dirty = is_dirty
+        
     def draw(self, screen, offset=(0,0), modifier=None):
         Entity.draw(self, screen, offset, modifier)
         if self._cached_outline != None:
-            screen.blit(self._cached_outline, cool_math.add(self.xy(), offset))      
+            screen.blit(self._cached_outline, cool_math.add(self.xy(), offset))    
+            
+    def update(self, tick_counter, input_state, world):
+        if self._outline_dirty:
+            self.update_outlines(world)
+            self._outline_dirty = False 
         
     def update_outlines(self, world):
         if self._cached_outline == None:
