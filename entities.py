@@ -251,9 +251,8 @@ class Player(Actor):
             self.shoot_cooldown = self.shoot_max_cooldown
             
         if keyboard_interact and not self._is_shooting():
-            is_interactable = lambda x: x.is_interactable()
             box = self.get_rect().inflate((self.interact_radius,0))
-            interactables = world.get_entities_in_rect(box, is_interactable)
+            interactables = world.get_entities_in_rect(box, category="interactable")
             cntr = self.center()
             if len(interactables) > 0:
                 interactables.sort(key=lambda x: cool_math.dist(cntr, x.center()))
@@ -282,9 +281,8 @@ class Player(Actor):
                 bullet_x = rect.x + rect.width if self.facing_right else rect.x - bullet_w
                 self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, 4)
                 bullet_hitbox = self.active_bullet.inflate(0, 8)
-                is_enemy = lambda x: x.is_enemy()
                 direction = (1, 0) if self.facing_right else (-1, 0)
-                for e in world.get_entities_in_rect(bullet_hitbox, is_enemy):
+                for e in world.get_entities_in_rect(bullet_hitbox, category="enemy"):
                     e.deal_damage(10, direction)
                     
         if self.shoot_cooldown < 8 or self.shoot_cooldown > 10:
@@ -412,8 +410,7 @@ class RopeBullet(Bullet):
         pygame.draw.circle(screen, (200, 100, 100), pos, 4, 0)
         
     def update(self, tick_counter, input_state, world):
-        is_wall = lambda x: x.is_wall()
-        colliding_with = world.get_entities_in_rect(self.get_rect(), is_wall)
+        colliding_with = world.get_entities_in_rect(self.get_rect(), category="wall")
         
         if len(colliding_with) > 0:
             colliding_with.sort(key=lambda x: cool_math.dist(self.center(), x.center()))
@@ -519,7 +516,7 @@ class Spawner(Entity):
         spawned.set_center_x(rand_x)
         spawned.set_center_y(rand_y)
         
-        if len(world.get_entities_in_rect(spawned.get_rect())) == 0:
+        if len(world.get_entities_in_rect(spawned.get_rect()), not_category="ground") == 0:
             world.add_entity(spawned)
             sparkles = Overlay(images.SPAWN_SPARKLES, 40, rand_x, rand_y, target=spawned)
             world.add_entity(sparkles)

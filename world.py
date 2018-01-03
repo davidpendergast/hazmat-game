@@ -105,8 +105,7 @@ class World:
         
         p = self.player()        
         if p is not None:
-            is_enemy = lambda x: x.is_enemy()
-            for e in self.get_entities_in_rect(p.get_rect(), is_enemy):
+            for e in self.get_entities_in_rect(p.get_rect(), category="enemy"):
                 e.touched_player(p, self)
                     
             self.recenter_camera(p.center())
@@ -160,21 +159,29 @@ class World:
     def player(self):
         return self._player
         
-    def get_entities_in_circle(self, center, radius, cond=None):
+    def get_entities_in_circle(self, center, radius, category=None, not_category=[], cond=None):
         rect = [center[0]-radius, center[1]-radius, radius*2, center[1]*2]
         in_circle = lambda x: cool_math.dist(x.center(), center) <= radius
         rect_search_cond = lambda x: in_circle(x) and (cond==None or cond(x))
-        return self.get_entities_in_rect(rect, cond=rect_search_cond)
+        return self.get_entities_in_rect(
+                rect, 
+                category=category, 
+                not_category=not_category, 
+                cond=rect_search_cond)
         
-    def get_entities_in_rect(self, rect, cond=None):
+    def get_entities_in_rect(self, rect, category=None, not_category=[], cond=None):
         res = []
         for chunk in self.get_chunks_in_rect(rect):
-            res.extend(chunk.entities.get_all(rect=rect, cond=cond))
-        
+            to_add = chunk.entities.get_all(
+                    category=category, 
+                    not_category=not_category, 
+                    rect=rect, 
+                    cond=cond)
+            res.extend(to_add)
         return res
         
     def get_entities_at_point(self, pt, cond=None):
-        return self.get_entities_in_rect([pt[0], pt[1], 1, 1], cond)
+        return self.get_entities_in_rect([pt[0], pt[1], 1, 1], cond=cond)
         
     def get_entities_with(self, cond):
         return self.get_chunks_in_rect(null, cond=cond)
@@ -209,8 +216,7 @@ class World:
         res_x = rect.x
         
         v_rect = rect.inflate(-10, 0)
-        is_wall = lambda e: e.is_wall()
-        v_collides = self.get_entities_in_rect(v_rect, is_wall)
+        v_collides = self.get_entities_in_rect(v_rect, category="wall")
         
         for w in v_collides:
             w_rect = w.get_rect()
@@ -224,7 +230,7 @@ class World:
                 
         rect.y = res_y
         h_rect = rect.inflate(0,-10)
-        h_collides = self.get_entities_in_rect(h_rect, is_wall)
+        h_collides = self.get_entities_in_rect(h_rect, category="wall")
                     
         for w in h_collides:
             w_rect = w.get_rect()
