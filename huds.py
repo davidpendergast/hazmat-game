@@ -24,7 +24,10 @@ class HUD:
         
     def update(self, input_state, world):
         self._handle_selecting_item(input_state)
-        self._handle_placing_item(input_state, world)
+        placed = self._handle_placing_item(input_state, world)
+        removed = False
+        if not placed:
+            removed = self._handle_removing_item(input_state, world)
     
     def draw(self, screen, offset=(0, 0)):
         to_place = self.selected_item_to_place
@@ -73,6 +76,7 @@ class HUD:
         if to_place is not None:
             mouse = input_state.mouse_pos()
             if mouse is not None:
+                in_world = world.to_world_pos(*mouse)
                 w,h = to_place.get_rect().size
                 if w <= 16:
                     w = 16
@@ -82,7 +86,7 @@ class HUD:
                     h = 16
                 elif h <= 32:
                     h = 32
-                c_xy = world.get_tile_at(*mouse, tilesize=(w,h))
+                c_xy = world.get_tile_at(*in_world, tilesize=(w,h))
                 to_place.set_center_x(c_xy[0])
                 to_place.set_center_y(c_xy[1])
         
@@ -100,5 +104,19 @@ class HUD:
                 world.add_entity(copy.deepcopy(to_place))
                 self.selected_item_placeable = None
                 self.selected_item_to_place = None 
+                return True
+                
+        return False
     
+    def _handle_removing_item(self, input_state, world):
+        if self.selected_item_to_place == None:
+            if input_state.mouse_in_window() and input_state.mouse_was_pressed():
+                screen_pos = input_state.mouse_pos()
+                world_pos = world.to_world_pos(*screen_pos)
+                ents = world.get_entities_at_point(world_pos, not_category="ground")
+                print("trying to del: ", ents)
+                if len(ents) > 0:
+                    return world.remove_entity(ents[0])
+        return False
+        
         

@@ -434,23 +434,22 @@ class Wall(Entity):
         else:
             self._cached_outline.fill((0,0,0,0), None, 0)
         rect = self.get_rect()
-        is_wall = lambda x: x.is_wall()
         r = [0,0,2,2]
         for x in range(0, self.width(), 2):
-            if len(world.get_entities_at_point((rect.x + x, rect.y - 1), is_wall)) == 0:
+            if len(world.get_entities_at_point((rect.x + x, rect.y - 1), category="wall")) == 0:
                 r[0]=x
                 r[1]=0
                 pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)
-            if len(world.get_entities_at_point((rect.x + x, rect.y + rect.height), is_wall)) == 0:
+            if len(world.get_entities_at_point((rect.x + x, rect.y + rect.height), category="wall")) == 0:
                 r[0]=x
                 r[1]=rect.height - 2
                 pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)
         for y in range(0, self.height(), 2):
-            if len(world.get_entities_at_point((rect.x - 1, rect.y + y), is_wall)) == 0:
+            if len(world.get_entities_at_point((rect.x - 1, rect.y + y), category="wall")) == 0:
                 r[0]=0
                 r[1]=y
                 pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)
-            if len(world.get_entities_at_point((rect.x + rect.width, rect.y + y), is_wall)) == 0:
+            if len(world.get_entities_at_point((rect.x + rect.width, rect.y + y), category="wall")) == 0:
                 r[0]=rect.width - 2
                 r[1]=y
                 pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)

@@ -55,7 +55,7 @@ class Chunk:
             if lp != None:
                 sources.append(lp)
         for chunk_key in self._neighbors:
-            chunk = world.get_chunk(chunk_key)
+            chunk = world.get_chunk_from_key(chunk_key)
             if chunk != None:
                 for decoration in chunk.entities.get_all(category="light_source"):
                     lp = decoration.light_profile()
@@ -98,7 +98,7 @@ class World:
         else:
             return None
             
-    def get_chunk(self, key):
+    def get_chunk_from_key(self, key):
         if key in self.chunks:
             return self.chunks[key]
         else:
@@ -140,13 +140,12 @@ class World:
                     moved_out.append(entity)
             for entity in dead:
                 print(entity, " has died.")
-                self._prepare_to_remove(entity)
-                chunk.entities.remove(entity)
+                self.remove_entity(entity, chunk=chunk)
             for entity in moved_out:
                 chunk.entities.remove(entity)
                 
                 key = self.get_chunk_key_for_point(*entity.xy())
-                moving_to = self.get_chunk(key)
+                moving_to = self.get_chunk_from_key(key)
                 if moving_to == None:
                     if key in new_chunks:
                         # in case two entities move into a new chunk on the
@@ -198,7 +197,8 @@ class World:
             chunk.draw_actors(screen, offset)
             
         for chunk in chunks_to_draw:
-            chunk.draw_darkness(self, screen, offset)
+            if not global_state.show_no_darkness:
+                chunk.draw_darkness(self, screen, offset)
             chunk.draw_debug_stuff(screen, offset)
             
     def add_entity(self, entity):
@@ -218,6 +218,18 @@ class World:
     def add_all_entities(self, entity_list):
         for x in entity_list:
             self.add_entity(x)
+            
+    def remove_entity(self, entity, chunk=None):
+        if chunk == None:
+            chunk = self.get_chunk(*entity.xy())
+            if chunk == None:
+                return False
+        if entity in chunk.entities:
+            self._prepare_to_remove(entity)
+            chunk.entities.remove(entity)
+            return True
+        else:
+            return False
             
     def player(self):
         return self._player
@@ -243,8 +255,9 @@ class World:
             res.extend(to_add)
         return res
         
-    def get_entities_at_point(self, pt, cond=None):
-        return self.get_entities_in_rect([pt[0], pt[1], 1, 1], cond=cond)
+    def get_entities_at_point(self, pt, category=None, not_category=[], cond=None):
+        return self.get_entities_in_rect([pt[0], pt[1], 1, 1], 
+                category=category, not_category=not_category, cond=cond)
         
     def get_entities_with(self, cond):
         return self.get_chunks_in_rect(null, cond=cond)
@@ -313,17 +326,17 @@ class World:
         detected = self.get_entities_in_rect(detector_rect, cond=is_wall)
         return len(detected) > 0
                     
-    def get_tile_at(self, screen_x, screen_y, tilesize=(32,32)):
+    def get_tile_at(self, x, y, tilesize=(32,32)):
         """returns: coordinate of center of 'tile' that contains (x, y)"""
-        x = screen_x + self.camera[0]
-        y = screen_y + self.camera[1]
-        cx = int(x / tilesize[0])*tilesize[0] + tilesize[0]/2
-        cy = int(y / tilesize[1])*tilesize[1] + tilesize[1]/2
+        cx = int(abs(x) / tilesize[0])*tilesize[0] + tilesize[0]/2
+        cx = cx if x >= 0 else -cx
+        cy = int(abs(y) / tilesize[1])*tilesize[1] + tilesize[1]/2
+        cy = cy if y >= 0 else -cy
         return (cx, cy)       
         
-    def to_world_pos(self, screen_pos):
-        x = screen_pos[0] + self.camera[0]
-        y = screen_pos[1] + self.camera[1]
+    def to_world_pos(self, screen_x, screen_y):
+        x = screen_x + self.camera[0]
+        y = screen_y + self.camera[1]
         return (x, y)
                     
     def gimme_a_sample_world():
