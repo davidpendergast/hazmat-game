@@ -430,7 +430,7 @@ class Wall(Entity):
         
     def update_outlines(self, world):
         if self._cached_outline == None:
-            self._cached_outline = pygame.Surface(self.size(), pygame.SRCALPHA, 32)
+            self._cached_outline = pygame.Surface(self.size(), flags=pygame.SRCALPHA)
         else:
             self._cached_outline.fill((0,0,0,0), None, 0)
         rect = self.get_rect()
@@ -652,6 +652,13 @@ class Ground(Decoration):
     def is_ground(self):
         return True
         
+def _safe_remove(item, collection, print_err=False):
+        try:
+            collection.remove(item)
+        except:
+            if print_err:
+                print("cannot remove ", item,", probably because it's not in the collection")
+        
 class EntityCollection:
     def __init__(self, entities=[]):
         self.all_stuff = []
@@ -677,10 +684,10 @@ class EntityCollection:
             self.categories[catkey][1].add(entity)
         
     def remove(self, entity):
-        EntityCollection._safe_remove(entity, self.all_stuff, True)
+        _safe_remove(entity, self.all_stuff, True)
         cats = self._get_categories(entity)
         for catkey in cats:
-            EntityCollection._safe_remove(entity, self.categories[catkey][1]) 
+            _safe_remove(entity, self.categories[catkey][1]) 
                 
     def get_all(self, category=None, not_category=[], rect=None, cond=None):
         """
@@ -728,13 +735,6 @@ class EntityCollection:
         
     def all_categories(self):
         return self.categories.keys()     
-            
-    def _safe_remove(item, collection, print_err=False):
-        try:
-            collection.remove(item)
-        except:
-            if print_err:
-                print("cannot remove ", item,", probably because it's not in the collection")
            
     def _get_categories(self, entity):
         return [x for x in self.categories if self.categories[x][0](entity)]       

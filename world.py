@@ -117,10 +117,10 @@ class World:
     def get_or_create_chunk(self, x, y, and_add_to_dict=True):
         key = self.get_chunk_key_for_point(x, y)
         if key not in self.chunks:
-             new_chunk = Chunk(key[0], key[1])
-             if and_add_to_dict:
+            new_chunk = Chunk(key[0], key[1])
+            if and_add_to_dict:
                 self.chunks[key] = new_chunk
-             return new_chunk
+            return new_chunk
         else:
             return self.chunks[key]
         
@@ -259,12 +259,18 @@ class World:
         return self.get_entities_in_rect([pt[0], pt[1], 1, 1], 
                 category=category, not_category=not_category, cond=cond)
         
-    def get_entities_with(self, cond):
-        return self.get_chunks_in_rect(null, cond=cond)
+    def get_entities_with(self, category=None, not_category=[] cond=None):
+        res = []
+        for chunk in self.chunks.values():
+            res.extend(chunk.entities.get_all(
+                    category=category, 
+                    not_category=not_category, 
+                    cond=cond))
+        return res
         
     def get_door(self, door_id):
         is_my_door = lambda x: x.is_door() and x.door_id == door_id
-        matches = self.get_entities_with(is_my_door)
+        matches = self.get_entities_with(cond=is_my_door)
         if len(matches) == 0:
             return None
         elif len(matches) > 0:
@@ -339,31 +345,31 @@ class World:
         y = screen_y + self.camera[1]
         return (x, y)
                     
-    def gimme_a_sample_world():
-        world = World()
+def gimme_a_sample_world():
+    world = World()
+    
+    other_junk = [entities.Player(50, 50)]
+    for i in range(0, 640, 32):
+        other_junk.append(entities.Wall(i, 0))
+        other_junk.append(entities.Wall(i, 480-32))
+    for i in range(32, 480, 32):
+        other_junk.append(entities.Wall(0, i))
+        other_junk.append(entities.Wall(640-32, i))
         
-        other_junk = [entities.Player(50, 50)]
-        for i in range(0, 640, 32):
-            other_junk.append(entities.Wall(i, 0))
-            other_junk.append(entities.Wall(i, 480-32))
-        for i in range(32, 480, 32):
-            other_junk.append(entities.Wall(0, i))
-            other_junk.append(entities.Wall(640-32, i))
-            
-        other_junk.append(entities.Enemy(300,200))
-        
-        ground = []    
-        for x in range(0, 640, 32):
-            for y in range(0, 480, 32):
-                rx = random.random() * 640
-                ry = random.random() * 480
-                n = 0 if rx < x else 2
-                n += 0 if ry < y else 1
-                ground.append(entities.Ground(x, y, n))
-        
-        all_stuff = other_junk + ground
-        world.add_all_entities(all_stuff)
-        return world 
+    other_junk.append(entities.Enemy(300,200))
+    
+    ground = []    
+    for x in range(0, 640, 32):
+        for y in range(0, 480, 32):
+            rx = random.random() * 640
+            ry = random.random() * 480
+            n = 0 if rx < x else 2
+            n += 0 if ry < y else 1
+            ground.append(entities.Ground(x, y, n))
+    
+    all_stuff = other_junk + ground
+    world.add_all_entities(all_stuff)
+    return world 
                     
         
     

@@ -110,7 +110,7 @@ def get_sheet(modifier="normal"):
         return sheets[modifier]
     
 def get_window_icon():
-    res_surface = pygame.Surface((32, 32), pygame.SRCALPHA)
+    res_surface = pygame.Surface((32, 32), flags=pygame.SRCALPHA)
     draw_sprite(res_surface, [0,0,32,32], [0,32,32,32]) # uhh.. hack alert lol
     return res_surface
     
