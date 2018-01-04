@@ -124,7 +124,7 @@ def get_lightmap(radius):
     
 def reload_sheet():
     print ("Loading sprites...")
-    global sheets, light_diffusion
+    global sheets, lightmap
     actual_size = pygame.image.load("art_n_stuff.png")
     sprite_sheet = pygame.transform.scale2x(actual_size)
     sheets["normal"] = sprite_sheet
@@ -132,7 +132,19 @@ def reload_sheet():
     sheets["red_ghosts"]   = dye_sheet(sprite_sheet, (255,0,0), alpha=100)
     sheets["white_ghosts"]   = dye_sheet(sprite_sheet, (255,255,255), alpha=100)
     
-    light_diffusion = pygame.image.load("lightmap.jpg")
+    raw_lightmap = pygame.image.load("lightmap.jpg")
+    w, h = raw_lightmap.get_size()
+    lightmap = pygame.Surface((w, h), flags=pygame.SRCALPHA)
+    
+    # going pixel by pixel is very slow, but only done once at launch
+    # TODO - just get a png that already has proper alpha
+    lightmap.lock() # helps performance supposedly
+    for x in range(0, w):       
+        for y in range(0, h):
+            color = raw_lightmap.get_at((x, y))
+            with_alpha = (255, 255, 255, color[0])
+            lightmap.set_at((x, y), with_alpha)
+    lightmap.unlock()
     
     print ("done.")
     
@@ -177,13 +189,16 @@ def get_darkness_overlay(rect, sources, ambient_darkness):
     key = tuple([(lp[0]-rect[0], lp[1]-rect[1], lp[2], lp[3]) for lp in sources])
     if key not in CACHED_DARKNESS_CHUNKS or CACHED_DARKNESS_CHUNKS[key] == None:
         
-        if len(CACHED_DARKNESS_CHUNKS) > 300:
+        if len(CACHED_DARKNESS_CHUNKS) > 1000:
             print("Warning: there are LOTS of darkness overlays in memory...")
             
         res = pygame.Surface((rect[2], rect[3]), flags=pygame.SRCALPHA)
         res.fill((0,0,0,ambient_darkness))
         for src in key:
-            pygame.draw.circle(res, (255,255,255,255-src[2]), (src[0], src[1]), src[3], 0)
+            #pygame.draw.circle(res, (255,255,255,255-src[2]), (src[0], src[1]), src[3], 0)
+            sized_lightmap = get_lightmap(src[3])
+            dest = (src[0]-src[3], src[1]-src[3])
+            res.blit(sized_lightmap, dest, special_flags=pygame.BLEND_RGBA_SUB)
         CACHED_DARKNESS_CHUNKS[key] = res
     
     return CACHED_DARKNESS_CHUNKS[key]

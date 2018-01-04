@@ -17,6 +17,10 @@ class Chunk:
         dirs = [(-1,-1),(0,-1),(1,-1),(-1,0),(1,0),(-1,1),(0,1),(1,1)]
         self._neighbors = [(x + d[0]*cs, y + d[1]*cs) for d in dirs]
         
+    def xy(self):
+        rect = self.get_rect()
+        return (rect.x, rect.y)
+        
     def get_rect(self):
         return self.rect
         
@@ -44,7 +48,7 @@ class Chunk:
             e.draw(screen, offset)
                     
     def draw_darkness(self, world, screen, offset):
-        ambient_darkness = 125
+        ambient_darkness = 200
         sources = []
         for decoration in self.entities.get_all(category="light_source"):
             lp = decoration.light_profile()
@@ -110,17 +114,22 @@ class World:
                     res.append(self.chunks[(x, y)])
         return res
     
-    def get_or_create_chunk(self, x, y):
-        key = (int(x -(x % CHUNK_SIZE)), int(y - (y % CHUNK_SIZE)))
+    def get_or_create_chunk(self, x, y, and_add_to_dict=True):
+        key = self.get_chunk_key_for_point(x, y)
         if key not in self.chunks:
-            self.chunks[key] = Chunk(key[0], key[1])
-        return self.chunks[key]
+             new_chunk = Chunk(key[0], key[1])
+             if and_add_to_dict:
+                self.chunks[key] = new_chunk
+             return new_chunk
+        else:
+            return self.chunks[key]
         
     def update_all(self, input_state):
         for chunk in self.chunks.values():
             for entity in chunk.entities:
                 entity.update(input_state, self)
         
+        new_chunks = {}
         for chunk in self.chunks.values():
             dead = []
             moved_out = []
@@ -135,8 +144,19 @@ class World:
                 chunk.entities.remove(entity)
             for entity in moved_out:
                 chunk.entities.remove(entity)
-                moving_to = self.get_or_create_chunk(*entity.center())
+                
+                key = self.get_chunk_key_for_point(*entity.xy())
+                moving_to = self.get_chunk(key)
+                if moving_to == None:
+                    if key in new_chunks:
+                        # in case two entities move into a new chunk on the
+                        # same frame
+                        moving_to = new_chunks[key]
+                    else:
+                        moving_to = self.get_or_create_chunk(*key, and_add_to_dict=False)
+                        new_chunks[key] = moving_to
                 moving_to.entities.add(entity)
+        self.chunks.update(new_chunks)
         
         for chunk in self.chunks.values():
             for e in chunk.entities.get_all(category="actor"):
