@@ -570,7 +570,35 @@ class Door(Entity):
             
     def is_door(self):
         return True
-                
+        
+class Terminal(Entity):
+    def __init__(self, x, y):
+        Entity.__init__(self, x, y, 32, 64)
+        
+    def update(self, input_state, world):
+        pass
+        
+    def sprite(self):
+        return images.TERMINAL
+    
+    def sprite_offset(self):
+        return (0, 0)
+        
+    def draw(self, screen, offset=(0,0), modifier=None):
+        Entity.draw(self, screen, offset=offset, modifier=modifier)
+        
+        modifier = self.sprite_modifier() if modifier == None else modifier
+        screen_sprite = images.TERMINAL_SCREEN
+        dest_rect = self.get_rect().move(*offset)
+        dest_rect.move_ip(3*2, 9*2) # shift into screen area of sprite
+        dest_rect.move_ip(*self.sprite_offset())
+        images.draw_animated_sprite(screen, dest_rect, screen_sprite, modifier)
+        
+    def is_interactable(self):
+        return True
+        
+    def interact(self):
+        print("interacted with terminal")        
         
 class Overlay(Entity):
     def __init__(self, animation, lifespan, x, y, target=None):

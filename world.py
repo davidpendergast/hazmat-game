@@ -259,7 +259,7 @@ class World:
         return self.get_entities_in_rect([pt[0], pt[1], 1, 1], 
                 category=category, not_category=not_category, cond=cond)
         
-    def get_entities_with(self, category=None, not_category=[] cond=None):
+    def get_entities_with(self, category=None, not_category=[], cond=None):
         res = []
         for chunk in self.chunks.values():
             res.extend(chunk.entities.get_all(
