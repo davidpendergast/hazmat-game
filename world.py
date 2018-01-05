@@ -6,7 +6,8 @@ import entities
 import global_state
 import cool_math
 
-CHUNK_SIZE = 8*32
+CHUNK_SIZE = 256
+AMBIENT_DARKNESS = 125
 
 class Chunk:
     def __init__(self, x, y):
@@ -48,7 +49,6 @@ class Chunk:
             e.draw(screen, offset)
                     
     def draw_darkness(self, world, screen, offset):
-        ambient_darkness = 200
         sources = []
         for decoration in self.entities.get_all(category="light_source"):
             lp = decoration.light_profile()
@@ -63,12 +63,8 @@ class Chunk:
                         sources.append(lp) 
         
         rect = self.get_rect()
-        img = images.get_darkness_overlay(rect, sources, ambient_darkness)
+        img = images.get_darkness_overlay(rect, sources, AMBIENT_DARKNESS)
         screen.blit(img, cool_math.add(rect.topleft, offset))
-        
-    _DIRS = [(-1,-1),(0,-1),(1,-1),(-1,0),(1,0),(-1,1),(0,1),(1,1)]
-    def neighbor_chunks(self):
-        return 
     
     def draw_debug_stuff(self, screen, offset):
         if global_state.show_debug_rects:
@@ -81,6 +77,7 @@ class Chunk:
         
     def __contains__(self, entity):
         return entity in self.entities
+
 
 class World:
     def __init__(self):
@@ -103,15 +100,28 @@ class World:
             return self.chunks[key]
         else:
             return None
-                        
-    def get_chunks_in_rect(self, rect):
+            
+    def get_chunk_keys_in_rect(self, rect, and_above_and_left=True):
         xy_min = self.get_chunk_key_for_point(rect[0], rect[1])
         xy_max = self.get_chunk_key_for_point(rect[0] + rect[2], rect[1] + rect[3])
+        xy_min = (int(xy_min[0] / CHUNK_SIZE), int(xy_min[1] / CHUNK_SIZE))
+        xy_max = (int(xy_max[0] / CHUNK_SIZE), int(xy_max[1] / CHUNK_SIZE))
+        
         res = []
-        for x in range(xy_min[0]-1, xy_max[0]+1):
-            for y in range(xy_min[1]-1, xy_max[1]+1):
-                if (x, y) in self.chunks:
-                    res.append(self.chunks[(x, y)])
+        extra = 1 if and_above_and_left else 0
+        
+        for x in range(xy_min[0]-extra, xy_max[0]+1):
+            for y in range(xy_min[1]-extra, xy_max[1]+1):
+               res.append((x*CHUNK_SIZE, y*CHUNK_SIZE))
+
+        return res
+                        
+    def get_chunks_in_rect(self, rect, and_above_and_left=True):
+        keys = self.get_chunk_keys_in_rect(rect, and_above_and_left=and_above_and_left)
+        res = []
+        for key in keys:
+            if key in self.chunks:
+                res.append(self.chunks[key])
         return res
     
     def get_or_create_chunk(self, x, y, and_add_to_dict=True):
@@ -186,9 +196,12 @@ class World:
                 wall.set_outline_dirty(True)
     
     def draw_all(self, screen):
-        offset = cool_math.neg(self.camera)
+        screen_rect = [self.camera[0], self.camera[1], global_state.WIDTH, global_state.HEIGHT]
+        chunks_to_draw = self.get_chunks_in_rect(screen_rect)
         sortkey = lambda chunk: chunk.get_rect().x + chunk.get_rect().y
-        chunks_to_draw = sorted(self.chunks.values(), key=sortkey) # TODO - onscreen only
+        chunks_to_draw.sort(key=sortkey)
+        
+        offset = cool_math.neg(self.camera)
         
         for chunk in chunks_to_draw:
             chunk.draw_nonactors(screen, offset)
@@ -196,10 +209,12 @@ class World:
         for chunk in chunks_to_draw:
             chunk.draw_actors(screen, offset)
             
-        for chunk in chunks_to_draw:
+        onscreen_keys = self.get_chunk_keys_in_rect(screen_rect, and_above_and_left=False)
+        for key in onscreen_keys:
             if not global_state.show_no_darkness:
                 chunk.draw_darkness(self, screen, offset)
             chunk.draw_debug_stuff(screen, offset)
+            
             
     def add_entity(self, entity):
         if entity.is_player():
@@ -370,7 +385,5 @@ def gimme_a_sample_world():
     all_stuff = other_junk + ground
     world.add_all_entities(all_stuff)
     return world 
-                    
-        
     
         

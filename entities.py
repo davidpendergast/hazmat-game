@@ -13,6 +13,7 @@ class Entity:
         self.vel = [0, 0]
         self.rect = pygame.Rect(x, y, w, h)
         self.weight = 1
+        self.categories = set()
     
     def draw(self, screen, offset=(0,0), modifier=None):
         modifier = self.sprite_modifier() if modifier == None else modifier
@@ -82,35 +83,41 @@ class Entity:
     def size(self):
         return (self.width(), self.height()) 
         
+    def is_(self, category):
+        return category in self.categories
+        
     def is_wall(self):
-        return False  
+        return self.is_("wall")  
         
     def is_actor(self):
-        return False
+        return self.is_("actor")
     
     def is_enemy(self):
-        return False
+        return self.is_("enemy")
         
     def is_player(self):
-        return False
+        return self.is_("player")
         
     def is_ground(self):
-        return False
+        return self.is_("ground")
         
     def is_door(self):
-        return False
+        return self.is_("door")
         
     def is_interactable(self):
+        return self.is_("interactable")
+    
+    def can_interact(self):
         return False
         
     def interact(self):
         pass
         
     def is_decoration(self):
-        return False
+        return self.is_("decoration")
         
     def is_light_source(self):
-        return False
+        return self.is_("light_source")
     
     def __repr__(self):
         pos = "(%s, %s)" % (self.rect.x, self.rect.y)
@@ -120,6 +127,7 @@ class Actor(Entity):
     gravity = 1.5
     def __init__(self, x, y, w, h):
         Entity.__init__(self, x, y, w, h)
+        self.categories.update(["actor"])
         self.has_gravity = True
         self.is_grounded = False
         self.is_left_walled = False
@@ -161,6 +169,7 @@ class Actor(Entity):
 class Player(Actor):
     def __init__(self, x, y):
         Actor.__init__(self, x, y, 16, 48)
+        self.categories.update(["player"])
         self.speed = 5
         
         self.facing_right = True
@@ -300,6 +309,7 @@ class Player(Actor):
 class Enemy(Actor):
     def __init__(self, x, y):
         Actor.__init__(self, x, y, 16, 48)
+        self.categories.update(["enemy"])
         self.speed = 1.5 + random.random() / 2
         self.current_dir = (0, 0)
         self._randint = random.randint(0,999)
@@ -367,39 +377,6 @@ class Enemy(Actor):
         
     def is_enemy(self):
         return True   
-        
-class Bullet(Entity):
-    def __init__(self, x, y, target, speed, damage):
-        Entity.__init__(self, x, y, 4, 4)
-        self.start = (x, y)
-        self.target = target
-        self.speed = speed
-        self.damage = damage
-        self.hit_target = False
-        
-    def draw(self, screen, offset=(0,0), modifier=None):
-        center = self.center()
-        pos = (center[0] + offset[0], center[1] + offset[1])
-        pygame.draw.circle(screen, (200, 100, 100), pos, 4, 0)
-        
-    def update(self, input_state, world):
-        if not self.target.is_alive:
-            self.is_alive = False
-            
-        c = self.center()
-        t = self.target.center()
-        if cool_math.dist(c, t) <= self.speed:
-            self.target.health -= self.damage
-            fire = Overlay(images.FIRE, 40, 0, 0, target=self.target)
-            world.add_entity(fire)
-            self.is_alive = False
-        else:
-            v = cool_math.sub(t, c)
-            v = cool_math.set_length(v, self.speed)
-            self.x += v[0]
-            self.y += v[1]
-            self.rect.x = round(self.x) % 640
-            self.rect.y = round(self.y) % 480
                
                
 class Wall(Entity):
@@ -408,6 +385,7 @@ class Wall(Entity):
         self._sprite = sprite
         self._cached_outline = None # surface
         self._outline_dirty = True
+        self.categories.update(["wall"])
     
     def sprite(self):
         return self._sprite
@@ -454,18 +432,13 @@ class Wall(Entity):
                 r[1]=y
                 pygame.draw.rect(self._cached_outline, (0,0,0), r, 0)
         
-    def is_wall(self):
-        return True
-        
 class Spawner(Entity):
     def __init__(self, x, y, radius):
         Entity.__init__(self, x, y, 24, 24)
         self.radius = radius
         self.spawn_cooldown = 40
         self.current_cooldown = 0
-        
-    def is_wall(self):
-        return True
+        self.categories.update(["wall"])
         
     def sprite(self):
         if self.current_cooldown > 0:
@@ -511,9 +484,7 @@ class EnergyTank(Entity):
         Entity.__init__(self, x, y, 24, 24)
         self.max_health = health
         self.health = health
-        
-    def is_wall(self):
-        return True
+        self.categories.update(["wall"])
         
     def sprite(self):
         return images.ENERGY_TANK
@@ -527,6 +498,7 @@ class Door(Entity):
         self.door_id = door_id
         self.dest_id = dest_id
         self.locked = locked
+        self.categories.update(["door", "interactable"])
         
         # Cooldown behavior:
         #   0: door is closed. 
@@ -560,20 +532,18 @@ class Door(Entity):
         if self.open_cooldown < 0:
             self.open_cooldown += 1
             
-    def is_interactable(self):
+    def can_interact(self):
         # can't interact after it's already been interacted with
         return not self.locked and self.open_cooldown == 0
         
     def interact(self):
         if not self.locked:
             self.open_cooldown = self.open_max_cooldown
-            
-    def is_door(self):
-        return True
         
 class Terminal(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 32, 64)
+        self.categories.update(["terminal", "interactable"])
         
     def update(self, input_state, world):
         pass
@@ -594,7 +564,7 @@ class Terminal(Entity):
         dest_rect.move_ip(*self.sprite_offset())
         images.draw_animated_sprite(screen, dest_rect, screen_sprite, modifier)
         
-    def is_interactable(self):
+    def can_interact(self):
         return True
         
     def interact(self):
@@ -629,15 +599,14 @@ class Decoration(Entity):
     def __init__(self, x, y, animation):
         Entity.__init__(self, x, y, animation.width(), animation.height())
         self.animation = animation
+        self.categories.update(["decoration"])
         
     def sprite(self):
         return self.animation
         
     def sprite_offset(self):
         return (0, 0)
-        
-    def is_decoration(self):
-        return True
+
             
 class LightEmittingDecoration(Decoration):
     """A decoration that emits light. Should never move."""
@@ -646,6 +615,7 @@ class LightEmittingDecoration(Decoration):
         Decoration.__init__(self, x, y, animation)
         self._luminosity = luminosity   # brightness level from 0 to 255
         self.radius = light_radius      # radius in pixels
+        self.categories.update(["light_source"])
     
     def light_profile(self):
         """returns: integers (x, y, luminosity, radius), or None if luminosity 
@@ -656,9 +626,6 @@ class LightEmittingDecoration(Decoration):
             return (pos[0], pos[1], self._luminosity, self.radius)
         else:
             return None
-    
-    def is_light_source(self):
-        return True
                 
 class Ladder(Entity):
     def __init__(self, x, y):
@@ -676,10 +643,9 @@ class Ground(Decoration):
             
     def __init__(self, x, y, ground_type):
         Decoration.__init__(self, x, y, Ground.all_sprites[ground_type])
+        self.categories.update(["ground"])
         
-    def is_ground(self):
-        return True
-        
+                
 def _safe_remove(item, collection, print_err=False):
         try:
             collection.remove(item)

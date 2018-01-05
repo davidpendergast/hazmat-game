@@ -127,14 +127,14 @@ def get_lightmap(radius):
 def reload_sheet():
     print ("Loading sprites...")
     global sheets, lightmap
-    actual_size = pygame.image.load("art_n_stuff.png")
+    actual_size = pygame.image.load("res/art_n_stuff.png")
     sprite_sheet = pygame.transform.scale2x(actual_size)
     sheets["normal"] = sprite_sheet
     sheets["green_ghosts"] = dye_sheet(sprite_sheet, (0,255,0), alpha=100)
     sheets["red_ghosts"]   = dye_sheet(sprite_sheet, (255,0,0), alpha=100)
     sheets["white_ghosts"]   = dye_sheet(sprite_sheet, (255,255,255), alpha=100)
     
-    raw_lightmap = pygame.image.load("lightmap.jpg")
+    raw_lightmap = pygame.image.load("res/lightmap.jpg")
     w, h = raw_lightmap.get_size()
     lightmap = pygame.Surface((w, h), flags=pygame.SRCALPHA)
     
