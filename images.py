@@ -76,6 +76,7 @@ LIGHT_BULB = A([R(80,88,8,8), R(88,88,8,8)])
 WIRE_VERTICAL = A([R(80,80,8,8)])
 TERMINAL = A([R(96,64,16,32)])
 TERMINAL_SCREEN = A([R(112,64+i*5,10,5) for i in range(0, 6)])
+CHALKBOARD = A([R(96,96,32,16)])
 
 PLAYER_IDLE     = A([R(176,32,16,32), R(192,32,16,32)])
 PLAYER_IDLE_LEFT = A([R(176,64,16,32), R(192,64,16,32)])
@@ -202,7 +203,6 @@ def get_darkness_overlay(rect, sources, ambient_darkness):
             dest = (src[0]-src[3], src[1]-src[3])
             res.blit(sized_lightmap, dest, special_flags=pygame.BLEND_RGBA_SUB)
         CACHED_DARKNESS_CHUNKS[key] = res
-    
     return CACHED_DARKNESS_CHUNKS[key]
                 
     

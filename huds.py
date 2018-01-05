@@ -19,7 +19,8 @@ class HUD:
             entities.Door(0,0,"test_door1","test_door2"),
             entities.Enemy(0,0),
             entities.LightEmittingDecoration(0,0,images.LIGHT_BULB, luminosity=255, light_radius=128),
-            entities.Decoration(0,0,images.WIRE_VERTICAL)
+            entities.Decoration(0,0,images.WIRE_VERTICAL),
+            entities.Decoration(0,0,images.CHALKBOARD)
         ] 
         
     def update(self, input_state, world):
@@ -78,17 +79,12 @@ class HUD:
             if mouse is not None:
                 in_world = world.to_world_pos(*mouse)
                 w,h = to_place.get_rect().size
-                if w <= 16:
-                    w = 16
-                elif w <= 32:
-                    w = 32
-                if h <= 16:
-                    h = 16
-                elif h <= 32:
-                    h = 32
+                w = 16 if w <= 16 else 32
+                h = 16 if h <= 16 else 32
                 c_xy = world.get_tile_at(*in_world, tilesize=(w,h))
-                to_place.set_center_x(c_xy[0])
-                to_place.set_center_y(c_xy[1])
+                to_place.set_x(c_xy[0]-w/2)
+                to_place.set_y(c_xy[1]-h/2)
+                #print("in_world=",in_world," (w,h)=",(w,h)," c_xy=",c_xy)
         
         if to_place == None or world.player() == None or not input_state.mouse_in_window():
             self.selected_item_placeable = False
