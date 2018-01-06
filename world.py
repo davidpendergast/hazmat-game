@@ -162,7 +162,9 @@ class World:
                         # same frame
                         moving_to = new_chunks[key]
                     else:
-                        moving_to = self.get_or_create_chunk(*key, and_add_to_dict=False)
+                        moving_to = self.get_or_create_chunk(
+                                key[0], key[1], 
+                                and_add_to_dict=False)
                         new_chunks[key] = moving_to
                 moving_to.entities.add(entity)
         self.chunks.update(new_chunks)
@@ -196,9 +198,12 @@ class World:
                 wall.set_outline_dirty(True)
     
     def draw_all(self, screen):
-        screen_rect = [self.camera[0], self.camera[1], global_state.WIDTH, global_state.HEIGHT]
+        screen_rect = [
+            self.camera[0], self.camera[1], 
+            global_state.WIDTH, global_state.HEIGHT
+        ]
         chunks_to_draw = self.get_chunks_in_rect(screen_rect)
-        sortkey = lambda chunk: chunk.get_rect().x + chunk.get_rect().y
+        sortkey = lambda chunk: -chunk.get_rect().x - chunk.get_rect().y
         chunks_to_draw.sort(key=sortkey)
         
         offset = cool_math.neg(self.camera)
@@ -210,7 +215,9 @@ class World:
             chunk.draw_actors(screen, offset)
             
         if not global_state.show_no_darkness:
-            onscreen_keys = self.get_chunk_keys_in_rect(screen_rect, and_above_and_left=False)
+            onscreen_keys = self.get_chunk_keys_in_rect(
+                    screen_rect, 
+                    and_above_and_left=False)
             dummy_chunk = None
             for key in onscreen_keys:
                 chunk = self.get_chunk_from_key(key)
@@ -223,9 +230,7 @@ class World:
                     dummy_chunk.rect.x = key[0]     # uhh lel
                     dummy_chunk.rect.y = key[1]
                     dummy_chunk.draw_darkness(self, screen, offset)
-                    
-            
-            
+                        
     def add_entity(self, entity):
         if entity.is_player():
             if self._player is not None:

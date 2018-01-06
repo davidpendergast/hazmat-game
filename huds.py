@@ -132,7 +132,6 @@ class HUD:
                 screen_pos = input_state.mouse_pos()
                 world_pos = world.to_world_pos(*screen_pos)
                 ents = world.get_entities_at_point(world_pos, not_category="ground")
-                print("trying to del: ", ents)
                 if len(ents) > 0:
                     return world.remove_entity(ents[0])
         return False

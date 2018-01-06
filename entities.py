@@ -534,12 +534,13 @@ class Door(Entity):
             
     def can_interact(self):
         # can't interact after it's already been interacted with
-        return not self.locked and self.open_cooldown == 0
+        return self.open_cooldown == 0
         
     def interact(self):
         if not self.locked:
             self.open_cooldown = self.open_max_cooldown
-            global_state.hud.display_text("It's an ordinary door.")
+        else:
+            global_state.hud.display_text("It's locked.")
         
 class Terminal(Entity):
     def __init__(self, x, y):
