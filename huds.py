@@ -1,6 +1,7 @@
 import pygame
 
 import copy
+import collections
 
 import entities
 import global_state
@@ -24,14 +25,18 @@ class HUD:
             entities.Decoration(0,0,images.CHALKBOARD)
         ] 
         
-        self.text_queue = ["here's some text to display. Now it's a little bit longer. I wonder if we can handle wrapping it... And now, it is really quite long. Let's make sure that it can handle sentences of this length."]
+        self.text_queue = collections.deque(["here's some text to display. Now it's a little bit longer. I wonder if we can handle wrapping it... And now, it is really quite long. Let's make sure that it can handle sentences of this length.", "here's a second message.", "and now a third."])
         
     def update(self, input_state, world):
-        self._handle_selecting_item(input_state)
-        placed = self._handle_placing_item(input_state, world)
-        removed = False
-        if not placed:
-            removed = self._handle_removing_item(input_state, world)
+        if self.is_showing_text(): # when text is showing, block all other user commands
+            if input_state.was_pressed(pygame.K_k) and len(self.text_queue) > 0:
+                self.text_queue.popleft()
+        else:
+            self._handle_selecting_item(input_state)
+            placed = self._handle_placing_item(input_state, world)
+            removed = False
+            if not placed:
+                removed = self._handle_removing_item(input_state, world)
     
     def draw(self, screen, offset=(0, 0)):
         to_place = self.selected_item_to_place
@@ -47,8 +52,9 @@ class HUD:
             screen.blit(fps_text, (0, 0))
             
         if self.is_showing_text():
-            self.draw_text(screen)
- 
+            if self.is_showing_text() and len(self.text_queue) > 0:
+                text_string = self.text_queue[0]
+                text_stuff.draw_text(screen, text_string, "standard", 32, 512)
         
     def _get_item_to_place(self, index):
         if index >= len(self.items):
@@ -127,59 +133,9 @@ class HUD:
     def is_showing_text(self):
         return len(self.text_queue) > 0
         
-    def wrap_text(self, text_string, rect_width, font):
-        """returns: (rectangle, list of lines)"""
-        box_w = rect_width
-        box_x = int(global_state.WIDTH/2 - box_w/2) 
-        lines = []
+    
         
-        words = text_string.split(" ")
-        next_word = 0
-        #while next_word < len(words):
-        i = 1
-        while i < (len(words) - next_word):
-            candidate = " ".join(words[next_word:next_word+i+1])
-            #print(font.size(candidate)[0]," = ",candidate)
-            if font.size(candidate)[0] > box_w:
-                lines.append(" ".join(words[next_word:next_word+i]))
-                next_word = next_word + i
-                i = 1
-            else:
-                i += 1
-        if next_word < len(words)-1:
-            lines.append(" ".join(words[next_word:]))             
-        
-        box_h = len(lines) * 32
-        box_y = global_state.HEIGHT - box_h
-        box = [box_x, box_y, box_w, box_h]
-        return (box, lines)
-        
-    def draw_text(self, screen):
-        if not self.is_showing_text() or len(self.text_queue) == 0:
-            return
-        else:
-            text_string = self.text_queue[0]
-            width = 512
-            font = text_stuff.get_font("standard", 32)
-            rect, lines = self.wrap_text(text_string, width, font)
-            x1 = rect[0]
-            x2 = rect[0] + rect[2]
-            y1 = rect[1]
-            y2 = rect[1] + rect[3]
-            
-            bord_w, bord_h = images.TEXT_BORDER_L.size() 
-            images.draw_animated_sprite(screen, (x1-bord_w, y1-bord_h), images.TEXT_BORDER_TL)
-            images.draw_animated_sprite(screen, (x2, y1-bord_h), images.TEXT_BORDER_TR)
-            for x in range(x1, x2, bord_w):
-                images.draw_animated_sprite(screen, (x, y1-bord_h), images.TEXT_BORDER_T)
-            for y in range(y1, y2, bord_h):
-                images.draw_animated_sprite(screen, (x1-bord_w, y), images.TEXT_BORDER_L)
-                images.draw_animated_sprite(screen, (x2, y), images.TEXT_BORDER_R)
-            
-            pygame.draw.rect(screen, (0,0,0), rect)
-            for i in range(0, len(lines)):
-                line_img = font.render(lines[i], False, (255,255,255), (0,0,0))
-                screen.blit(line_img, (rect[0], rect[1]+32*i))
+    
             
             
             
