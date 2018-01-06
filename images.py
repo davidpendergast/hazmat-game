@@ -42,6 +42,9 @@ class Animation:
         
     def height(self):
         return self.rects[0].height
+        
+    def size(self):
+        return (self.width(), self.height())
 
 def A(rects, TPF=TICKS_PER_FRAME):
     return Animation(rects, TPF=TPF)
@@ -94,6 +97,16 @@ STONE_GROUND = A([r(0,2,1,1)])
 SAND_GROUND = A([r(1,2,1,1)])
 GRASS_GROUND = A([r(2,2,1,1)])
 PURPLE_GROUND = A([r(3,2,1,1)])
+
+TEXT_BORDER_L   = A([R(0,144,16,16)])
+TEXT_BORDER_TL  = A([R(0,128,16,16)])
+TEXT_BORDER_T   = A([R(16,128,16,16)])
+TEXT_BORDER_TR  = A([R(32,128,16,16)])
+TEXT_BORDER_R   = A([R(32,144,16,16)])
+TEXT_BORDER_BR  = A([R(32,160,16,16)])
+TEXT_BORDER_B   = A([R(16,160,16,16)])
+TEXT_BORDER_BL  = A([R(0,160,16,16)])
+
 
 def draw_animated_sprite(screen, dest_rect, animation, modifier="normal"):
     """animation: either an Animation or a Rect"""
