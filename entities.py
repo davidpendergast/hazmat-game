@@ -4,6 +4,7 @@ import math
 
 import cool_math
 import images
+import global_state
 
 class Entity:
     def __init__(self, x, y, w, h):
@@ -269,7 +270,6 @@ class Player(Actor):
             if len(interactables) > 0:
                 interactables.sort(key=lambda x: cool_math.dist(cntr, x.center()))
                 interactables[0].interact()
-                print("interacted with: ", interactables[0])
                 
         if self.is_left_walled or self.is_right_walled:
             if self.vel[1] > self.max_slide_speed:
@@ -539,6 +539,7 @@ class Door(Entity):
     def interact(self):
         if not self.locked:
             self.open_cooldown = self.open_max_cooldown
+            global_state.hud.display_text("It's an ordinary door.")
         
 class Terminal(Entity):
     def __init__(self, x, y):
@@ -568,7 +569,8 @@ class Terminal(Entity):
         return True
         
     def interact(self):
-        print("interacted with terminal")        
+        print("interacted with terminal") 
+        global_state.hud.display_text("It's a computer terminal.")       
         
 class Overlay(Entity):
     def __init__(self, animation, lifespan, x, y, target=None):

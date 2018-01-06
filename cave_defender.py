@@ -23,7 +23,7 @@ FPS = 30
 
 input_state = inputs.InputState()
 world = world.gimme_a_sample_world()
-hud = huds.HUD()
+gs.hud = huds.HUD()
 
 def stop_running(): 
     global still_running
@@ -33,14 +33,15 @@ def draw(screen):
     screen_rect = (0, 0, gs.WIDTH, gs.HEIGHT)
     pygame.draw.rect(screen, (120,120,120), screen_rect, 0)
     world.draw_all(screen)
-    hud.draw(screen, offset=cool_math.neg(world.get_camera()))
+    gs.hud.draw(screen, offset=cool_math.neg(world.get_camera()))
 
 def update():
     input_state.update()
     
     gs.update(input_state)
-    world.update_all(input_state)
-    hud.update(input_state, world)
+    gs.hud.update(input_state, world)
+    if not gs.hud.is_absorbing_inputs():
+        world.update_all(input_state)
     
     images.update()
 

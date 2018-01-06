@@ -25,12 +25,24 @@ class HUD:
             entities.Decoration(0,0,images.CHALKBOARD)
         ] 
         
-        self.text_queue = collections.deque(["here's some text to display. Now it's a little bit longer. I wonder if we can handle wrapping it... And now, it is really quite long. Let's make sure that it can handle sentences of this length.", "here's a second message.", "and now a third."])
+        self.text_queue = collections.deque()
+        self.show_text_time = -500
+        
+    def display_text(self, lines):
+        """lines: string or list of strings to display"""
+        if isinstance(lines, str):
+            lines = [lines]
+            
+        self.text_queue.extend(lines)
+        self.show_text_time = global_state.tick_counter
         
     def update(self, input_state, world):
         if self.is_showing_text(): # when text is showing, block all other user commands
             if input_state.was_pressed(pygame.K_k) and len(self.text_queue) > 0:
-                self.text_queue.popleft()
+                # wait a little bit before nuking the text box
+                if global_state.tick_counter - self.show_text_time > 15:
+                    self.text_queue.popleft()
+                    self.show_text_time = global_state.tick_counter
         else:
             self._handle_selecting_item(input_state)
             placed = self._handle_placing_item(input_state, world)
@@ -46,15 +58,14 @@ class HUD:
             to_place.draw(screen, offset, modifier=mod)   
             
         if global_state.show_fps:
-            basicfont = pygame.font.SysFont(None, 16)
+            basicfont = text_stuff.get_font("standard", 32)
             text = "FPS: " + str(global_state.current_fps)
             fps_text = basicfont.render(text, True, (255, 0, 0), (255, 255, 255))
             screen.blit(fps_text, (0, 0))
             
-        if self.is_showing_text():
-            if self.is_showing_text() and len(self.text_queue) > 0:
-                text_string = self.text_queue[0]
-                text_stuff.draw_text(screen, text_string, "standard", 32, 512)
+        if self.is_showing_text() and len(self.text_queue) > 0:
+            text_string = self.text_queue[0]
+            text_stuff.draw_text(screen, text_string, "standard", 32, 512)
         
     def _get_item_to_place(self, index):
         if index >= len(self.items):
@@ -96,7 +107,6 @@ class HUD:
                 c_xy = world.get_tile_at(*in_world, tilesize=(w,h))
                 to_place.set_x(c_xy[0]-w/2)
                 to_place.set_y(c_xy[1]-h/2)
-                #print("in_world=",in_world," (w,h)=",(w,h)," c_xy=",c_xy)
         
         if to_place == None or world.player() == None or not input_state.mouse_in_window():
             self.selected_item_placeable = False
@@ -128,7 +138,8 @@ class HUD:
         return False
         
     def is_absorbing_inputs(self):
-        return self.is_showing_text()
+        freshly_closed = global_state.tick_counter - self.show_text_time < 2
+        return self.is_showing_text() or freshly_closed
         
     def is_showing_text(self):
         return len(self.text_queue) > 0

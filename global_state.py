@@ -4,6 +4,8 @@ import time
 WIDTH = 640
 HEIGHT = 480
 
+hud = None
+
 tick_counter = 0
 
 show_debug_rects = False
