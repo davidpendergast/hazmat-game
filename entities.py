@@ -30,6 +30,7 @@ class Entity:
         return (0, 0)
         
     def sprite(self):
+        """returns: animated_sprite"""
         return None
         
     def sprite_modifier(self):
@@ -133,15 +134,16 @@ class Actor(Entity):
         self.is_grounded = False
         self.is_left_walled = False
         self.is_right_walled = False
+        self.facing_right = True
         self.max_speed = (10, 20)
         self.jump_height = 64 + 32
         self.max_health = 50
         self.health = 50
         
         self.vel = [0, 0]
-    
-    def is_actor(self):
-        return True
+        
+    def sprite_modifier(self):
+        return "normal" if self.facing_right else "flipped"
         
     def get_jump_speed(self):
         a = Actor.gravity
@@ -163,6 +165,15 @@ class Actor(Entity):
     def set_vel_y(self, vy):
         self.vel[1] = vy
         
+    def _update_status_tags(self, world):
+        self.is_grounded = world.is_touching_wall(self, (0, 1))
+        self.is_left_walled = world.is_touching_wall(self, (-1, 0))
+        self.is_right_walled = world.is_touching_wall(self, (1, 0))    
+        if self.is_left_walled or self.vel[0] > 0:
+            self.facing_right = True
+        if self.is_right_walled or self.vel[0] < 0:
+            self.facing_right = False
+        
     def deal_damage(self, damage, direction=None):
         self.health -= damage
         print(self, " was damaged by ", damage)
@@ -173,7 +184,6 @@ class Player(Actor):
         self.categories.update(["player"])
         self.speed = 5
         
-        self.facing_right = True
         self.max_slide_speed = 1.5
         
         self.shoot_cooldown = 0
@@ -183,45 +193,36 @@ class Player(Actor):
         self.interact_radius = 32
     
     def sprite(self):
-        direction = self.facing_right
         if self._is_shooting():
             frm = (self.shoot_max_cooldown - self.shoot_cooldown) // 5 # lol
-            anim = images.PLAYER_GUN if direction else images.PLAYER_GUN_LEFT
+            anim = images.PLAYER_GUN
             return anim.single_frame(frm)
         elif self.is_grounded:
             if abs(self.vel[0]) > 1:
-                return images.PLAYER_RUN if direction else images.PLAYER_RUN_LEFT
+                return images.PLAYER_RUN
             else:
-                return images.PLAYER_IDLE if direction else images.PLAYER_IDLE_LEFT
+                return images.PLAYER_IDLE
         elif self.is_left_walled or self.is_right_walled:
-            return images.PLAYER_WALLSLIDE if direction else images.PLAYER_WALLSLIDE_LEFT
+            return images.PLAYER_WALLSLIDE
         else:
-            return images.PLAYER_AIR if direction else images.PLAYER_AIR_LEFT
-        
+            return images.PLAYER_AIR
+            
     def sprite_offset(self):
         spr = self.sprite()
         w = self.get_rect().width
         h = self.get_rect().height
         res = [(w - spr.width())/2, (h - spr.height())/2 - (64 - h)/2]
         if spr is images.PLAYER_WALLSLIDE:
-            res[0] += 12 # needs changing if sprite is redrawn or player resized
-        elif spr is images.PLAYER_WALLSLIDE_LEFT:
-            res[0] -= 12
+            sign = 1 if self.facing_right else -1
+            res[0] = res[0] + sign * 12
+        
         return res
         
     def draw(self, screen, offset=(0,0), modifier=None):
         if self.active_bullet is not None:
-            pygame.draw.rect(screen, (255,255,255), self.active_bullet.move(*offset), 0)
+            bullet_pos = self.active_bullet.move(offset[0], offset[1])
+            pygame.draw.rect(screen, (255,255,255), bullet_pos, 0)
         Actor.draw(self, screen, offset, modifier)
-        
-    def _update_status_tags(self, world):
-        self.is_grounded = world.is_touching_wall(self, (0, 1))
-        self.is_left_walled = world.is_touching_wall(self, (-1, 0))
-        self.is_right_walled = world.is_touching_wall(self, (1, 0))    
-        if self.is_left_walled or self.vel[0] > 0:
-            self.facing_right = True
-        if self.is_right_walled or self.vel[0] < 0:
-            self.facing_right = False
         
     def update(self, input_state, world):
         self._update_status_tags(world)
@@ -248,7 +249,8 @@ class Player(Actor):
                 # turn around instantly when grounded
                 self.vel[0] = 0
             else:
-                self.vel[0] = cool_math.tend_towards(target_speed, self.vel[0], 1, only_if_increasing=True)
+                self.vel[0] = cool_math.tend_towards(target_speed, 
+                        self.vel[0], 1, only_if_increasing=True)
         
         if keyboard_jump:
             if self.is_grounded:
@@ -300,12 +302,6 @@ class Player(Actor):
         if self.shoot_cooldown < 8 or self.shoot_cooldown > 10:
             self.active_bullet = None
         
-    def sprite_modifier(self):
-        return "normal"
-        
-    def is_player(self):
-        return True
-        
 class Enemy(Actor):
     def __init__(self, x, y):
         Actor.__init__(self, x, y, 16, 48)
@@ -340,6 +336,8 @@ class Enemy(Actor):
             pygame.draw.rect(screen, (50, 255, 50), health_rect, 0)
         
     def update(self, input_state, world):
+        self._update_status_tags(world)
+        
         if self.health <= 0:
             self.is_alive = False
             return

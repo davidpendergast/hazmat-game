@@ -6,6 +6,7 @@ import global_state
 mult = 32
 sheets = {
     "normal":None,
+    "flipped":None,
     "green_ghosts":None,
     "red_ghosts":None,
     "white_ghosts":None,
@@ -107,6 +108,10 @@ TEXT_BORDER_BR  = A([R(32,160,16,16)])
 TEXT_BORDER_B   = A([R(16,160,16,16)])
 TEXT_BORDER_BL  = A([R(0,160,16,16)])
 
+def flip_rect(rect):
+    sheet_w = get_sheet(modifier="flipped").get_width()
+    x = sheet_w - rect[0] - rect[2]
+    return [x, rect[1], rect[2], rect[3]]
 
 def draw_animated_sprite(screen, dest_rect, animation, modifier="normal"):
     """animation: either an Animation or a Rect"""
@@ -117,6 +122,8 @@ def draw_animated_sprite(screen, dest_rect, animation, modifier="normal"):
         draw_sprite(screen, dest_rect, animation, modifier)
 
 def draw_sprite(screen, dest_rect, source_rect, modifier="normal"):
+    if modifier == "flipped":
+        source_rect = flip_rect(source_rect)
     screen.blit(get_sheet(modifier), dest_rect, source_rect)
     
 def get_sheet(modifier="normal"):
@@ -145,8 +152,9 @@ def reload_sheet():
     sprite_sheet = pygame.transform.scale2x(actual_size)
     sheets["normal"] = sprite_sheet
     sheets["green_ghosts"] = dye_sheet(sprite_sheet, (0,255,0), alpha=100)
-    sheets["red_ghosts"]   = dye_sheet(sprite_sheet, (255,0,0), alpha=100)
-    sheets["white_ghosts"]   = dye_sheet(sprite_sheet, (255,255,255), alpha=100)
+    sheets["red_ghosts"] = dye_sheet(sprite_sheet, (255,0,0), alpha=100)
+    sheets["white_ghosts"] = dye_sheet(sprite_sheet, (255,255,255), alpha=100)
+    sheets["flipped"] = pygame.transform.flip(sprite_sheet, True, False)
     
     raw_lightmap = pygame.image.load("res/lightmap.jpg")
     w, h = raw_lightmap.get_size()

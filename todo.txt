@@ -1,12 +1,48 @@
 
 
-Game Mechanics
+Player Mechanics
     crouching
-    ladders
+        + crouch walking
+        + crouch shooting
+    walking up stairs
+    
+Game Mechanics
+    
+    
+Level System
+    + level files
+        easily editable? use pre-existing level editor software? (Tiled? etc.) 
+        for storing basic objects, spawn points, etc.
+        json? whatever, doesn't really matter
+            just list of ClassName + positions, really
+            EntityReference objects for placement of special things
+    
+    + level class
+        has an associated level file
+        basic stuff loaded from file
+        special stuff is created, each has a reference_id with associated 
+            reference object in level file.
+        and that's about it? insert player and start updating world
+        
+        level.load_into(world) -> 
+        
+    + save data
+        one global dict that stores every single piece of save data
+        no real structure, just data_string_tag -> data_value
+        json-friendly values only
+        loaded at launch, autosaved periodically
+        loaded levels reference this to maintain state between loads/unloads
+        
+            
+          
+    
+    
+    
     
 Optimizations
-    use chunks for collisions
-    cache drawing of static entities
+    cache more stuff
+        + rendered text
+        + chunk backgrounds
     
 Bugs
     Sprites aren't always being drawn pixel perfect, not sure why    
