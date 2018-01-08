@@ -54,6 +54,12 @@ class Entity:
         self.y = y
         self.rect.y = round(y)
         
+    def set_w(self, w):
+        self.rect.width = w
+        
+    def set_h(self, h):
+        self.rect.height = h
+        
     def set_xy(self, x, y):
         self.set_x(x)
         self.set_y(y)
@@ -165,13 +171,13 @@ class Actor(Entity):
     def set_vel_y(self, vy):
         self.vel[1] = vy
         
-    def _update_status_tags(self, world):
+    def _update_status_tags(self, world, input_state):
         self.is_grounded = world.is_touching_wall(self, (0, 1))
         self.is_left_walled = world.is_touching_wall(self, (-1, 0))
         self.is_right_walled = world.is_touching_wall(self, (1, 0))    
-        if self.is_left_walled or self.vel[0] > 0:
+        if self.vel[0] > 0 or (not self.is_grounded and self.is_left_walled):
             self.facing_right = True
-        if self.is_right_walled or self.vel[0] < 0:
+        if self.vel[0] < 0 or (not self.is_grounded and self.is_right_walled):
             self.facing_right = False
         
     def deal_damage(self, damage, direction=None):
@@ -180,9 +186,12 @@ class Actor(Entity):
         
 class Player(Actor):
     def __init__(self, x, y):
-        Actor.__init__(self, x, y, 16, 48)
+        self.full_height = 48
+        self.crouch_height = 32
+        Actor.__init__(self, x, y, 16, self.full_height)
         self.categories.update(["player"])
         self.speed = 5
+        self.crouch_speed = 2.5
         
         self.max_slide_speed = 1.5
         
@@ -191,6 +200,7 @@ class Player(Actor):
         self.active_bullet = None # rect where bullet is
         
         self.interact_radius = 32
+        self.is_crouching = False
     
     def sprite(self):
         if self._is_shooting():
@@ -198,10 +208,16 @@ class Player(Actor):
             anim = images.PLAYER_GUN
             return anim.single_frame(frm)
         elif self.is_grounded:
-            if abs(self.vel[0]) > 1:
-                return images.PLAYER_RUN
+            if self.is_crouching:
+                if abs(self.vel[0]) > 0.5:
+                    return images.PLAYER_CROUCH_WALK
+                else:
+                    return images.PLAYER_CROUCH
             else:
-                return images.PLAYER_IDLE
+                if abs(self.vel[0]) > 1:
+                    return images.PLAYER_RUN
+                else:
+                    return images.PLAYER_IDLE
         elif self.is_left_walled or self.is_right_walled:
             return images.PLAYER_WALLSLIDE
         else:
@@ -215,7 +231,10 @@ class Player(Actor):
         if spr is images.PLAYER_WALLSLIDE:
             sign = 1 if self.facing_right else -1
             res[0] = res[0] + sign * 12
-        
+        if self.is_crouching:
+            #res[1] -= 8
+            pass
+            
         return res
         
     def draw(self, screen, offset=(0,0), modifier=None):
@@ -225,7 +244,15 @@ class Player(Actor):
         Actor.draw(self, screen, offset, modifier)
         
     def update(self, input_state, world):
-        self._update_status_tags(world)
+        self._update_status_tags(world, input_state)
+        
+        h = self.height()
+        expected_h = self.crouch_height if self.is_crouching else self.full_height
+        if h != expected_h:
+            y = self.xy()[1]
+            self.set_h(expected_h)
+            self.set_y(y + (h - expected_h)) # keep feet in same place
+        
         self._handle_shooting(world)
         
         keyboard_x = 0
@@ -244,7 +271,8 @@ class Player(Actor):
                 fric = 0.25
             self.vel[0] = cool_math.tend_towards(0, self.vel[0], fric)
         else:    
-            target_speed = keyboard_x * self.speed
+            target_speed = self.speed if not self.is_crouching else self.crouch_speed
+            target_speed *= keyboard_x
             if self.is_grounded and self.vel[0] * target_speed < 0:
                 # turn around instantly when grounded
                 self.vel[0] = 0
@@ -279,6 +307,16 @@ class Player(Actor):
 
         self.apply_gravity()
         self.apply_physics()
+        
+    def _update_status_tags(self, world, input_state):
+        Actor._update_status_tags(self, world, input_state)
+        
+        was_crouching = self.is_crouching
+        self.is_crouching = self.is_grounded and input_state.is_held(pygame.K_s)
+        if was_crouching and self.is_grounded and not self.is_crouching:
+            blocked_above = world.is_touching_wall(self, (0, -1))
+            if blocked_above:
+                self.is_crouching = True
         
     def _is_shooting(self):
         return self.shoot_cooldown > 0
@@ -336,7 +374,7 @@ class Enemy(Actor):
             pygame.draw.rect(screen, (50, 255, 50), health_rect, 0)
         
     def update(self, input_state, world):
-        self._update_status_tags(world)
+        self._update_status_tags(world, input_state)
         
         if self.health <= 0:
             self.is_alive = False
@@ -368,13 +406,7 @@ class Enemy(Actor):
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
         v = cool_math.normalize(v)
-        player.deal_damage(5, v)
-        
-    def is_actor(self):
-        return True
-        
-    def is_enemy(self):
-        return True   
+        player.deal_damage(5, v)  
                
                
 class Wall(Entity):

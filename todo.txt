@@ -33,7 +33,11 @@ Level System
         loaded at launch, autosaved periodically
         loaded levels reference this to maintain state between loads/unloads
         
-            
+Light
+    + colored lights
+    + flickering lights
+    + turning lights on and off
+    ? ring of light around player      
           
     
     

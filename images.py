@@ -83,16 +83,13 @@ TERMINAL_SCREEN = A([R(112,64+i*5,10,5) for i in range(0, 6)])
 CHALKBOARD = A([R(96,96,32,16)])
 
 PLAYER_IDLE     = A([R(176,32,16,32), R(192,32,16,32)])
-PLAYER_IDLE_LEFT = A([R(176,64,16,32), R(192,64,16,32)])
 PLAYER_GUN      = A([R(208+i*32,32,24,32) for i in range(0, 3)], TPF=5)
-PLAYER_GUN_LEFT = A([R(208+i*32,64,24,32) for i in range(0, 3)], TPF=5)
 PLAYER_AIR      = A([R(304,32,32,32), R(336,32,32,32)])
-PLAYER_AIR_LEFT = A([R(304,64,32,32), R(336,64,32,32)])
 PLAYER_WALLSLIDE = A([R(368,32,24,32)])
-PLAYER_WALLSLIDE_LEFT = A([R(376,64,24,32)]) 
 PLAYER_RUN      = A([R(400+32*i,32,32,32) for i in range(0, 6)], TPF=3)
-PLAYER_RUN_LEFT = A([R(400+32*i,64,32,32) for i in range(0, 6)], TPF=3)
 PLAYER_LADDER   = A([R(128,64,16,32), R(144,64,16,32),R(160,64,16,32),R(144,64,16,32)])
+PLAYER_CROUCH   = A([R(176+i*16,64,16,32) for i in range(0, 2)])
+PLAYER_CROUCH_WALK = A([R(208+i*16,64,16,32) for i in range(0, 6)], TPF=3)
 
 STONE_GROUND = A([r(0,2,1,1)])
 SAND_GROUND = A([r(1,2,1,1)])
@@ -108,7 +105,7 @@ TEXT_BORDER_BR  = A([R(32,160,16,16)])
 TEXT_BORDER_B   = A([R(16,160,16,16)])
 TEXT_BORDER_BL  = A([R(0,160,16,16)])
 
-def flip_rect(rect):
+def _flip_rect(rect):
     sheet_w = get_sheet(modifier="flipped").get_width()
     x = sheet_w - rect[0] - rect[2]
     return [x, rect[1], rect[2], rect[3]]
@@ -123,7 +120,7 @@ def draw_animated_sprite(screen, dest_rect, animation, modifier="normal"):
 
 def draw_sprite(screen, dest_rect, source_rect, modifier="normal"):
     if modifier == "flipped":
-        source_rect = flip_rect(source_rect)
+        source_rect = _flip_rect(source_rect)
     screen.blit(get_sheet(modifier), dest_rect, source_rect)
     
 def get_sheet(modifier="normal"):
@@ -219,7 +216,6 @@ def get_darkness_overlay(rect, sources, ambient_darkness):
         res = pygame.Surface((rect[2], rect[3]), flags=pygame.SRCALPHA)
         res.fill((0,0,0,ambient_darkness))
         for src in key:
-            #pygame.draw.circle(res, (255,255,255,255-src[2]), (src[0], src[1]), src[3], 0)
             sized_lightmap = get_lightmap(src[3])
             dest = (src[0]-src[3], src[1]-src[3])
             res.blit(sized_lightmap, dest, special_flags=pygame.BLEND_RGBA_SUB)

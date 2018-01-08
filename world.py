@@ -214,21 +214,22 @@ class World:
         for chunk in chunks_to_draw:
             chunk.draw_actors(screen, offset)
             
-        if not global_state.show_no_darkness:
-            onscreen_keys = self.get_chunk_keys_in_rect(
-                    screen_rect, 
-                    and_above_and_left=False)
-            dummy_chunk = None
-            for key in onscreen_keys:
-                chunk = self.get_chunk_from_key(key)
-                if chunk != None:
+        onscreen_keys = self.get_chunk_keys_in_rect(
+                screen_rect, 
+                and_above_and_left=False)
+        dummy_chunk = None
+        for key in onscreen_keys:
+            chunk = self.get_chunk_from_key(key)
+            if chunk != None:
+                if not global_state.show_no_darkness:
                     chunk.draw_darkness(self, screen, offset)
-                    chunk.draw_debug_stuff(screen, offset)
-                else:
-                    if dummy_chunk == None:         
-                        dummy_chunk = Chunk(0, 0)
-                    dummy_chunk.rect.x = key[0]     # uhh lel
-                    dummy_chunk.rect.y = key[1]
+                chunk.draw_debug_stuff(screen, offset)
+            else:
+                if dummy_chunk == None:         
+                    dummy_chunk = Chunk(0, 0)
+                dummy_chunk.rect.x = key[0]     # uhh lel
+                dummy_chunk.rect.y = key[1]
+                if not global_state.show_no_darkness:
                     dummy_chunk.draw_darkness(self, screen, offset)
                         
     def add_entity(self, entity):
