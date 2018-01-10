@@ -1,15 +1,11 @@
 import pygame
 
-import random
-import time
-
 import world
 import images
 import global_state as gs
 import huds
 import inputs
 import cool_math
-
 
 pygame.init()
 
@@ -25,25 +21,29 @@ input_state = inputs.InputState()
 world = world.gimme_a_sample_world()
 gs.hud = huds.HUD()
 
-def stop_running(): 
+
+def stop_running():
     global still_running
     still_running = False
 
+
 def draw(screen):
     screen_rect = (0, 0, gs.WIDTH, gs.HEIGHT)
-    pygame.draw.rect(screen, (120,120,120), screen_rect, 0)
+    pygame.draw.rect(screen, (120, 120, 120), screen_rect, 0)
     world.draw_all(screen)
     gs.hud.draw(screen, offset=cool_math.neg(world.get_camera()))
 
+
 def update():
     input_state.update()
-    
+
     gs.update(input_state)
     gs.hud.update(input_state, world)
     if not gs.hud.is_absorbing_inputs():
         world.update_all(input_state)
-    
+
     images.update()
+
 
 while still_running:
     for event in pygame.event.get():
@@ -69,14 +69,14 @@ while still_running:
             input_state.set_mouse_down(True)
         elif event.type == pygame.MOUSEBUTTONUP:
             input_state.set_mouse_down(False)
-    
+
     if not pygame.mouse.get_focused():
         input_state.set_mouse_pos(None)
-    
+
     update()
     draw(screen)
 
     pygame.display.flip()
     clock.tick(FPS)
-        
+
 pygame.quit()

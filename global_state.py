@@ -16,6 +16,7 @@ current_fps = 0
 last_timing = 0
 last_tick_count = 0
 
+
 def update(input_state):
     global tick_counter
     tick_counter += 1
@@ -39,5 +40,3 @@ def update(input_state):
     if input_state.was_pressed(pygame.K_g):
         global show_no_darkness
         show_no_darkness = not show_no_darkness
-    
-            

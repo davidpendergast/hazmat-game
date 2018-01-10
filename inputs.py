@@ -1,5 +1,6 @@
 import global_state
 
+
 class InputState:
     def __init__(self):
         self._held_keys = {} # keycode -> time pressed
@@ -32,7 +33,7 @@ class InputState:
         return self._mouse_down_time is not None
     
     def mouse_held_time(self):
-        if self._mouse_down_time == None:
+        if self._mouse_down_time is None:
             return -1
         else:
             return self._current_time - self._mouse_down_time  
@@ -54,7 +55,3 @@ class InputState:
         
     def update(self):
         self._current_time = global_state.tick_counter
-        
-        
-        
-                

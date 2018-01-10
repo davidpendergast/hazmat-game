@@ -49,5 +49,6 @@ Optimizations
         + chunk backgrounds
     
 Bugs
-    Sprites aren't always being drawn pixel perfect, not sure why    
+    Sprites aren't always being drawn pixel perfect, not sure why
+    Can't jump while crouch-walking
 

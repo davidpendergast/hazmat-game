@@ -5,18 +5,20 @@ import images
 
 
 _FONT_NAMES = {
-    "fancy":"res/Fipps-Regular.otf",
-    "standard":"res/coders_crux.ttf"
+    "fancy": "res/Fipps-Regular.otf",
+    "standard": "res/coders_crux.ttf"
 }
 
 _CACHED_FONTS = {}
 
+
 def get_font(style, size):
     key = (style, size)
-    if not key in _CACHED_FONTS:
+    if key not in _CACHED_FONTS:
         _CACHED_FONTS[key] = pygame.font.Font(_FONT_NAMES[style], size)
     return _CACHED_FONTS[key]
-    
+
+
 def wrap_text(text_string, rect_width, font):
     """returns: (rectangle, list of lines)"""
     box_w = rect_width
@@ -42,7 +44,8 @@ def wrap_text(text_string, rect_width, font):
     box_y = global_state.HEIGHT - box_h
     box = [box_x, box_y, box_w, box_h]
     return (box, lines)
-    
+
+
 def draw_text(screen, text_string, font_name, font_size, width):
     font = get_font(font_name, font_size)
     rect, lines = wrap_text(text_string, width, font)
@@ -64,5 +67,3 @@ def draw_text(screen, text_string, font_name, font_size, width):
     for i in range(0, len(lines)):
         line_img = font.render(lines[i], False, (255,255,255), (0,0,0))
         screen.blit(line_img, (rect[0], rect[1]+32*i))
-        
-    
