@@ -1,6 +1,5 @@
 
 General
-    + give string ids to each animation
     + move decorations into their own file, make factory methods
     + key commands in their own file
         + later, make configurable
@@ -8,7 +7,6 @@ General
 
 Player Mechanics
     crouching
-DONE    + crouch walking
         + crouch shooting
     walking up/down stairs
     stick to walls a bit when sliding

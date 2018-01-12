@@ -26,7 +26,7 @@ class Entity:
             dest_rect.move_ip(*self.sprite_offset())
             images.draw_animated_sprite(screen, dest_rect, sprite, modifier)
         else:
-            pygame.draw.rect(screen, images.rainbow, dest_rect, 0)
+            pygame.draw.rect(screen, images.RAINBOW, dest_rect, 0)
 
     def sprite_offset(self):
         return (0, 0)

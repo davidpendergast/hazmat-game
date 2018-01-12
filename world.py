@@ -71,10 +71,10 @@ class Chunk:
         if global_state.show_debug_rects:
             pygame.draw.rect(screen, (0, 0, 0), self.get_rect().move(*offset), 1)
             for thing in self.entities.get_all(not_category="ground"):
-                pygame.draw.rect(screen, images.rainbow, thing.get_rect().move(*offset), 2)
+                pygame.draw.rect(screen, images.RAINBOW, thing.get_rect().move(*offset), 2)
                 if hasattr(thing, 'radius') and thing.radius > 2:
                     center = cool_math.add(thing.center(), offset)
-                    pygame.draw.circle(screen, images.rainbow, center, thing.radius, 2)
+                    pygame.draw.circle(screen, images.RAINBOW, center, thing.radius, 2)
 
     def __contains__(self, entity):
         return entity in self.entities
