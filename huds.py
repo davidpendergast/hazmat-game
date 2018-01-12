@@ -21,9 +21,9 @@ class HUD:
             entities.Terminal(0, 0),
             entities.Door(0, 0, "test_door1", "test_door2"),
             entities.Enemy(0, 0),
-            entities.LightEmittingDecoration(0, 0, images.LIGHT_BULB, luminosity=255, light_radius=128),
-            entities.Decoration(0, 0, images.WIRE_VERTICAL),
-            entities.Decoration(0, 0, images.CHALKBOARD)
+            entities.LightEmittingDecoration(0, 0, "lightbulb", images.LIGHT_BULB, luminosity=255, light_radius=128),
+            entities.Decoration(0, 0, "wire_vert", images.WIRE_VERTICAL),
+            entities.Decoration(0, 0, "chalkboard", images.CHALKBOARD)
         ]
 
         self.text_queue = collections.deque()

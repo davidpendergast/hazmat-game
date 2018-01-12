@@ -21,9 +21,10 @@ TICKS_PER_FRAME = 10
 
 
 class Animation:
-    def __init__(self, rects, tpf=TICKS_PER_FRAME):
+    def __init__(self, rects, anim_id="no_id", tpf=TICKS_PER_FRAME):
         self.rects = rects
         self.TPF = tpf
+        self.anim_id = anim_id
         self._subanimations = [None] * len(rects)
 
     def num_frames(self):
@@ -37,7 +38,7 @@ class Animation:
         return self._subanimations[idx]
 
     def reversify(self):
-        return Animation(list(reversed(self.rects)), self.TPF)
+        return Animation(list(reversed(self.rects)), tpf=self.TPF)
 
     def width(self):
         return self.rects[0].width
@@ -47,6 +48,9 @@ class Animation:
 
     def size(self):
         return (self.width(), self.height())
+
+    def get_id(self):
+        return self.anim_id
 
 
 def A(rects, tpf=TICKS_PER_FRAME):

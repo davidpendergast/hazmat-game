@@ -16,6 +16,7 @@ class Entity:
         self.rect = pygame.Rect(x, y, w, h)
         self.weight = 1
         self.categories = set()
+        self.ref_id = None  # used by the level loader to mark entity as 'special'
 
     def draw(self, screen, offset=(0, 0), modifier=None):
         modifier = self.sprite_modifier() if modifier is None else modifier
@@ -75,6 +76,12 @@ class Entity:
         self.set_center_x(x)
         self.set_center_y(y)
 
+    def get_x(self):
+        return self.get_rect().x
+
+    def get_y(self):
+        return self.get_rect().y
+
     def xy(self):
         r = self.get_rect()
         return (r.x, r.y)
@@ -91,6 +98,12 @@ class Entity:
 
     def size(self):
         return (self.width(), self.height())
+
+    def get_ref_id(self):
+        return self.ref_id
+
+    def set_ref_id(self, ref_id):
+        self.ref_id = ref_id
 
     def is_(self, category):
         return category in self.categories
@@ -639,10 +652,14 @@ class Overlay(Entity):
 class Decoration(Entity):
     """Just a noninteractive piece of art basically."""
 
-    def __init__(self, x, y, animation):
+    def __init__(self, x, y, dec_id, animation):
         Entity.__init__(self, x, y, animation.width(), animation.height())
         self.animation = animation
+        self.dec_id = dec_id
         self.categories.update(["decoration"])
+
+    def get_dec_id(self):
+        return self.dec_id
 
     def sprite(self):
         return self.animation
@@ -654,8 +671,8 @@ class Decoration(Entity):
 class LightEmittingDecoration(Decoration):
     """A decoration that emits light. Should never move."""
 
-    def __init__(self, x, y, animation, luminosity, light_radius):
-        Decoration.__init__(self, x, y, animation)
+    def __init__(self, x, y, dec_id, animation, luminosity, light_radius):
+        Decoration.__init__(self, x, y, dec_id, animation)
         self._luminosity = luminosity  # brightness level from 0 to 255
         self.radius = light_radius  # radius in pixels
         self.categories.update(["light_source"])
@@ -687,7 +704,8 @@ class Ground(Decoration):
                    images.GRASS_GROUND, images.PURPLE_GROUND]
 
     def __init__(self, x, y, ground_type):
-        Decoration.__init__(self, x, y, Ground.all_sprites[ground_type])
+        sprite = Ground.all_sprites[ground_type]
+        Decoration.__init__(self, x, y, sprite.get_id(), sprite)
         self.categories.update(["ground"])
 
 

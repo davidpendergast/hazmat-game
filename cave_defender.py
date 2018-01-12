@@ -6,6 +6,7 @@ import global_state as gs
 import huds
 import inputs
 import cool_math
+import levels
 
 pygame.init()
 
@@ -61,6 +62,10 @@ while still_running:
             elif event.key == pygame.K_F2:
                 pygame.image.save(screen, "screenshots/screenshot.png")
                 print("saved screenshot: screenshot.png")
+            elif event.key == pygame.K_F5:
+                filename = "saved_level_0.txt"
+                print("saving world to: ", filename)
+                levels.save_to_level_file(world, filename)
         elif event.type == pygame.KEYUP:
             input_state.set_key(event.key, False)
         elif event.type == pygame.MOUSEMOTION:

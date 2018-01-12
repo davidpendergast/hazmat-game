@@ -1,13 +1,26 @@
 
+General
+    + give string ids to each animation
+    + move decorations into their own file, make factory methods
+    + key commands in their own file
+        + later, make configurable
+
 
 Player Mechanics
     crouching
-        + crouch walking
+DONE    + crouch walking
         + crouch shooting
-    walking up stairs
+    walking up/down stairs
+    stick to walls a bit when sliding
+
     
 Game Mechanics
-    
+    damage
+        + knockback and stun when damaged
+        + death animation
+            generated crumple effect? I ain't drawing all that
+    enemies
+
     
 Level System
     + level files
@@ -32,21 +45,26 @@ Level System
         json-friendly values only
         loaded at launch, autosaved periodically
         loaded levels reference this to maintain state between loads/unloads
+
+Art
+    background
+        ? background move slower than foreground to add depth
+        + bigger background tiles to break up grid
+
         
 Light
     + colored lights
     + flickering lights
+        this can be done pretty simply by just overriding the get_light_profile
     + turning lights on and off
-    ? ring of light around player      
-          
-    
-    
-    
+    ? ring of light around player
+
     
 Optimizations
     cache more stuff
         + rendered text
         + chunk backgrounds
+
     
 Bugs
     Sprites aren't always being drawn pixel perfect, not sure why
