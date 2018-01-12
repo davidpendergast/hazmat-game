@@ -63,7 +63,7 @@ while still_running:
                 pygame.image.save(screen, "screenshots/screenshot.png")
                 print("saved screenshot: screenshot.png")
             elif event.key == pygame.K_F5:
-                filename = "saved_level_0.txt"
+                filename = "temp_save_file"
                 print("saving world to: ", filename)
                 levels.save_to_level_file(world, filename)
         elif event.type == pygame.KEYUP:

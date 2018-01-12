@@ -15,13 +15,20 @@ SHEETS = {
 
 LIGHTMAP = None
 
-CACHED_LIGHTMAPS = {}   # radius -> Surface
-
 RAINBOW = [0, 0, 0]
 
 TICKS_PER_FRAME = 10    # default animation speed
 
 ALL_ANIMATIONS = {}     # anim_id -> Animation
+
+
+CACHED_LIGHTMAPS = {}           # radius -> Surface
+CACHED_DARKNESS_CHUNKS = {}     # light profile -> Surface
+
+
+def wipe_caches():
+    CACHED_LIGHTMAPS.clear()
+    CACHED_DARKNESS_CHUNKS.clear()
 
 
 class Animation:
@@ -58,6 +65,13 @@ class Animation:
 
     def get_id(self):
         return self.anim_id
+
+
+def get_animation(anim_id):
+    if anim_id not in ALL_ANIMATIONS:
+        raise ValueError("No animation exists for id: " + str(anim_id))
+    else:
+        return ALL_ANIMATIONS[anim_id]
 
 
 def create(anim_id, rects, tpf=TICKS_PER_FRAME):
@@ -159,12 +173,12 @@ def get_sheet(modifier="normal"):
 
 def get_window_icon():
     res_surface = pygame.Surface((32, 32), flags=pygame.SRCALPHA)
-    draw_sprite(res_surface, [0, 0, 32, 32], [0, 32, 32, 32])  # uhh.. hack alert lol
+    draw_sprite(res_surface, (0, 0), [0, 32, 32, 32])  # uhh.. hack alert lol
     return res_surface
 
 
 def get_lightmap(radius):
-    if not radius in CACHED_LIGHTMAPS:
+    if radius not in CACHED_LIGHTMAPS:
         num_lightmaps = len(CACHED_LIGHTMAPS) + 1
         print("computing lightmap of radius: ", radius, " (", num_lightmaps, " total)")
         size = (radius * 2 + 1, radius * 2 + 1)
@@ -200,10 +214,6 @@ def reload_sheet():
     print("done.")
 
 
-def wipe_caches():
-    CACHED_LIGHTMAPS.clear()
-
-
 def update():
     global RAINBOW
     i = random.randint(0, 2)
@@ -224,9 +234,6 @@ def dye_sheet(sheet, color, base_color=(0, 0, 0), alpha=255):
             b = int(base_color[2] + (color[2] - base_color[2]) * val)
             new_sheet.set_at((x, y), (r, g, b, alpha))
     return new_sheet
-
-
-CACHED_DARKNESS_CHUNKS = {}
 
 
 def get_darkness_overlay(rect, sources, ambient_darkness):
