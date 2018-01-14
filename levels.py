@@ -1,5 +1,6 @@
 import images
 import entities
+import decorations
 
 ALL_LEVELS = {}  # name -> level
 
@@ -72,18 +73,14 @@ def load_from_level_file(world, filename):
                         x, y, w, h = int(items[1]), int(items[2]), int(items[3]), int(items[4])
                         world.add_entity(entities.Wall(x, y, w=w, h=h, sprite=animation))
 
-                    elif last_header == DECOR_HEADER:
+                    elif last_header == DECOR_HEADER or last_header == GROUND_HEADER:
                         dec_id = items[0]
                         x = int(items[1])
                         y = int(items[2])
-                        # TODO - dec = decorations.get_decoration(dec_id)
-                        # TODO - dec.set_xy(x, y)
-                        # TODO - world.add_entity(dec)
 
-                    elif last_header == GROUND_HEADER:
-                        x = int(items[1])
-                        y = int(items[2])
-                        world.add_entity(entities.Ground(x, y, 0))
+                        dec = decorations.get_decoration(dec_id)
+                        dec.set_xy(x, y)
+                        world.add_entity(dec)
 
             except ValueError:
                 print("Error on line ", cnt, ":\t", line)

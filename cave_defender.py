@@ -19,7 +19,7 @@ clock = pygame.time.Clock()
 FPS = 30
 
 input_state = inputs.InputState()
-world = world.gimme_a_sample_world()
+world = world.gimme_a_sample_world(load_from_file=True)
 gs.hud = huds.HUD()
 
 

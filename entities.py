@@ -649,45 +649,6 @@ class Overlay(Entity):
                 self.set_center_y(pos[1])
 
 
-class Decoration(Entity):
-    """Just a noninteractive piece of art basically."""
-
-    def __init__(self, x, y, dec_id, animation):
-        Entity.__init__(self, x, y, animation.width(), animation.height())
-        self.animation = animation
-        self.dec_id = dec_id
-        self.categories.update(["decoration"])
-
-    def get_dec_id(self):
-        return self.dec_id
-
-    def sprite(self):
-        return self.animation
-
-    def sprite_offset(self):
-        return (0, 0)
-
-
-class LightEmittingDecoration(Decoration):
-    """A decoration that emits light. Should never move."""
-
-    def __init__(self, x, y, dec_id, animation, luminosity, light_radius):
-        Decoration.__init__(self, x, y, dec_id, animation)
-        self._luminosity = luminosity  # brightness level from 0 to 255
-        self.radius = light_radius  # radius in pixels
-        self.categories.update(["light_source"])
-
-    def light_profile(self):
-        """returns: integers (x, y, luminosity, radius), or None if luminosity 
-            or radius is zero
-        """
-        if self._luminosity > 0 and self.radius > 0:
-            pos = self.center()
-            return (pos[0], pos[1], self._luminosity, self.radius)
-        else:
-            return None
-
-
 class Ladder(Entity):
     def __init__(self, x, y):
         Entity.__init__(self, x, y, 24, 32)
@@ -697,16 +658,6 @@ class Ladder(Entity):
 
     def sprite(self):
         return images.LADDER
-
-
-class Ground(Decoration):
-    all_sprites = [images.STONE_GROUND, images.SAND_GROUND,
-                   images.GRASS_GROUND, images.PURPLE_GROUND]
-
-    def __init__(self, x, y, ground_type):
-        sprite = Ground.all_sprites[ground_type]
-        Decoration.__init__(self, x, y, sprite.get_id(), sprite)
-        self.categories.update(["ground"])
 
 
 def _safe_remove(item, collection, print_err=False):

@@ -8,6 +8,7 @@ import global_state
 import cool_math
 import images
 import text_stuff
+import decorations
 
 
 class HUD:
@@ -21,9 +22,9 @@ class HUD:
             entities.Terminal(0, 0),
             entities.Door(0, 0, "test_door1", "test_door2"),
             entities.Enemy(0, 0),
-            entities.LightEmittingDecoration(0, 0, "lightbulb", images.LIGHT_BULB, luminosity=255, light_radius=128),
-            entities.Decoration(0, 0, "wire_vert", images.WIRE_VERTICAL),
-            entities.Decoration(0, 0, "chalkboard", images.CHALKBOARD)
+            decorations.get_decoration("lightbulb"),
+            decorations.get_decoration("wire_vert"),
+            decorations.get_decoration("chalkboard")
         ]
 
         self.text_queue = collections.deque()

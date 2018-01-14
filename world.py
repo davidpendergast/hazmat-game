@@ -6,6 +6,7 @@ import entities
 import global_state
 import cool_math
 import levels
+import decorations
 
 CHUNK_SIZE = 256
 AMBIENT_DARKNESS = 125
@@ -407,6 +408,7 @@ def gimme_a_sample_world(load_from_file=True):
 
         # other_junk.append(entities.Enemy(300,200))
 
+        ground_ids = ["ground_grass", "ground_stone", "ground_purple", "ground_sand"]
         ground = []
         for x in range(0, 640, 32):
             for y in range(0, 480, 32):
@@ -414,7 +416,9 @@ def gimme_a_sample_world(load_from_file=True):
                 ry = random.random() * 480
                 n = 0 if rx < x else 2
                 n += 0 if ry < y else 1
-                ground.append(entities.Ground(x, y, n))
+                ent = decorations.get_decoration(ground_ids[n])
+                ent.set_xy(x, y)
+                ground.append(ent)
 
         all_stuff = other_junk + ground
         world.add_all_entities(all_stuff)
