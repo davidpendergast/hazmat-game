@@ -7,6 +7,7 @@ import global_state
 import cool_math
 import levels
 import decorations
+import settings
 
 CHUNK_SIZE = 256
 AMBIENT_DARKNESS = 125
@@ -240,7 +241,6 @@ class World:
                     dummy_chunk.draw_darkness(self, screen, offset)
 
     def add_entity(self, entity):
-        print("adding: ", entity)
         if entity.is_player():
             if self._player is not None:
                 raise ValueError("There is already a player in this world.")
@@ -392,35 +392,39 @@ class World:
 
 def gimme_a_sample_world(load_from_file=True):
     world = World()
-    if (load_from_file):
-        filename = "default_level"
-        level = levels.get_level(filename)
-        level.build(world)
-        world.add_entity(entities.Player(50, 50))
-    else:
-        other_junk = [entities.Player(50, 50)]
-        for i in range(0, 640, 32):
-            other_junk.append(entities.Wall(i, 0))
-            other_junk.append(entities.Wall(i, 480 - 32))
-        for i in range(32, 480, 32):
-            other_junk.append(entities.Wall(0, i))
-            other_junk.append(entities.Wall(640 - 32, i))
+    if load_from_file:
+        try:
+            filename = settings.CONFIGS["level_file_load"]
+            level = levels.get_level(filename)
+            level.build(world)
+            world.add_entity(entities.Player(50, 50))
+            return world
+        except:
+            print("failed to load level from file, generating one instead.")
 
-        # other_junk.append(entities.Enemy(300,200))
+    other_junk = [entities.Player(50, 50)]
+    for i in range(0, 640, 32):
+        other_junk.append(entities.Wall(i, 0))
+        other_junk.append(entities.Wall(i, 480 - 32))
+    for i in range(32, 480, 32):
+        other_junk.append(entities.Wall(0, i))
+        other_junk.append(entities.Wall(640 - 32, i))
 
-        ground_ids = ["ground_grass", "ground_stone", "ground_purple", "ground_sand"]
-        ground = []
-        for x in range(0, 640, 32):
-            for y in range(0, 480, 32):
-                rx = random.random() * 640
-                ry = random.random() * 480
-                n = 0 if rx < x else 2
-                n += 0 if ry < y else 1
-                ent = decorations.get_decoration(ground_ids[n])
-                ent.set_xy(x, y)
-                ground.append(ent)
+    # other_junk.append(entities.Enemy(300,200))
 
-        all_stuff = other_junk + ground
-        world.add_all_entities(all_stuff)
+    ground_ids = ["ground_grass", "ground_stone", "ground_purple", "ground_sand"]
+    ground = []
+    for x in range(0, 640, 32):
+        for y in range(0, 480, 32):
+            rx = random.random() * 640
+            ry = random.random() * 480
+            n = 0 if rx < x else 2
+            n += 0 if ry < y else 1
+            ent = decorations.get_decoration(ground_ids[n])
+            ent.set_xy(x, y)
+            ground.append(ent)
+
+    all_stuff = other_junk + ground
+    world.add_all_entities(all_stuff)
 
     return world

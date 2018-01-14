@@ -1,6 +1,8 @@
 import images
 import entities
 import decorations
+import file_stuff
+import settings
 
 ALL_LEVELS = {}  # name -> level
 
@@ -45,53 +47,50 @@ _SampleLevel()
 
 
 def load_from_level_file(world, filename):
-    with open(LEVELS_DIR + filename + LEVEL_EXT, "r") as file:
-        refs = {}  # ref_id -> (x, y)
-        last_header = None
-        line = file.readline()
-        cnt = 1
-        while line:
-            if line.endswith("\n"):
-                line = line[:-1]
-            try:
-                if line in ALL_HEADERS:
-                    last_header = line
-                    print("Loading from section: ", last_header)
-                elif line == "":
-                    pass
-                elif last_header is None or line.startswith("#"):
-                    print("skipping line: ", line)
-                else:
-                    items = line.split(", ")
-                    if last_header == REF_HEADER:
-                        xy = (int(items[1]), int(items[2]))
-                        refs[items[0]] = xy
+    refs = {}  # ref_id -> (x, y)
+    last_header = None
+    cnt = 1
+    levels_dir = settings.CONFIGS["level_dir"]
+    lines = file_stuff.read_lines_from_file(levels_dir + filename + LEVEL_EXT)
+    for line in lines:
+        try:
+            if line in ALL_HEADERS:
+                last_header = line
+                print("Loading from section: ", last_header)
+            elif line == "":
+                pass
+            elif last_header is None or line.startswith("#"):
+                print("skipping line: ", line)
+            else:
+                items = line.split(", ")
+                if last_header == REF_HEADER:
+                    xy = (int(items[1]), int(items[2]))
+                    refs[items[0]] = xy
 
-                    elif last_header == WALLS_HEADER:
-                        anim_id = items[0]
-                        animation = images.get_animation(anim_id)
-                        x, y, w, h = int(items[1]), int(items[2]), int(items[3]), int(items[4])
-                        world.add_entity(entities.Wall(x, y, w=w, h=h, sprite=animation))
+                elif last_header == WALLS_HEADER:
+                    anim_id = items[0]
+                    animation = images.get_animation(anim_id)
+                    x, y, w, h = int(items[1]), int(items[2]), int(items[3]), int(items[4])
+                    world.add_entity(entities.Wall(x, y, w=w, h=h, sprite=animation))
 
-                    elif last_header == DECOR_HEADER or last_header == GROUND_HEADER:
-                        dec_id = items[0]
-                        x = int(items[1])
-                        y = int(items[2])
+                elif last_header == DECOR_HEADER or last_header == GROUND_HEADER:
+                    dec_id = items[0]
+                    x = int(items[1])
+                    y = int(items[2])
 
-                        dec = decorations.get_decoration(dec_id)
-                        dec.set_xy(x, y)
-                        world.add_entity(dec)
+                    dec = decorations.get_decoration(dec_id)
+                    dec.set_xy(x, y)
+                    world.add_entity(dec)
 
-            except ValueError:
-                print("Error on line ", cnt, ":\t", line)
+        except ValueError:
+            print("Error on line ", cnt, ":\t", line)
 
-            line = file.readline()
-            cnt += 1
-        return refs
+        cnt += 1
+    return refs
 
 
 def save_to_level_file(world, filename):
-    with open(LEVELS_DIR + filename + LEVEL_EXT, "w") as file:
+
         walls = []
         decorations = []
         ground = []
@@ -132,8 +131,8 @@ def save_to_level_file(world, filename):
             lines.append("{}, {}, {}".format(gr.get_dec_id(), gr.get_x(), gr.get_y()))
         lines.append("")
 
-        for l in lines:
-            file.write(l + "\n")
+        levels_dir = settings.CONFIGS["level_dir"]
+        file_stuff.write_lines_to_file(lines, levels_dir + filename + LEVEL_EXT)
 
 
 

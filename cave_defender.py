@@ -7,6 +7,7 @@ import huds
 import inputs
 import cool_math
 import levels
+import settings
 
 pygame.init()
 
@@ -63,7 +64,7 @@ while still_running:
                 pygame.image.save(screen, "screenshots/screenshot.png")
                 print("saved screenshot: screenshot.png")
             elif event.key == pygame.K_F5:
-                filename = "temp_save_file"
+                filename = settings.CONFIGS["level_file_save"]
                 print("saving world to: ", filename)
                 levels.save_to_level_file(world, filename)
         elif event.type == pygame.KEYUP:
