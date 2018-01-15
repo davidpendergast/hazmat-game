@@ -125,24 +125,24 @@ def save_to_level_file(world, filename):
 
         lines = list()
         lines.append(REF_HEADER)
-        for ref in references:
+        for ref in sorted(references, key=str):
             lines.append("{}, {}, {}".format(ref.get_ref_id(), ref.get_x(), ref.get_y()))
         lines.append("")
 
         lines.append(DECOR_HEADER)
-        for dec in decorations:
+        for dec in sorted(decorations, key=str):
             lines.append("{}, {}, {}".format(dec.get_dec_id(), dec.get_x(), dec.get_y()))
         lines.append("")
 
         lines.append(WALLS_HEADER)
-        for wall in walls:
+        for wall in sorted(walls, key=str):
             anim_id = wall.sprite().get_id()
             r = wall.get_rect()
             lines.append("{}, {}, {}, {}, {}".format(anim_id, r[0], r[1], r[2], r[3]))
         lines.append("")
 
         lines.append(GROUND_HEADER)
-        for gr in ground:
+        for gr in sorted(ground, key=str):
             lines.append("{}, {}, {}".format(gr.get_dec_id(), gr.get_x(), gr.get_y()))
         lines.append("")
 
