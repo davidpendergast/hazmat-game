@@ -118,6 +118,8 @@ WIRE_VERTICAL       = create("wire_vertical", [R(80, 80, 8, 8)])
 TERMINAL            = create("terminal", [R(96, 64, 16, 32)])
 TERMINAL_SCREEN     = create("terminal_screen", [R(112, 64 + i * 5, 10, 5) for i in range(0, 6)])
 CHALKBOARD          = create("chalkboard", [R(96, 96, 32, 16)])
+PUZZLE_TERMINAL     = create("puzzle_terminal", [R(128, 96, 16, 32)])
+PUZZ_TERM_SCREEN    = create("puzzle_terminal_screen", [R(144, 96 + 9*i, 10, 9) for i in range(0, 3)])
 
 PLAYER_IDLE         = create("player_idle", [R(176, 32, 16, 32), R(192, 32, 16, 32)])
 PLAYER_GUN          = create("player_gun", [R(208 + i * 32, 32, 24, 32) for i in range(0, 3)], tpf=5)

@@ -119,3 +119,17 @@ def sliver_adjacent(rect, direction):
         return (rect.x, rect.y - 1, rect.width, 1)
     else:
         return (rect.x, rect.y + rect.height, rect.width, 1)
+
+
+def recenter_rect_in(rect1, rect2):
+    """
+    returns: a rectangle (in integer list form: [x, y, w, h]) with the size of
+    rect1 that has the same center as rect2. Does not change rect1 or rect2.
+    """
+    c1 = (rect1[0] + rect1[2]/2, rect1[1] + rect1[3]/2)
+    c2 = (rect2[0] + rect2[2]/2, rect2[1] + rect2[3]/2)
+    diff = sub(c2, c1)
+    return [int(rect1[0] + diff[0]),
+            int(rect1[1] + diff[1]),
+            rect1[2],
+            rect1[3]]

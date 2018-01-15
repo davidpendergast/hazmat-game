@@ -5,6 +5,7 @@ import math
 import cool_math
 import images
 import global_state
+import puzzles
 
 
 class Entity:
@@ -607,11 +608,14 @@ class Terminal(Entity):
     def sprite_offset(self):
         return (0, 0)
 
+    def screen_sprite(self):
+        return images.TERMINAL_SCREEN
+
     def draw(self, screen, offset=(0, 0), modifier=None):
         Entity.draw(self, screen, offset=offset, modifier=modifier)
 
         modifier = self.sprite_modifier() if modifier is None else modifier
-        screen_sprite = images.TERMINAL_SCREEN
+        screen_sprite = self.screen_sprite()
         dest_rect = self.get_rect().move(*offset)
         dest_rect.move_ip(3 * 2, 9 * 2)  # shift into screen area of sprite
         dest_rect.move_ip(*self.sprite_offset())
@@ -623,6 +627,28 @@ class Terminal(Entity):
     def interact(self):
         print("interacted with terminal")
         global_state.hud.display_text("It's a computer terminal.")
+
+
+class PuzzleTerminal(Terminal):
+    def __init__(self, x, y):
+        Terminal.__init__(self, x, y)
+        self.categories.update(["puzzle_terminal"])
+        self.active_callback = None
+
+    def update(self, input_state, world):
+        if self.active_callback is not None:
+            print("recieved puzzle callback: ", self.active_callback)
+            self.active_callback = None
+
+    def sprite(self):
+        return images.PUZZLE_TERMINAL
+
+    def screen_sprite(self):
+        return images.PUZZ_TERM_SCREEN
+
+    def interact(self):
+        print("activated puzzle terminal")
+        self.active_callback = global_state.hud.set_puzzle(puzzles.DummyPuzzle())
 
 
 class Overlay(Entity):
@@ -658,6 +684,20 @@ class Ladder(Entity):
 
     def sprite(self):
         return images.LADDER
+
+
+class ReferenceEntity(Entity):
+    def __init__(self, x, y, ref_id=None):
+        Entity.__init__(self, x, y, 32, 32)
+        self.set_ref_id(ref_id)
+
+    def get_ref_id(self):
+        if Entity.get_ref_id(self) is None:
+            self.set_ref_id("ref_" + str(random.randint(0, 9999)))
+        return Entity.get_ref_id(self)
+
+    def draw(self, screen, offset=(0, 0), modifier=None):
+        pygame.draw.rect(screen, (100, 100, 255), self.get_rect().move(*offset), 2)
 
 
 def _safe_remove(item, collection, print_err=False):

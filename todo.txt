@@ -48,6 +48,8 @@ Art
     background
         ? background move slower than foreground to add depth
         + bigger background tiles to break up grid
+    + running animations
+        pls
 
 Camera
     needs behavior that fits game a little better. Fixed camera is ok but not the best

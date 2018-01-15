@@ -22,6 +22,16 @@ def get_level(level_id):
         return ALL_LEVELS[level_id]
 
 
+def fetch_ref(ref_id, entity, refs):
+    if ref_id not in refs:
+        raise ValueError("reference doesn't exist: ", ref_id)
+    else:
+        position = refs[ref_id]
+        entity.set_xy(position[0], position[1])
+        entity.set_ref_id(ref_id)
+        return entity
+
+
 class Level:
     def __init__(self, level_id):
         self.level_id = level_id
@@ -40,7 +50,12 @@ class _SampleLevel(Level):
         Level.__init__(self, "default_level")
 
     def build_refs(self, refs, world):
-        pass
+        ref_items = list()
+        ref_items.append(fetch_ref("terminal_1", entities.Terminal(0, 0), refs))
+        ref_items.append(fetch_ref("puzzle_terminal_1", entities.PuzzleTerminal(0, 0), refs))
+
+        for item in ref_items:
+            world.add_entity(item)
 
 
 _SampleLevel()
@@ -99,7 +114,7 @@ def save_to_level_file(world, filename):
         for e in world.get_entities_with(not_category="actor"):
             if e.get_ref_id() is not None:
                 references.append(e)
-            if e.is_("wall"):
+            elif e.is_("wall"):
                 walls.append(e)
             elif e.is_("ground"):
                 ground.append(e)

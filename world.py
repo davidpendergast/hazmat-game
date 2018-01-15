@@ -376,6 +376,11 @@ class World:
         detected = self.get_entities_in_rect(detector_rect, category="wall")
         return len(detected) > 0
 
+    def to_world_pos(self, screen_x, screen_y):
+        x = screen_x + self.camera[0]
+        y = screen_y + self.camera[1]
+        return (x, y)
+
     def get_tile_at(self, x, y, tilesize=(32, 32)):
         """returns: coordinate of center of 'tile' that contains (x, y)"""
         cx = int(abs(x) / tilesize[0]) * tilesize[0] + tilesize[0] / 2
@@ -384,47 +389,37 @@ class World:
         cy = cy if y >= 0 else -cy
         return (cx, cy)
 
-    def to_world_pos(self, screen_x, screen_y):
-        x = screen_x + self.camera[0]
-        y = screen_y + self.camera[1]
-        return (x, y)
-
 
 def gimme_a_sample_world(load_from_file=True):
     world = World()
     if load_from_file:
-        try:
-            filename = settings.CONFIGS["level_file_load"]
-            level = levels.get_level(filename)
-            level.build(world)
-            world.add_entity(entities.Player(50, 50))
-            return world
-        except:
-            print("failed to load level from file, generating one instead.")
+        filename = settings.CONFIGS["level_file_load"]
+        level = levels.get_level(filename)
+        level.build(world)
+        world.add_entity(entities.Player(50, 50))
+    else:
+        other_junk = [entities.Player(50, 50)]
+        for i in range(0, 640, 32):
+            other_junk.append(entities.Wall(i, 0))
+            other_junk.append(entities.Wall(i, 480 - 32))
+        for i in range(32, 480, 32):
+            other_junk.append(entities.Wall(0, i))
+            other_junk.append(entities.Wall(640 - 32, i))
 
-    other_junk = [entities.Player(50, 50)]
-    for i in range(0, 640, 32):
-        other_junk.append(entities.Wall(i, 0))
-        other_junk.append(entities.Wall(i, 480 - 32))
-    for i in range(32, 480, 32):
-        other_junk.append(entities.Wall(0, i))
-        other_junk.append(entities.Wall(640 - 32, i))
+        # other_junk.append(entities.Enemy(300,200))
 
-    # other_junk.append(entities.Enemy(300,200))
+        ground_ids = ["ground_grass", "ground_stone", "ground_purple", "ground_sand"]
+        ground = []
+        for x in range(0, 640, 32):
+            for y in range(0, 480, 32):
+                rx = random.random() * 640
+                ry = random.random() * 480
+                n = 0 if rx < x else 2
+                n += 0 if ry < y else 1
+                ent = decorations.get_decoration(ground_ids[n])
+                ent.set_xy(x, y)
+                ground.append(ent)
 
-    ground_ids = ["ground_grass", "ground_stone", "ground_purple", "ground_sand"]
-    ground = []
-    for x in range(0, 640, 32):
-        for y in range(0, 480, 32):
-            rx = random.random() * 640
-            ry = random.random() * 480
-            n = 0 if rx < x else 2
-            n += 0 if ry < y else 1
-            ent = decorations.get_decoration(ground_ids[n])
-            ent.set_xy(x, y)
-            ground.append(ent)
-
-    all_stuff = other_junk + ground
-    world.add_all_entities(all_stuff)
-
+        all_stuff = other_junk + ground
+        world.add_all_entities(all_stuff)
     return world

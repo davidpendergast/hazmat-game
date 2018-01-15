@@ -9,6 +9,7 @@ import cool_math
 import images
 import text_stuff
 import decorations
+import puzzles
 
 
 class HUD:
@@ -20,15 +21,18 @@ class HUD:
             entities.Wall(0, 0, 16, 16, images.CHAIN_SMOL),
             entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL),
             entities.Terminal(0, 0),
-            entities.Door(0, 0, "test_door1", "test_door2"),
+            entities.ReferenceEntity(0, 0, ref_id=None),
             entities.Enemy(0, 0),
             decorations.get_decoration("lightbulb"),
             decorations.get_decoration("wire_vert"),
-            decorations.get_decoration("chalkboard")
+            entities.PuzzleTerminal(0, 0)
         ]
 
         self.text_queue = collections.deque()
         self.show_text_time = -500
+
+        self.active_puzzle = None
+        self.puzzle_state_callback = None
 
     def display_text(self, lines):
         """lines: string or list of strings to display"""
@@ -39,7 +43,18 @@ class HUD:
         self.show_text_time = global_state.tick_counter
 
     def update(self, input_state, world):
-        if self.is_showing_text():  # when text is showing, block all other user commands
+        if self.active_puzzle is not None:
+            # if puzzle is active block everything else
+            self.active_puzzle.update(input_state)
+
+            status = self.active_puzzle.get_status()
+            if status != puzzles.IN_PROGRESS:
+                self.puzzle_state_callback[0] = status
+                self.active_puzzle = None
+                self.puzzle_state_callback = None
+
+        elif self.is_showing_text():
+            # if text is showing, block everything else
             if input_state.was_pressed(pygame.K_k) and len(self.text_queue) > 0:
                 # wait a little bit before nuking the text box
                 if global_state.tick_counter - self.show_text_time > 15:
@@ -52,11 +67,20 @@ class HUD:
                 self._handle_removing_item(input_state, world)
 
     def draw(self, screen, offset=(0, 0)):
-        to_place = self.selected_item_to_place
-        placeable = self.selected_item_placeable
-        if to_place is not None and placeable is not None:
-            mod = "green_ghosts" if placeable else "red_ghosts"
-            to_place.draw(screen, offset, modifier=mod)
+        if self.active_puzzle is not None:
+            puzzle_rect = self._get_puzzle_rect()
+            text_stuff.draw_pretty_bordered_rect(screen, puzzle_rect)
+            self.active_puzzle.draw(screen, puzzle_rect)
+        else:
+            to_place = self.selected_item_to_place
+            placeable = self.selected_item_placeable
+            if to_place is not None and placeable is not None:
+                mod = "green_ghosts" if placeable else "red_ghosts"
+                to_place.draw(screen, offset, modifier=mod)
+
+            if self.is_showing_text() and len(self.text_queue) > 0:
+                text_string = self.text_queue[0]
+                text_stuff.draw_text(screen, text_string, "standard", 32, 512)
 
         if global_state.show_fps:
             basicfont = text_stuff.get_font("standard", 32)
@@ -64,9 +88,18 @@ class HUD:
             fps_text = basicfont.render(text, True, (255, 0, 0), (255, 255, 255))
             screen.blit(fps_text, (0, 0))
 
-        if self.is_showing_text() and len(self.text_queue) > 0:
-            text_string = self.text_queue[0]
-            text_stuff.draw_text(screen, text_string, "standard", 32, 512)
+    def set_puzzle(self, puzzle):
+        """
+        Displays a puzzle to the player. Cannot be called if there is already an active puzzle.
+        :param puzzle: Puzzle
+        :return: a single-element list whose value will eventually be set to the puzzle's exit status.
+        """
+        if self.active_puzzle is not None:
+            raise ValueError("There is already an active puzzle.")
+        else:
+            self.active_puzzle = puzzle
+            self.puzzle_state_callback = [puzzles.IN_PROGRESS]
+            return self.puzzle_state_callback
 
     def _get_item_to_place(self, index):
         if index >= len(self.items):
@@ -139,7 +172,20 @@ class HUD:
 
     def is_absorbing_inputs(self):
         freshly_closed = global_state.tick_counter - self.show_text_time < 2
-        return self.is_showing_text() or freshly_closed
+        return self.is_showing_text() or freshly_closed or self.active_puzzle is not None
 
     def is_showing_text(self):
         return len(self.text_queue) > 0
+
+    def _get_puzzle_rect(self):
+        if self.active_puzzle is None:
+            return None
+        else:
+            screen_rect = [0, 0, global_state.WIDTH, global_state.HEIGHT]
+            puzzle_size = self.active_puzzle.size()
+            puzzle_rect = [0, 0, puzzle_size[0], puzzle_size[1]]
+
+            return cool_math.recenter_rect_in(puzzle_rect, screen_rect)
+
+
+

@@ -49,21 +49,43 @@ def wrap_text(text_string, rect_width, font):
 def draw_text(screen, text_string, font_name, font_size, width):
     font = get_font(font_name, font_size)
     rect, lines = wrap_text(text_string, width, font)
+
+    draw_pretty_bordered_rect(screen, rect, bottom=False)
+
+    for i in range(0, len(lines)):
+        line_img = font.render(lines[i], False, (255, 255, 255), (0, 0, 0))
+        screen.blit(line_img, (rect[0], rect[1]+32*i))
+
+
+def draw_pretty_bordered_rect(screen, rect, top=True, left=True, bottom=True, right=True):
     x1 = rect[0]
     x2 = rect[0] + rect[2]
     y1 = rect[1]
     y2 = rect[1] + rect[3]
-    
-    bord_w, bord_h = images.TEXT_BORDER_L.size() 
-    images.draw_animated_sprite(screen, (x1-bord_w, y1-bord_h), images.TEXT_BORDER_TL)
-    images.draw_animated_sprite(screen, (x2, y1-bord_h), images.TEXT_BORDER_TR)
+
+    bord_w, bord_h = images.TEXT_BORDER_L.size()
+    if top and left:
+        images.draw_animated_sprite(screen, (x1 - bord_w, y1 - bord_h), images.TEXT_BORDER_TL)
+    if top and right:
+        images.draw_animated_sprite(screen, (x2, y1 - bord_h), images.TEXT_BORDER_TR)
+    if bottom and left:
+        images.draw_animated_sprite(screen, (x1 - bord_w, y2), images.TEXT_BORDER_BL)
+    if bottom and right:
+        images.draw_animated_sprite(screen, (x2, y2), images.TEXT_BORDER_BR)
+
     for x in range(x1, x2, bord_w):
-        images.draw_animated_sprite(screen, (x, y1-bord_h), images.TEXT_BORDER_T)
+        if x + bord_w > x2:
+            x = x2 - bord_w  # prevent overdrawing of border
+        if top:
+            images.draw_animated_sprite(screen, (x, y1 - bord_h), images.TEXT_BORDER_T)
+        if bottom:
+            images.draw_animated_sprite(screen, (x, y2), images.TEXT_BORDER_B)
     for y in range(y1, y2, bord_h):
-        images.draw_animated_sprite(screen, (x1-bord_w, y), images.TEXT_BORDER_L)
-        images.draw_animated_sprite(screen, (x2, y), images.TEXT_BORDER_R)
-    
-    pygame.draw.rect(screen, (0,0,0), rect)
-    for i in range(0, len(lines)):
-        line_img = font.render(lines[i], False, (255,255,255), (0,0,0))
-        screen.blit(line_img, (rect[0], rect[1]+32*i))
+        if y + bord_h > y2:
+            y = y2 - bord_h  # prevent overdrawing of border
+        if left:
+            images.draw_animated_sprite(screen, (x1 - bord_w, y), images.TEXT_BORDER_L)
+        if right:
+            images.draw_animated_sprite(screen, (x2, y), images.TEXT_BORDER_R)
+
+    pygame.draw.rect(screen, (0, 0, 0), rect)
