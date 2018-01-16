@@ -45,13 +45,12 @@ class HUD:
     def update(self, input_state, world):
         if self.active_puzzle is not None:
             # if puzzle is active block everything else
-            self.active_puzzle.update(input_state)
-
-            status = self.active_puzzle.get_status()
-            if status != puzzles.IN_PROGRESS:
-                self.puzzle_state_callback[0] = status
+            if self.active_puzzle.ready_to_close():
+                self.puzzle_state_callback[0] = self.active_puzzle.get_status()
                 self.active_puzzle = None
                 self.puzzle_state_callback = None
+            else:
+                self.active_puzzle.update(input_state)
 
         elif self.is_showing_text():
             # if text is showing, block everything else
