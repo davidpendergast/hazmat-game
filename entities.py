@@ -15,7 +15,6 @@ class Entity:
         self.y = y  # floating point
         self.vel = [0, 0]
         self.rect = pygame.Rect(x, y, w, h)
-        self.weight = 1
         self.categories = set()
         self.ref_id = None  # used by the level loader to mark entity as 'special'
 

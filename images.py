@@ -125,7 +125,7 @@ PLAYER_IDLE         = create("player_idle", [R(176, 32, 16, 32), R(192, 32, 16, 
 PLAYER_GUN          = create("player_gun", [R(208 + i * 32, 32, 24, 32) for i in range(0, 3)], tpf=10)
 PLAYER_AIR          = create("player_air", [R(304, 32, 32, 32), R(336, 32, 32, 32)])
 PLAYER_WALLSLIDE    = create("player_wallslide", [R(368, 32, 24, 32)])
-PLAYER_RUN          = create("player_run", [R(400 + 32 * i, 32, 32, 32) for i in range(0, 6)], tpf=6)
+PLAYER_RUN          = create("player_run", [R(272 + 32 * i, 0, 32, 32) for i in range(0, 7)], tpf=6)
 PLAYER_LADDER       = create("player_ladder", [R(128, 64, 16, 32), R(144, 64, 16, 32), R(160, 64, 16, 32), R(144, 64, 16, 32)])
 PLAYER_CROUCH       = create("player_crouch", [R(176 + i * 16, 64, 16, 32) for i in range(0, 2)])
 PLAYER_CROUCH_WALK  = create("player_crouch_walk", [R(208 + i * 16, 64, 16, 32) for i in range(0, 6)], tpf=6)
