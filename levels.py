@@ -51,9 +51,10 @@ class _SampleLevel(Level):
 
     def build_refs(self, refs, world):
         ref_items = list()
-        ref_items.append(fetch_ref("terminal_1", entities.Terminal(0, 0), refs))
+        ref_items.append(fetch_ref("terminal_1", entities.Terminal(0, 0, "you don't belong here."), refs))
         ref_items.append(fetch_ref("puzzle_terminal_1", entities.PuzzleTerminal(0, 0), refs))
-        ref_items.append(fetch_ref("jump_tip_terminal", entities.Terminal(0, 0), refs))
+        msg = ["you'll die in this place.", "is that what you want?"]
+        ref_items.append(fetch_ref("jump_tip_terminal", entities.Terminal(0, 0, msg), refs))
 
         for item in ref_items:
             world.add_entity(item)

@@ -72,10 +72,12 @@ Optimizations
     cache more stuff
         + rendered text
         + chunk backgrounds
+    + all cached stuff needs to be in one place
+        + and it needs to be cleared every so often to prevent memory leaks
 
     
 Bugs
-    Sprites aren't always being drawn pixel perfect, not sure why
-    Can't jump while crouch-walking
+    sprites aren't always being drawn pixel perfect, not sure why
+    can't jump while crouch-walking
     light entering nonexistant chunks is not rendered
 

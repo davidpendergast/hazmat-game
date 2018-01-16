@@ -602,9 +602,10 @@ class Door(Entity):
 
 
 class Terminal(Entity):
-    def __init__(self, x, y):
+    def __init__(self, x, y, message="It's a computer terminal"):
         Entity.__init__(self, x, y, 32, 64)
         self.categories.update(["terminal", "interactable"])
+        self.message = message
 
     def update(self, input_state, world):
         pass
@@ -631,9 +632,14 @@ class Terminal(Entity):
     def can_interact(self):
         return True
 
+    def set_message(self, message):
+        """
+        :param message: string or list of strings
+        """
+        self.message = message
+
     def interact(self):
-        print("interacted with terminal")
-        global_state.hud.display_text("It's a computer terminal.")
+        global_state.hud.display_text(self.message)
 
 
 class PuzzleTerminal(Terminal):
