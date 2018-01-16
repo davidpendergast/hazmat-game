@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.RESIZABLE)
 
 still_running = True
 clock = pygame.time.Clock()
-FPS = 30
+FPS = 60
 
 input_state = inputs.InputState()
 world = world.gimme_a_sample_world(load_from_file=True)

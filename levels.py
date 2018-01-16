@@ -53,6 +53,7 @@ class _SampleLevel(Level):
         ref_items = list()
         ref_items.append(fetch_ref("terminal_1", entities.Terminal(0, 0), refs))
         ref_items.append(fetch_ref("puzzle_terminal_1", entities.PuzzleTerminal(0, 0), refs))
+        ref_items.append(fetch_ref("jump_tip_terminal", entities.Terminal(0, 0), refs))
 
         for item in ref_items:
             world.add_entity(item)

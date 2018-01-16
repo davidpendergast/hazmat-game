@@ -17,7 +17,7 @@ LIGHTMAP = None
 
 RAINBOW = [0, 0, 0]
 
-TICKS_PER_FRAME = 10    # default animation speed
+TICKS_PER_FRAME = 20    # default animation speed
 
 ALL_ANIMATIONS = {}     # anim_id -> Animation
 
@@ -110,7 +110,7 @@ ENERGY_TANK         = create("energy_tank", [r(9, 2, 1, 2), r(10, 2, 1, 2)])
 ROCK                = create("rock", [r(6, 2, 1, 2)])
 DOOR_LOCKED         = create("door_locked", [R(0, 96, 16, 32)])
 DOOR_UNLOCKED       = create("door_unlocked", [R(16, 96, 16, 32)])
-DOOR_OPENING        = create("door_opening", [R(16 + 16 * i, 96, 16, 32) for i in range(0, 5)], tpf=5)
+DOOR_OPENING        = create("door_opening", [R(16 + 16 * i, 96, 16, 32) for i in range(0, 5)], tpf=10)
 DOOR_CLOSING        = reversify(DOOR_OPENING)
 LADDER              = create("ladder", [R(64, 80, 16, 16)])
 LIGHT_BULB          = create("light_bulb", [R(80, 88, 8, 8), R(88, 88, 8, 8)])
@@ -122,13 +122,13 @@ PUZZLE_TERMINAL     = create("puzzle_terminal", [R(128, 96, 16, 32)])
 PUZZ_TERM_SCREEN    = create("puzzle_terminal_screen", [R(144, 96 + 9*i, 10, 9) for i in range(0, 3)])
 
 PLAYER_IDLE         = create("player_idle", [R(176, 32, 16, 32), R(192, 32, 16, 32)])
-PLAYER_GUN          = create("player_gun", [R(208 + i * 32, 32, 24, 32) for i in range(0, 3)], tpf=5)
+PLAYER_GUN          = create("player_gun", [R(208 + i * 32, 32, 24, 32) for i in range(0, 3)], tpf=10)
 PLAYER_AIR          = create("player_air", [R(304, 32, 32, 32), R(336, 32, 32, 32)])
 PLAYER_WALLSLIDE    = create("player_wallslide", [R(368, 32, 24, 32)])
-PLAYER_RUN          = create("player_run", [R(400 + 32 * i, 32, 32, 32) for i in range(0, 6)], tpf=3)
+PLAYER_RUN          = create("player_run", [R(400 + 32 * i, 32, 32, 32) for i in range(0, 6)], tpf=6)
 PLAYER_LADDER       = create("player_ladder", [R(128, 64, 16, 32), R(144, 64, 16, 32), R(160, 64, 16, 32), R(144, 64, 16, 32)])
 PLAYER_CROUCH       = create("player_crouch", [R(176 + i * 16, 64, 16, 32) for i in range(0, 2)])
-PLAYER_CROUCH_WALK  = create("player_crouch_walk", [R(208 + i * 16, 64, 16, 32) for i in range(0, 6)], tpf=3)
+PLAYER_CROUCH_WALK  = create("player_crouch_walk", [R(208 + i * 16, 64, 16, 32) for i in range(0, 6)], tpf=6)
 
 STONE_GROUND        = create("ground_stone", [r(0, 2, 1, 1)])
 SAND_GROUND         = create("ground_sand", [r(1, 2, 1, 1)])

@@ -1,15 +1,13 @@
 
 General
-    + move decorations into their own file, make factory methods
     + key commands in their own file
         + later, make configurable
 
 
 Player Mechanics
-    crouching
-        + crouch shooting
-    walking up/down stairs
-    stick to walls a bit when sliding
+    + crouch shooting
+    + walking up/down stairs
+    + stick to walls a bit when sliding
 
     
 Game Mechanics
@@ -50,6 +48,14 @@ Art
         + bigger background tiles to break up grid
     + running animations
         pls
+        
+Sound
+    + music
+        not sure where to get this/how to make it
+        needs research
+    + sounds
+        again, not sure where to get this
+        probably a million free to use sounds are available online somewhere
 
 Camera
     needs behavior that fits game a little better. Fixed camera is ok but not the best

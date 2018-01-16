@@ -148,7 +148,7 @@ class Entity:
 
 
 class Actor(Entity):
-    gravity = 1.5
+    gravity = 0.65
 
     def __init__(self, x, y, w, h):
         Entity.__init__(self, x, y, w, h)
@@ -158,7 +158,7 @@ class Actor(Entity):
         self.is_left_walled = False
         self.is_right_walled = False
         self.facing_right = True
-        self.max_speed = (10, 20)
+        self.max_speed = (5, 10)
         self.jump_height = 64 + 32
         self.max_health = 50
         self.health = 50
@@ -192,9 +192,11 @@ class Actor(Entity):
         self.is_grounded = world.is_touching_wall(self, (0, 1))
         self.is_left_walled = world.is_touching_wall(self, (-1, 0))
         self.is_right_walled = world.is_touching_wall(self, (1, 0))
-        if self.vel[0] > 0 or (not self.is_grounded and self.is_left_walled):
+
+        if self.vel[0] > 0.75 or (not self.is_grounded and self.is_left_walled):
             self.facing_right = True
-        if self.vel[0] < 0 or (not self.is_grounded and self.is_right_walled):
+
+        if self.vel[0] < -0.75 or (not self.is_grounded and self.is_right_walled):
             self.facing_right = False
 
     def deal_damage(self, damage, direction=None):
@@ -208,13 +210,15 @@ class Player(Actor):
         self.crouch_height = 32
         Actor.__init__(self, x, y, 16, self.full_height)
         self.categories.update(["player"])
-        self.speed = 5
-        self.crouch_speed = 2.5
+        self.speed = 3
+        self.crouch_speed = 1.25
+        self.max_slide_speed = 0.75
 
-        self.max_slide_speed = 1.5
+        self.move_accel = 0.5
 
         self.shoot_cooldown = 0
-        self.shoot_max_cooldown = 15
+        self.shoot_max_cooldown = 30
+        self.shoot_on_frame = 20
         self.active_bullet = None  # rect where bullet is
 
         self.interact_radius = 32
@@ -222,17 +226,20 @@ class Player(Actor):
 
     def sprite(self):
         if self._is_shooting():
-            frm = (self.shoot_max_cooldown - self.shoot_cooldown) // 5  # lol
             anim = images.PLAYER_GUN
+            num_frms = images.PLAYER_GUN.num_frames()
+            numerator = self.shoot_max_cooldown - self.shoot_cooldown
+            denominator = self.shoot_max_cooldown / num_frms
+            frm = int(numerator / denominator)
             return anim.single_frame(frm)
         elif self.is_grounded:
             if self.is_crouching:
-                if abs(self.vel[0]) > 0.5:
+                if abs(self.vel[0]) > 0.25:
                     return images.PLAYER_CROUCH_WALK
                 else:
                     return images.PLAYER_CROUCH
             else:
-                if abs(self.vel[0]) > 1:
+                if abs(self.vel[0]) > 0.5:
                     return images.PLAYER_RUN
                 else:
                     return images.PLAYER_IDLE
@@ -286,7 +293,7 @@ class Player(Actor):
         if keyboard_x == 0 or self._is_shooting():
             fric = 1
             if not self.is_grounded:
-                fric = 0.25
+                fric = 0.125
             self.vel[0] = cool_math.tend_towards(0, self.vel[0], fric)
         else:
             target_speed = self.speed if not self.is_crouching else self.crouch_speed
@@ -295,7 +302,7 @@ class Player(Actor):
                 # turn around instantly when grounded
                 self.vel[0] = 0
             else:
-                self.vel[0] = cool_math.tend_towards(target_speed, self.vel[0], 1)
+                self.vel[0] = cool_math.tend_towards(target_speed, self.vel[0], self.move_accel)
 
         if keyboard_jump:
             if self.is_grounded:
@@ -320,7 +327,7 @@ class Player(Actor):
 
         if self.is_left_walled or self.is_right_walled:
             if self.vel[1] > self.max_slide_speed:
-                self.vel[1] = cool_math.tend_towards(self.max_slide_speed, self.vel[1], 2)
+                self.vel[1] = cool_math.tend_towards(self.max_slide_speed, self.vel[1], 1)
 
         self.apply_gravity()
         self.apply_physics()
@@ -343,7 +350,7 @@ class Player(Actor):
             self.shoot_cooldown = 0
         elif self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
-            if self.shoot_cooldown == 10:  # loll cmon
+            if self.shoot_cooldown == self.shoot_on_frame:
                 rect = self.get_rect()
                 bullet_y = rect.y + rect.height - 26 * 2
                 bullet_w = 300
@@ -354,7 +361,7 @@ class Player(Actor):
                 for e in world.get_entities_in_rect(bullet_hitbox, category="enemy"):
                     e.deal_damage(10, direction)
 
-        if self.shoot_cooldown < 8 or self.shoot_cooldown > 10:
+        if self.shoot_cooldown < self.shoot_on_frame - 4 or self.shoot_cooldown > self.shoot_on_frame:
             self.active_bullet = None
 
 
@@ -362,7 +369,7 @@ class Enemy(Actor):
     def __init__(self, x, y):
         Actor.__init__(self, x, y, 16, 48)
         self.categories.update(["enemy"])
-        self.speed = 1.5 + random.random() / 2
+        self.speed = 0.75 + random.random()
         self.current_dir = (0, 0)
         self._randint = random.randint(0, 999)
         self.radius = 140  # starts chasing player within this distance
@@ -412,7 +419,7 @@ class Enemy(Actor):
             self.current_dir = direction
         else:
             # change directions approx every 30 ticks
-            if random.random() < 1 / 30:
+            if random.random() < 1 / 60:
                 if random.random() < 0.25:
                     self.current_dir = (0, 0)
                 else:
