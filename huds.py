@@ -33,6 +33,8 @@ class HUD:
             decorations.get_decoration("ground_sand"),
             decorations.get_decoration("ground_purple"),
             decorations.get_decoration("ground_grass"),
+            decorations.get_decoration("ground_wall"),
+            decorations.get_decoration("ground_dark"),
         ]
 
         self.text_queue = collections.deque()
@@ -185,7 +187,11 @@ class HUD:
             self.selected_item_placeable = len(blocked_by) == 0
 
             if input_state.mouse_was_pressed() and self.selected_item_placeable:
-                world.add_entity(copy.deepcopy(to_place))
+                new_entity = copy.deepcopy(to_place)
+                if isinstance(new_entity, entities.ReferenceEntity):
+                    ref_id = input("Enter reference id: ")
+                    new_entity.set_ref_id(ref_id)
+                world.add_entity(new_entity)
                 # keep holding original object
                 return True
 

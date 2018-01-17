@@ -13,6 +13,8 @@ def init_decorations():
     ALL_DECORATIONS["ground_sand"] = lambda: Ground(0, 0, "ground_sand", images.SAND_GROUND)
     ALL_DECORATIONS["ground_grass"] = lambda: Ground(0, 0, "ground_grass", images.GRASS_GROUND)
     ALL_DECORATIONS["ground_purple"] = lambda: Ground(0, 0, "ground_purple", images.PURPLE_GROUND)
+    ALL_DECORATIONS["ground_wall"] = lambda: Ground(0, 0, "ground_wall", images.WALL_GROUND)
+    ALL_DECORATIONS["ground_dark"] = lambda: Ground(0, 0, "ground_dark", images.DARK_GROUND)
 
 
 def get_decoration(dec_id):

@@ -134,6 +134,8 @@ STONE_GROUND        = create("ground_stone", [r(0, 2, 1, 1)])
 SAND_GROUND         = create("ground_sand", [r(1, 2, 1, 1)])
 GRASS_GROUND        = create("ground_grass", [r(2, 2, 1, 1)])
 PURPLE_GROUND       = create("ground_purple", [r(3, 2, 1, 1)])
+WALL_GROUND         = create("ground_wall", [r(0, 3, 1, 1)])
+DARK_GROUND         = create("ground_dark", [r(1, 3, 1, 1)])
 
 TEXT_BORDER_L       = create("tb_l", [R(0, 144, 16, 16)])
 TEXT_BORDER_TL      = create("tb_tl", [R(0, 128, 16, 16)])

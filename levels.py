@@ -22,27 +22,43 @@ def get_level(level_id):
         return ALL_LEVELS[level_id]
 
 
-def fetch_ref(ref_id, entity, refs):
-    if ref_id not in refs:
-        raise ValueError("reference doesn't exist: ", ref_id)
-    else:
-        position = refs[ref_id]
-        entity.set_xy(position[0], position[1])
-        entity.set_ref_id(ref_id)
-        return entity
-
-
 class Level:
     def __init__(self, level_id):
         self.level_id = level_id
         ALL_LEVELS[level_id] = self
 
+        self._used_refs = set()
+
     def get_id(self):
         return self.level_id
+
+    def fetch_ref(self, ref_id, entity, refs):
+        if ref_id in self._used_refs:
+            raise ValueError("reference id has already been used: ", ref_id)
+        elif ref_id not in refs:
+            raise ValueError("reference id doesn't exist: ", ref_id)
+        else:
+            self._used_refs.add(ref_id)
+            position = refs[ref_id]
+            entity.set_xy(position[0], position[1])
+            entity.set_ref_id(ref_id)
+            return entity
 
     def build(self, world):
         refs = load_from_level_file(world, self.get_id())
         self.build_refs(refs, world)
+
+        for ref_id in refs:
+            if ref_id not in self._used_refs:
+                print("warning - did not build reference id: ", ref_id)
+                ref_entity = self.fetch_ref(ref_id, entities.ReferenceEntity(0, 0, ref_id=ref_id), refs)
+                world.add_entity(ref_entity)
+
+    def build_refs(self, refs, world):
+        """
+        Should be overriden for level classes
+        """
+        raise ValueError("build_refs() isn't defined.")
 
 
 class _SampleLevel(Level):
@@ -51,10 +67,10 @@ class _SampleLevel(Level):
 
     def build_refs(self, refs, world):
         ref_items = list()
-        ref_items.append(fetch_ref("terminal_1", entities.Terminal(0, 0, "you don't belong here."), refs))
-        ref_items.append(fetch_ref("puzzle_terminal_1", entities.PuzzleTerminal(0, 0), refs))
+        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, "you don't belong here."), refs))
+        ref_items.append(self.fetch_ref("puzzle_terminal_1", entities.PuzzleTerminal(0, 0), refs))
         msg = ["you'll die in this place.", "is that what you want?"]
-        ref_items.append(fetch_ref("jump_tip_terminal", entities.Terminal(0, 0, msg), refs))
+        ref_items.append(self.fetch_ref("jump_tip_terminal", entities.Terminal(0, 0, msg), refs))
 
         for item in ref_items:
             world.add_entity(item)
@@ -107,49 +123,48 @@ def load_from_level_file(world, filename):
 
 
 def save_to_level_file(world, filename):
+    walls = []
+    decorations = []
+    ground = []
+    references = []
 
-        walls = []
-        decorations = []
-        ground = []
-        references = []
+    for e in world.get_entities_with(not_category="actor"):
+        if e.get_ref_id() is not None:
+            references.append(e)
+        elif e.is_("wall"):
+            walls.append(e)
+        elif e.is_("ground"):
+            ground.append(e)
+        elif e.is_("decoration"):
+            decorations.append(e)
+        else:
+            print("discarding entity: ", e)
 
-        for e in world.get_entities_with(not_category="actor"):
-            if e.get_ref_id() is not None:
-                references.append(e)
-            elif e.is_("wall"):
-                walls.append(e)
-            elif e.is_("ground"):
-                ground.append(e)
-            elif e.is_("decoration"):
-                decorations.append(e)
-            else:
-                print("discarding entity: ", e)
+    lines = list()
+    lines.append(REF_HEADER)
+    for ref in sorted(references, key=str):
+        lines.append("{}, {}, {}".format(ref.get_ref_id(), ref.get_x(), ref.get_y()))
+    lines.append("")
 
-        lines = list()
-        lines.append(REF_HEADER)
-        for ref in sorted(references, key=str):
-            lines.append("{}, {}, {}".format(ref.get_ref_id(), ref.get_x(), ref.get_y()))
-        lines.append("")
+    lines.append(DECOR_HEADER)
+    for dec in sorted(decorations, key=str):
+        lines.append("{}, {}, {}".format(dec.get_dec_id(), dec.get_x(), dec.get_y()))
+    lines.append("")
 
-        lines.append(DECOR_HEADER)
-        for dec in sorted(decorations, key=str):
-            lines.append("{}, {}, {}".format(dec.get_dec_id(), dec.get_x(), dec.get_y()))
-        lines.append("")
+    lines.append(WALLS_HEADER)
+    for wall in sorted(walls, key=str):
+        anim_id = wall.sprite().get_id()
+        r = wall.get_rect()
+        lines.append("{}, {}, {}, {}, {}".format(anim_id, r[0], r[1], r[2], r[3]))
+    lines.append("")
 
-        lines.append(WALLS_HEADER)
-        for wall in sorted(walls, key=str):
-            anim_id = wall.sprite().get_id()
-            r = wall.get_rect()
-            lines.append("{}, {}, {}, {}, {}".format(anim_id, r[0], r[1], r[2], r[3]))
-        lines.append("")
+    lines.append(GROUND_HEADER)
+    for gr in sorted(ground, key=str):
+        lines.append("{}, {}, {}".format(gr.get_dec_id(), gr.get_x(), gr.get_y()))
+    lines.append("")
 
-        lines.append(GROUND_HEADER)
-        for gr in sorted(ground, key=str):
-            lines.append("{}, {}, {}".format(gr.get_dec_id(), gr.get_x(), gr.get_y()))
-        lines.append("")
-
-        levels_dir = settings.CONFIGS["level_dir"]
-        file_stuff.write_lines_to_file(lines, levels_dir + filename + LEVEL_EXT)
+    levels_dir = settings.CONFIGS["level_dir"]
+    file_stuff.write_lines_to_file(lines, levels_dir + filename + LEVEL_EXT)
 
 
 

@@ -1,8 +1,8 @@
 import pygame
 import time
 
-WIDTH = 640
-HEIGHT = 480
+HEIGHT = 16*32
+WIDTH = round(HEIGHT * 15/9)
 
 hud = None
 
