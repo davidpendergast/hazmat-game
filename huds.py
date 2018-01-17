@@ -28,6 +28,10 @@ class HUD:
             entities.PuzzleTerminal(0, 0)
         ]
 
+        self.alt_items = [  # accessed by hitting shift + numkuy
+            decorations.get_decoration("ground_stone")
+        ]
+
         self.text_queue = collections.deque()
         self.show_text_time = -500
 
@@ -77,6 +81,9 @@ class HUD:
                 mod = "green_ghosts" if placeable else "red_ghosts"
                 to_place.draw(screen, offset, modifier=mod)
 
+            if global_state.show_items_to_place:
+                self._draw_placeable_items(screen)
+
             if self.is_showing_text() and len(self.text_queue) > 0:
                 text_string = self.text_queue[0]
                 text_stuff.draw_text(screen, text_string, "standard", 32, 512)
@@ -86,6 +93,28 @@ class HUD:
             text = "FPS: " + str(global_state.current_fps)
             fps_text = basicfont.render(text, True, (255, 0, 0), (255, 255, 255))
             screen.blit(fps_text, (0, 0))
+
+    def _draw_placeable_items(self, screen):
+        w = global_state.WIDTH
+        h = 128
+        y1 = global_state.HEIGHT - h
+        y2 = int(y1 + h / 2)
+        columns = 10
+
+        pygame.draw.rect(screen, (0, 0, 0), [0, y1, w, h], 2)
+        pygame.draw.line(screen, (0, 0, 0), (0, y2), (w, y2), 2)
+
+        for i in range(0, columns):
+            x = int((i+0.5) * w / columns)
+            pygame.draw.line(screen, (0, 0, 0), (int(i*w/columns), y1), (int(i*w/columns), y1+h), 2)
+            if i < len(self.items) and self.items[i] is not None:
+                item = self.items[i]
+                pos = item.center()
+                item.draw(screen, cool_math.sub((x, int(y1 + h/4)), pos))
+            if i < len(self.alt_items) and self.alt_items[i] is not None:
+                item = self.alt_items[i]
+                pos = item.center()
+                item.draw(screen, cool_math.sub((x, int(y2 + h/4)), pos))
 
     def set_puzzle(self, puzzle):
         """
@@ -100,11 +129,12 @@ class HUD:
             self.puzzle_state_callback = [puzzles.IN_PROGRESS]
             return self.puzzle_state_callback
 
-    def _get_item_to_place(self, index):
-        if index >= len(self.items):
+    def _get_item_to_place(self, index, alt):
+        items = self.items if not alt else self.alt_items
+        if index >= len(items):
             return None
         else:
-            return self.items[index]
+            return items[index]
 
     KEYS = [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
             pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0]
@@ -118,7 +148,8 @@ class HUD:
                 break
 
         if idx is not None:
-            item = self._get_item_to_place(idx)
+            alt = input_state.is_held(pygame.K_LSHIFT) or input_state.is_held(pygame.K_RSHIFT)
+            item = self._get_item_to_place(idx, alt)
             if self.selected_item_to_place == item:
                 self._set_item_to_place(None)
             else:
@@ -144,12 +175,11 @@ class HUD:
         if to_place is None or world.player() is None or not input_state.mouse_in_window():
             self.selected_item_placeable = False
         else:
-            loc = to_place.center()
-            player_loc = world.player().center()
-            dist = cool_math.dist(loc, player_loc)
-            in_range = dist <= 120
-            blocked_by = world.get_entities_in_rect(to_place.get_rect(), not_category="ground")
-            self.selected_item_placeable = in_range and len(blocked_by) == 0
+            if to_place.is_ground():
+                blocked_by = world.get_entities_in_rect(to_place.get_rect(), category="ground")
+            else:
+                blocked_by = world.get_entities_in_rect(to_place.get_rect(), not_category="ground")
+            self.selected_item_placeable = len(blocked_by) == 0
 
             if input_state.mouse_was_pressed() and self.selected_item_placeable:
                 world.add_entity(copy.deepcopy(to_place))

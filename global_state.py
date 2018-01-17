@@ -11,6 +11,7 @@ tick_counter = 0
 show_debug_rects = False
 show_fps = True
 show_no_darkness = False
+show_items_to_place = False
 
 current_fps = 0
 last_timing = 0
@@ -40,3 +41,7 @@ def update(input_state):
     if input_state.was_pressed(pygame.K_g):
         global show_no_darkness
         show_no_darkness = not show_no_darkness
+
+    if input_state.was_pressed(pygame.K_i):
+        global show_items_to_place
+        show_items_to_place = not show_items_to_place
