@@ -22,6 +22,16 @@ class Chunk:
         dirs = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
         self._neighbors = [(x + d[0] * cs, y + d[1] * cs) for d in dirs]
 
+    def add(self, entity):
+        self.entities.add(entity)
+        if entity.is_ground() or entity.is_wall():
+            self.mark_dirty()
+
+    def remove(self, entity):
+        self.entities.remove(entity)
+        if entity.is_ground() or entity.is_wall():
+            self.mark_dirty()
+
     def xy(self):
         rect = self.get_rect()
         return (rect.x, rect.y)
@@ -36,13 +46,32 @@ class Chunk:
         return (x, y)
 
     def size(self):
-        return self.rect.size()
+        return self.get_rect().size
+
+    def _cache_key(self):
+        return str(self.xy()) + "_walls_n_ground"
+
+    def mark_dirty(self):
+        """Must be called whenever something ~static~ changes"""
+        images.remove_cached_image(self._cache_key())
 
     def draw_nonactors(self, screen, offset):
-        for g in self.entities.get_all(category="ground"):
-            g.draw(screen, offset)
+        if len(self.entities.get_all(category=["ground", "wall"])) > 0:
+            key = self._cache_key()
+            cache_img = images.get_cached_image(key)
+            if cache_img is None:
+                cache_img = pygame.Surface(self.size(), flags=pygame.SRCALPHA)
+                new_offset = cool_math.neg(self.xy())
+                for g in self.entities.get_all(category="ground"):
+                    g.draw(cache_img, new_offset)
+                for e in self.entities.get_all(category="wall"):
+                    e.draw(cache_img, new_offset)
+                images.put_cached_image(key, cache_img)
 
-        for e in self.entities.get_all(not_category=["ground", "actor"]):
+            screen_pos = cool_math.add(self.xy(), offset)
+            screen.blit(cache_img, screen_pos)
+
+        for e in self.entities.get_all(not_category=["ground", "wall", "actor"]):
             e.draw(screen, offset)
 
     def draw_actors(self, screen, offset):
@@ -71,6 +100,11 @@ class Chunk:
         screen.blit(img, cool_math.add(rect.topleft, offset))
 
     def draw_debug_stuff(self, screen, offset):
+        if global_state.show_chunk_redraws:
+            if images.time_since_cached(self._cache_key()) < 15:
+                screen_pos = cool_math.add(offset, self.xy())
+                rect = [screen_pos[0], screen_pos[1], self.size()[0], self.size()[1]]
+                pygame.draw.rect(screen, (255, 90, 90), rect, 10)
         if global_state.show_debug_rects:
             pygame.draw.rect(screen, (0, 0, 0), self.get_rect().move(*offset), 1)
             for thing in self.entities.get_all(not_category="ground"):
@@ -156,7 +190,7 @@ class World:
                 print(entity, " has died.")
                 self.remove_entity(entity, chunk=chunk)
             for entity in moved_out:
-                chunk.entities.remove(entity)
+                chunk.remove(entity)
 
                 key = self.get_chunk_key_for_point(*entity.xy())
                 moving_to = self.get_chunk_from_key(key)
@@ -170,7 +204,7 @@ class World:
                             key[0], key[1],
                             and_add_to_dict=False)
                         new_chunks[key] = moving_to
-                moving_to.entities.add(entity)
+                moving_to.add(entity)
         self.chunks.update(new_chunks)
 
         for chunk in self.chunks.values():
@@ -200,6 +234,8 @@ class World:
             r = entity.get_rect().inflate(2, 2)
             for wall in self.get_entities_in_rect(r, category="wall"):
                 wall.set_outline_dirty(True)
+            for chunk in self.get_chunks_in_rect(r, and_above_and_left=False):
+                chunk.mark_dirty()
 
     def draw_all(self, screen):
         screen_rect = [
@@ -247,12 +283,14 @@ class World:
             self._player = entity
 
         chunk = self.get_or_create_chunk(*entity.xy())
-        chunk.entities.add(entity)
+        chunk.add(entity)
 
         if entity.is_wall():
             r = entity.get_rect().inflate(2, 2)
             for wall in self.get_entities_in_rect(r, category="wall"):
                 wall.set_outline_dirty(True)
+            for chunk in self.get_chunks_in_rect(r, and_above_and_left=False):
+                chunk.mark_dirty()
 
     def add_all_entities(self, entity_list):
         for x in entity_list:
@@ -265,7 +303,7 @@ class World:
                 return False
         if entity in chunk.entities:
             self._prepare_to_remove(entity)
-            chunk.entities.remove(entity)
+            chunk.remove(entity)
             return True
         else:
             return False

@@ -25,10 +25,49 @@ ALL_ANIMATIONS = {}     # anim_id -> Animation
 CACHED_LIGHTMAPS = {}           # radius -> Surface
 CACHED_DARKNESS_CHUNKS = {}     # light profile -> Surface
 
+BIG_OL_IMG_CACHE = {}           # string -> [Surface, cache_time, last_accessed_time]
+
 
 def wipe_caches():
     CACHED_LIGHTMAPS.clear()
     CACHED_DARKNESS_CHUNKS.clear()
+    BIG_OL_IMG_CACHE.clear()
+
+
+def get_cached_image(key):
+    if key in BIG_OL_IMG_CACHE:
+        datablob = BIG_OL_IMG_CACHE[key]
+        datablob[2] = global_state.tick_counter
+        return datablob[0]
+    else:
+        return None
+
+
+def remove_cached_image(key):
+    if key in BIG_OL_IMG_CACHE:
+        del BIG_OL_IMG_CACHE[key]
+
+
+def put_cached_image(key, image):
+    print("caching image: ", key)
+    data_blob = [image, global_state.tick_counter, global_state.tick_counter]
+    BIG_OL_IMG_CACHE[key] = data_blob
+
+
+def time_since_last_access(key):
+    if key not in BIG_OL_IMG_CACHE:
+        return None
+    else:
+        data_blob = BIG_OL_IMG_CACHE[key]
+        return global_state.tick_counter - data_blob[2]
+
+
+def time_since_cached(key):
+    if key not in BIG_OL_IMG_CACHE:
+        return None
+    else:
+        data_blob = BIG_OL_IMG_CACHE[key]
+        return global_state.tick_counter - data_blob[1]
 
 
 class Animation:

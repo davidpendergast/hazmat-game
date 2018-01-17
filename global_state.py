@@ -9,6 +9,7 @@ hud = None
 tick_counter = 0
 
 show_debug_rects = False
+show_chunk_redraws = False
 show_fps = True
 show_no_darkness = False
 show_items_to_place = False
@@ -25,6 +26,8 @@ def update(input_state):
     if input_state.was_pressed(pygame.K_r):
         global show_debug_rects
         show_debug_rects = not show_debug_rects
+        global show_chunk_redraws
+        show_chunk_redraws = not show_chunk_redraws
         
     global show_fps
     if input_state.was_pressed(pygame.K_f):
