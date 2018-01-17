@@ -29,7 +29,10 @@ class HUD:
         ]
 
         self.alt_items = [  # accessed by hitting shift + numkuy
-            decorations.get_decoration("ground_stone")
+            decorations.get_decoration("ground_stone"),
+            decorations.get_decoration("ground_sand"),
+            decorations.get_decoration("ground_purple"),
+            decorations.get_decoration("ground_grass"),
         ]
 
         self.text_queue = collections.deque()
@@ -183,8 +186,7 @@ class HUD:
 
             if input_state.mouse_was_pressed() and self.selected_item_placeable:
                 world.add_entity(copy.deepcopy(to_place))
-                self.selected_item_placeable = None
-                self.selected_item_to_place = None
+                # keep holding original object
                 return True
 
         return False
@@ -194,9 +196,16 @@ class HUD:
             if input_state.mouse_in_window() and input_state.mouse_was_pressed():
                 screen_pos = input_state.mouse_pos()
                 world_pos = world.to_world_pos(*screen_pos)
-                ents = world.get_entities_at_point(world_pos, not_category="ground")
+
+                rm_ground = input_state.is_held(pygame.K_LSHIFT) or input_state.is_held(pygame.K_RSHIFT)
+                if rm_ground:
+                    ents = world.get_entities_at_point(world_pos, category="ground")
+                else:
+                    ents = world.get_entities_at_point(world_pos, not_category="ground")
+
                 if len(ents) > 0:
                     return world.remove_entity(ents[0])
+
         return False
 
     def is_absorbing_inputs(self):
