@@ -8,12 +8,16 @@ import inputs
 import cool_math
 import levels
 import settings
+import sounds
 
+pygame.mixer.pre_init(22050, 16, 1, 4096)
 pygame.init()
 
 pygame.display.set_caption("Hazardous Materials", "HAZMAT")
 pygame.display.set_icon(images.get_window_icon())
 screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.RESIZABLE)
+
+sounds.init_sounds()
 
 still_running = True
 clock = pygame.time.Clock()

@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import sounds
 
 import cool_math
 import images
@@ -357,8 +358,11 @@ class Player(Actor):
                 self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, 4)
                 bullet_hitbox = self.active_bullet.inflate(0, 8)
                 direction = (1, 0) if self.facing_right else (-1, 0)
+
                 for e in world.get_entities_in_rect(bullet_hitbox, category="enemy"):
                     e.deal_damage(10, direction)
+
+                sounds.play(sounds.ENERGY_PULSE)
 
         if self.shoot_cooldown < self.shoot_on_frame - 4 or self.shoot_cooldown > self.shoot_on_frame:
             self.active_bullet = None

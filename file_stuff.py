@@ -1,3 +1,4 @@
+import pathlib
 
 
 def write_lines_to_file(lines, filepath):
@@ -16,3 +17,13 @@ def read_lines_from_file(filepath):
             lines.append(line)
             line = file.readline()
         return lines
+
+
+def exists(filepath):
+    my_file = pathlib.Path(filepath)
+    return my_file.is_file()
+
+
+def dir_exists(path_to_dir):
+    my_dir = pathlib.Path(path_to_dir)
+    return my_dir.is_dir()
