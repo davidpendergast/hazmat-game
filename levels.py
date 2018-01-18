@@ -77,8 +77,8 @@ class _SampleLevel(Level):
         puzzle2 = self.fetch_ref("puzzle_2", entities.PuzzleTerminal(0, 0), refs)
 
         def rm_walls():
-            world.remove_entity(rm_wall_1)
-            world.remove_entity(rm_wall_2)
+            rm_wall_1.is_alive = False
+            rm_wall_2.is_alive = False
 
         puzzle2.set_on_success(rm_walls)
         ref_items.extend([rm_wall_1, rm_wall_2, puzzle2])

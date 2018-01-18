@@ -464,6 +464,9 @@ class Wall(Entity):
             self.update_outlines(world)
             self._outline_dirty = False
 
+            for chunk in world.get_chunks_in_rect(self.get_rect(), and_above_and_left=False):
+                chunk.mark_dirty()  # ehh this is kinda gross
+
     def update_outlines(self, world):
         if self._cached_outline is None:
             self._cached_outline = pygame.Surface(self.size(), flags=pygame.SRCALPHA)
