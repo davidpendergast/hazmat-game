@@ -650,11 +650,20 @@ class PuzzleTerminal(Terminal):
         Terminal.__init__(self, x, y)
         self.categories.update(["puzzle_terminal"])
         self.active_callback = None
+        self.on_success = None  # no-arg lambda
 
     def update(self, input_state, world):
         if self.active_callback is not None:
             print("recieved puzzle callback: ", self.active_callback)
+
+            if self.active_callback[0] == puzzles.SUCCESS:
+                if self.on_success is not None:
+                    self.on_success()
+
             self.active_callback = None
+
+    def set_on_success(self, on_success):
+        self.on_success = on_success
 
     def sprite(self):
         return images.PUZZLE_TERMINAL

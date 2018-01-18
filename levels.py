@@ -72,6 +72,17 @@ class _SampleLevel(Level):
         msg = ["you'll die in this place.", "is that what you want?"]
         ref_items.append(self.fetch_ref("jump_tip_terminal", entities.Terminal(0, 0, msg), refs))
 
+        rm_wall_1 = self.fetch_ref("rm_wall_1", entities.Wall(0, 0), refs)
+        rm_wall_2 = self.fetch_ref("rm_wall_2", entities.Wall(0, 0), refs)
+        puzzle2 = self.fetch_ref("puzzle_2", entities.PuzzleTerminal(0, 0), refs)
+
+        def rm_walls():
+            world.remove_entity(rm_wall_1)
+            world.remove_entity(rm_wall_2)
+
+        puzzle2.set_on_success(rm_walls)
+        ref_items.extend([rm_wall_1, rm_wall_2, puzzle2])
+
         for item in ref_items:
             world.add_entity(item)
 

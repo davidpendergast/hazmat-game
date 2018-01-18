@@ -1,8 +1,9 @@
 ##  REFERENCES  ##
 puzzle_terminal_1, 1056, 448
-ref_761, 2336, -192
 puzzle_2, 2976, -288
-test_obj, 768, 224
+ref_761, 2336, -192
+rm_wall_2, 3040, -256
+rm_wall_1, 3040, -288
 jump_tip_terminal, 1920, 224
 terminal_1, 672, 384
 
@@ -471,10 +472,6 @@ white_wall, 3040, -352, 32, 32
 white_wall, 3040, -384, 32, 32
 white_wall, 3040, -416, 32, 32
 white_wall, 3040, -448, 32, 32
-chain_small, 3056, -240, 16, 16
-chain_small, 3056, -256, 16, 16
-chain_small, 3056, -272, 16, 16
-chain_small, 3056, -288, 16, 16
 white_wall, 3072, -224, 32, 32
 white_wall, 3072, -448, 32, 32
 white_wall, 3104, -224, 32, 32
