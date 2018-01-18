@@ -1,6 +1,7 @@
 ##  REFERENCES  ##
 puzzle_terminal_1, 1056, 448
 ref_761, 2336, -192
+puzzle_2, 2976, -288
 test_obj, 768, 224
 jump_tip_terminal, 1920, 224
 terminal_1, 672, 384
@@ -56,6 +57,10 @@ lightbulb, 2640, -192
 lightbulb, 2672, -336
 lightbulb, 2768, -288
 lightbulb, 2848, -288
+lightbulb, 2960, -320
+lightbulb, 3088, -320
+lightbulb, 3088, -400
+lightbulb, 3168, -400
 lightbulb, 320, 272
 lightbulb, 400, 400
 lightbulb, 416, 208
@@ -460,12 +465,36 @@ white_wall, 2976, -224, 32, 32
 white_wall, 2976, -352, 32, 32
 white_wall, 3008, -224, 32, 32
 white_wall, 3008, -352, 32, 32
+white_wall, 3040, -224, 32, 32
+white_wall, 3040, -320, 32, 32
+white_wall, 3040, -352, 32, 32
+white_wall, 3040, -384, 32, 32
+white_wall, 3040, -416, 32, 32
+white_wall, 3040, -448, 32, 32
+chain_small, 3056, -240, 16, 16
+chain_small, 3056, -256, 16, 16
+chain_small, 3056, -272, 16, 16
+chain_small, 3056, -288, 16, 16
+white_wall, 3072, -224, 32, 32
+white_wall, 3072, -448, 32, 32
+white_wall, 3104, -224, 32, 32
+white_wall, 3104, -448, 32, 32
+white_wall, 3136, -224, 32, 32
+white_wall, 3136, -448, 32, 32
+white_wall, 3168, -224, 32, 32
+white_wall, 3168, -448, 32, 32
 white_wall, 32, 0, 32, 32
 white_wall, 32, 448, 32, 32
 white_wall, 320, 0, 32, 32
 white_wall, 320, 384, 32, 32
 white_wall, 320, 416, 32, 32
 white_wall, 320, 448, 32, 32
+white_wall, 3200, -224, 32, 32
+white_wall, 3200, -256, 32, 32
+white_wall, 3200, -288, 32, 32
+white_wall, 3200, -320, 32, 32
+white_wall, 3200, -352, 32, 32
+white_wall, 3200, -448, 32, 32
 white_wall, 352, 0, 32, 32
 white_wall, 352, 384, 32, 32
 white_wall, 352, 416, 32, 32
@@ -1081,6 +1110,47 @@ ground_stone, 288, 416
 ground_stone, 288, 448
 ground_stone, 288, 64
 ground_stone, 288, 96
+ground_sand, 2880, -256
+ground_sand, 2880, -288
+ground_sand, 2880, -320
+ground_sand, 2912, -256
+ground_sand, 2912, -288
+ground_sand, 2912, -320
+ground_sand, 2944, -256
+ground_sand, 2944, -288
+ground_sand, 2944, -320
+ground_sand, 2976, -256
+ground_sand, 2976, -288
+ground_sand, 2976, -320
+ground_sand, 3008, -256
+ground_sand, 3008, -288
+ground_sand, 3008, -320
+ground_sand, 3040, -256
+ground_sand, 3040, -288
+ground_wall, 3072, -256
+ground_wall, 3072, -288
+ground_wall, 3072, -320
+ground_wall, 3072, -352
+ground_wall, 3072, -384
+ground_wall, 3072, -416
+ground_wall, 3104, -256
+ground_wall, 3104, -288
+ground_wall, 3104, -320
+ground_wall, 3104, -352
+ground_wall, 3104, -384
+ground_wall, 3104, -416
+ground_wall, 3136, -256
+ground_wall, 3136, -288
+ground_wall, 3136, -320
+ground_wall, 3136, -352
+ground_wall, 3136, -384
+ground_wall, 3136, -416
+ground_wall, 3168, -256
+ground_wall, 3168, -288
+ground_wall, 3168, -320
+ground_wall, 3168, -352
+ground_wall, 3168, -384
+ground_wall, 3168, -416
 ground_stone, 32, 0
 ground_stone, 32, 128
 ground_stone, 32, 160

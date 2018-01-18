@@ -1,7 +1,7 @@
 import pygame
 import text_stuff
 import cool_math
-import logging
+import traceback
 
 DRAW_SIZE = 320, 240
 
@@ -29,9 +29,9 @@ class Puzzle:
             else:
                 try:
                     self.update_puzzle(input_state)
-                except Exception as e:
+                except:
                     print("Exception thrown while updating puzzle: ", self.puzzle_id)
-                    logging.exception(e)
+                    traceback.print_exc()
                     self.set_status(ERROR)
 
     def draw(self, screen, rect):
@@ -46,9 +46,9 @@ class Puzzle:
         elif self.status == IN_PROGRESS:
             try:
                 self.draw_puzzle(screen, rect)
-            except Exception as e:
-                print("Exception thrown while drawing puzzle: ", self.puzzle_id)
-                logging.exception(e)
+            except:
+                print("exception thrown while drawing puzzle: ", self.puzzle_id)
+                traceback.print_exc()
                 self.set_status(ERROR)
 
     def _draw_centered_text(self, screen, rect, text, text_size, text_color):
