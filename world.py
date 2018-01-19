@@ -71,7 +71,7 @@ class Chunk:
             screen_pos = cool_math.add(self.xy(), offset)
             screen.blit(cache_img, screen_pos)
 
-        for e in self.entities.get_all(not_category=["ground", "wall", "actor"]):
+        for e in self.entities.get_all(not_category=["ground", "wall", "actor", "overlay"]):
             e.draw(screen, offset)
 
     def draw_actors(self, screen, offset):
@@ -79,6 +79,11 @@ class Chunk:
         # so they need to be drawn after everything else (to prevent issues at
         # chunk borders).
         for e in self.entities.get_all(category="actor"):
+            e.draw(screen, offset)
+
+    def draw_overlays(self, screen, offset):
+        # These bad boys go on top of everything
+        for e in self.entities.get_all(category="overlay"):
             e.draw(screen, offset)
 
     def draw_darkness(self, world, screen, offset):
@@ -257,6 +262,9 @@ class World:
 
         for chunk in chunks_to_draw:
             chunk.draw_actors(screen, offset)
+
+        for chunk in chunks_to_draw:
+            chunk.draw_overlays(screen, offset)
 
         onscreen_keys = self.get_chunk_keys_in_rect(
             screen_rect,

@@ -1,10 +1,7 @@
 ##  REFERENCES  ##
 puzzle_terminal_1, 1056, 448
 jump_tip_terminal, 1920, 224
-ref_761, 2336, -192
-ref_761, 2336, -192
-ref_761, 2336, -192
-ref_761, 2336, -192
+enemy_2, 2336, -192
 puzzle_2, 2976, -288
 rm_wall_2, 3040, -256
 rm_wall_1, 3040, -288

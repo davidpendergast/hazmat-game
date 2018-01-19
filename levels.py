@@ -84,6 +84,7 @@ class _SampleLevel(Level):
         ref_items.extend([rm_wall_1, rm_wall_2, puzzle2])
 
         ref_items.append(self.fetch_ref("enemy_1", entities.Enemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("enemy_2", entities.Enemy(0, 0), refs))
 
         for item in ref_items:
             world.add_entity(item)

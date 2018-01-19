@@ -8,6 +8,7 @@ Player Mechanics
     + crouch shooting
     + walking up/down stairs
     + stick to walls a bit when sliding
+    + delay before sliding animation to prevent janky one framers on corner clips
 
     
 Game Mechanics
@@ -16,12 +17,13 @@ Game Mechanics
         + death animation
             generated crumple effect? I ain't drawing all that
     enemies
+        + attacking
 
     
 Level System
     level editting
-        + remove reach/overlap limits
         + ability to change items in keyboard slots
+        + drag add and drag removal
         
     + save data
         one global dict that stores every single piece of save data
@@ -29,51 +31,62 @@ Level System
         json-friendly values only
         loaded at launch, autosaved periodically/saved at save points
         loaded levels reference this to maintain state between loads/unloads
-        
-    + reference entities need to exist in level independently of their 
-        spawned item(s)
+
 
 Art
     background
-        ? background move slower than foreground to add depth
         + bigger background tiles to break up grid
+
+    + figure out what to draw outside of levels
+        just black? faded version of neighbors?
     
     running animations
         + pls make better it's painful to watch
-    + bullet hit animation 
     + more wall sprites
+    + bullet splash in center of enemy
+
         
 Sound
     find and hook up lots of effects
         + walking
-            + crouch walking
+            + slower for crouch walking
         + jumping
         + landing
         + sliding
         + text show/dismiss
         + puzzle fail/success/quit
 
+
 Camera
     needs behavior that fits game a little better. Fixed camera is ok but not the best
+
         
 Light
     + flickering lights
         this can be done pretty simply by just overriding the get_light_profile
     + turning lights on and off
     ? ring of light around player
+    ? light when bullet hits walls
     ? configurable ambient light zones in levels
+    + ambient light zones in levels
 
     
 Optimizations
     cache more stuff
         + rendered text
-        + chunk backgrounds
     + all cached stuff needs to be in one place
         + and it needs to be cleared every so often to prevent memory leaks
 
+
+Maintenence
+    + seperate classes for entities
+
     
 Bugs
-    sprites aren't always being drawn pixel perfect, not sure why
-    can't jump while crouch-walking
-    light entering nonexistant chunks is not rendered
+    + sprites aren't always being drawn pixel perfect, not sure why
+    + can't jump while crouch-walking
+    + light entering nonexistant chunks is not rendered
+    + can't turn around if standing in a 0.5 x 0.5 hole
+
+
 

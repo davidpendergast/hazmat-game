@@ -201,6 +201,8 @@ class Actor(Entity):
 
     def deal_damage(self, damage, direction=None):
         self.health -= damage
+        if direction is not None and abs(direction[0]) > 0.25:
+            self.set_vel_x(3 * direction[0])
         print(self, " was damaged by ", damage)
 
 
@@ -454,14 +456,19 @@ class Enemy(Actor):
                     self.current_dir = (0, 0)
                 else:
                     self.current_dir = cool_math.rand_direction()
-        self.set_vel_x(self.current_dir[0] * self.speed)
+        new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
+        self.set_vel_x(new_vel)
         self.apply_gravity()
         self.apply_physics()
 
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
         v = cool_math.normalize(v)
-        player.deal_damage(5, v)
+        player.deal_damage(5, direction=v)
+
+    def deal_damage(self, damage, direction=None):
+        Actor.deal_damage(self, damage, direction=direction)
+        self.is_chasing = True
 
 
 class Wall(Entity):
