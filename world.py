@@ -101,7 +101,8 @@ class Chunk:
 
     def draw_debug_stuff(self, screen, offset):
         if global_state.show_chunk_redraws:
-            if images.time_since_cached(self._cache_key()) < 15:
+            key = self._cache_key()
+            if images.get_cached_image(key) is not None and images.time_since_cached(key) < 15:
                 screen_pos = cool_math.add(offset, self.xy())
                 rect = [screen_pos[0], screen_pos[1], self.size()[0], self.size()[1]]
                 pygame.draw.rect(screen, (255, 90, 90), rect, 10)

@@ -351,21 +351,40 @@ class Player(Actor):
         elif self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
             if self.shoot_cooldown == self.shoot_on_frame:
-                rect = self.get_rect()
-                bullet_y = rect.y + rect.height - 26 * 2
-                bullet_w = 300
-                bullet_x = rect.x + rect.width if self.facing_right else rect.x - bullet_w
-                self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, 4)
-                bullet_hitbox = self.active_bullet.inflate(0, 8)
-                direction = (1, 0) if self.facing_right else (-1, 0)
-
-                for e in world.get_entities_in_rect(bullet_hitbox, category="enemy"):
-                    e.deal_damage(10, direction)
-
+                hit_entity = self._create_bullet(world)
+                if hit_entity is not None and hit_entity.is_enemy():
+                    direction = (1, 0) if self.facing_right else (-1, 0)
+                    hit_entity.deal_damage(10, direction)
                 sounds.play(sounds.ENERGY_PULSE)
 
         if self.shoot_cooldown < self.shoot_on_frame - 4 or self.shoot_cooldown > self.shoot_on_frame:
             self.active_bullet = None
+
+    def _create_bullet(self, world):
+        rect = self.get_rect()
+        bullet_y = rect.y + rect.height - 26 * 2
+        bullet_w = int(global_state.WIDTH/2 + 64)
+        bullet_x = rect.x + rect.width if self.facing_right else rect.x - bullet_w
+        self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, 4)
+
+        colliders = world.get_entities_in_rect(self.active_bullet.inflate(0, 8), category="enemy")
+        colliders.extend(world.get_entities_in_rect(self.active_bullet, category="wall"))
+
+        hit_entity = None
+        if len(colliders) > 0:
+            if self.facing_right:
+                colliders.sort(key=lambda x: x.get_x())
+                hit_entity = colliders[0]
+                bullet_w = hit_entity.get_x() - bullet_x
+            else:
+                colliders.sort(key=lambda x: x.get_x() + x.width())
+                hit_entity = colliders[-1]
+                bullet_w = self.get_x() - (hit_entity.get_x() + hit_entity.width())
+                bullet_x = hit_entity.get_x() + hit_entity.width()
+            self.active_bullet.x = bullet_x
+            self.active_bullet.width = bullet_w
+
+        return hit_entity
 
 
 class Enemy(Actor):
