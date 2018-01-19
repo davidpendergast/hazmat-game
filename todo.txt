@@ -13,7 +13,6 @@ Player Mechanics
     
 Game Mechanics
     damage
-        + knockback and stun when damaged
         + death animation
             generated crumple effect? I ain't drawing all that
     enemies
@@ -31,6 +30,9 @@ Level System
         json-friendly values only
         loaded at launch, autosaved periodically/saved at save points
         loaded levels reference this to maintain state between loads/unloads
+
+Puzzles
+    + instruction panel/title before gameplay starts
 
 
 Art
@@ -87,6 +89,7 @@ Bugs
     + can't jump while crouch-walking
     + light entering nonexistant chunks is not rendered
     + can't turn around if standing in a 0.5 x 0.5 hole
+    + knockback shouldn't play walking sprite
 
 
 

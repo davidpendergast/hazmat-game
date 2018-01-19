@@ -407,6 +407,8 @@ class Enemy(Actor):
         self.radius = 140  # starts chasing player within this distance
         self.forget_radius = 300  # stops chasing at this distance
         self.is_chasing = False
+        self.start_chasing_time = 0
+        self.forget_time = 240  # fps dependent
 
     sprites = [images.BLUE_GUY, images.PURPLE_GUY, images.BROWN_GUY]
 
@@ -441,9 +443,11 @@ class Enemy(Actor):
         if p is not None:
             dist = cool_math.dist(self.center(), p.center())
             if dist <= self.radius:
-                self.is_chasing = True
+                self.start_chasing()  # it's ok to call this every frame
             elif dist > self.forget_radius:
-                self.is_chasing = False
+                follow_time = global_state.tick_counter - self.start_chasing_time
+                if follow_time >= self.forget_time:
+                    self.is_chasing = False
 
         if self.is_chasing and p is not None:
             direction = cool_math.sub(p.center(), self.center())
@@ -468,6 +472,10 @@ class Enemy(Actor):
 
     def deal_damage(self, damage, direction=None):
         Actor.deal_damage(self, damage, direction=direction)
+        self.start_chasing()
+
+    def start_chasing(self):
+        self.start_chasing_time = global_state.tick_counter
         self.is_chasing = True
 
 
