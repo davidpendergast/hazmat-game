@@ -1,11 +1,15 @@
 ##  REFERENCES  ##
 puzzle_terminal_1, 1056, 448
-puzzle_2, 2976, -288
-ref_761, 2336, -192
 jump_tip_terminal, 1920, 224
-terminal_1, 672, 384
+ref_761, 2336, -192
+ref_761, 2336, -192
+ref_761, 2336, -192
+ref_761, 2336, -192
+puzzle_2, 2976, -288
 rm_wall_2, 3040, -256
 rm_wall_1, 3040, -288
+enemy_1, 480, 192
+terminal_1, 672, 384
 
 ##  DECORATIONS  ##
 wire_vert, 1024, 32
@@ -40,7 +44,6 @@ lightbulb, 1024, 96
 lightbulb, 1040, 416
 lightbulb, 1168, 256
 lightbulb, 1216, 96
-lightbulb, 1232, 448
 lightbulb, 1440, 128
 lightbulb, 1600, 144
 lightbulb, 1728, 192
@@ -98,13 +101,14 @@ white_wall, 1024, 0, 32, 32
 white_wall, 1024, 192, 32, 32
 white_wall, 1024, 224, 32, 32
 white_wall, 1024, 256, 32, 32
-white_wall, 1024, 288, 32, 32
+white_wall_small, 1024, 288, 16, 16
+white_wall_small, 1024, 304, 16, 16
 white_wall, 1024, 320, 32, 32
 white_wall, 1024, 352, 32, 32
 white_wall, 1024, 512, 32, 32
+white_wall_small, 1040, 288, 16, 16
+white_wall_small, 1040, 304, 16, 16
 white_wall, 1056, 0, 32, 32
-white_wall_small, 1056, 256, 16, 16
-white_wall_small, 1056, 272, 16, 16
 white_wall, 1056, 352, 32, 32
 white_wall, 1056, 512, 32, 32
 white_wall, 1088, 0, 32, 32
@@ -122,12 +126,14 @@ white_wall, 1152, 192, 32, 32
 white_wall_small, 1152, 352, 16, 16
 white_wall, 1152, 512, 32, 32
 white_wall, 1184, 0, 32, 32
-white_wall, 1184, 192, 32, 32
+white_wall_small, 1184, 192, 16, 16
+white_wall_small, 1184, 208, 16, 16
 white_wall, 1184, 512, 32, 32
+white_wall_small, 1200, 192, 16, 16
+white_wall_small, 1200, 208, 16, 16
 white_wall, 1216, 0, 32, 32
 white_wall, 1216, 192, 32, 32
 white_wall, 1216, 512, 32, 32
-chain_small, 1232, 432, 16, 16
 white_wall, 1248, 0, 32, 32
 white_wall, 1248, 192, 32, 32
 white_wall, 1248, 224, 32, 32
@@ -137,7 +143,7 @@ white_wall, 1248, 320, 32, 32
 white_wall, 1248, 352, 32, 32
 white_wall, 1248, 384, 32, 32
 white_wall_small, 1248, 416, 16, 16
-chain_small, 1248, 432, 16, 16
+white_wall_small, 1248, 432, 16, 16
 white_wall, 1248, 448, 32, 32
 white_wall, 1248, 480, 32, 32
 white_wall, 1248, 512, 32, 32
@@ -717,6 +723,7 @@ ground_stone, 1152, 64
 ground_stone, 1152, 96
 ground_stone, 1184, 128
 ground_stone, 1184, 160
+ground_wall, 1184, 192
 ground_wall, 1184, 224
 ground_wall, 1184, 256
 ground_wall, 1184, 288

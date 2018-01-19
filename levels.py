@@ -83,6 +83,8 @@ class _SampleLevel(Level):
         puzzle2.set_on_success(rm_walls)
         ref_items.extend([rm_wall_1, rm_wall_2, puzzle2])
 
+        ref_items.append(self.fetch_ref("enemy_1", entities.Enemy(0, 0), refs))
+
         for item in ref_items:
             world.add_entity(item)
 
@@ -110,6 +112,7 @@ def load_from_level_file(world, filename):
                 if last_header == REF_HEADER:
                     xy = (int(items[1]), int(items[2]))
                     refs[items[0]] = xy
+                    world.add_entity(entities.ReferenceEntity(xy[0], xy[1], ref_id=items[0]))
 
                 elif last_header == WALLS_HEADER:
                     anim_id = items[0]
@@ -141,7 +144,11 @@ def save_to_level_file(world, filename):
 
     for e in world.get_entities_with(not_category="actor"):
         if e.get_ref_id() is not None:
-            references.append(e)
+            if isinstance(e, entities.ReferenceEntity):
+                references.append(e)
+            else:
+                # do nothing, this entity gets spawned by a reference entity
+                pass
         elif e.is_("wall"):
             walls.append(e)
         elif e.is_("ground"):

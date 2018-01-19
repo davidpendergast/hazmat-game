@@ -744,7 +744,8 @@ class ReferenceEntity(Entity):
         return Entity.get_ref_id(self)
 
     def draw(self, screen, offset=(0, 0), modifier=None):
-        pygame.draw.rect(screen, (100, 100, 255), self.get_rect().move(*offset), 2)
+        if global_state.show_items_to_place:
+            pygame.draw.rect(screen, (100, 100, 255), self.get_rect().move(*offset), 2)
 
 
 def _safe_remove(item, collection, print_err=False):
