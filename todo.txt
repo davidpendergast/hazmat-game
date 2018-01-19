@@ -9,6 +9,8 @@ Player Mechanics
     + walking up/down stairs
     + stick to walls a bit when sliding
     + delay before sliding animation to prevent janky one framers on corner clips
+    + health system
+        
 
     
 Game Mechanics
@@ -32,7 +34,8 @@ Level System
         loaded levels reference this to maintain state between loads/unloads
 
 Puzzles
-    + instruction panel/title before gameplay starts
+    + indication that puzzle has already been completed
+    + damage for failing puzzle
 
 
 Art
