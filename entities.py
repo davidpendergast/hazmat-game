@@ -365,7 +365,8 @@ class Player(Actor):
         bullet_y = rect.y + rect.height - 26 * 2
         bullet_w = int(global_state.WIDTH/2 + 64)
         bullet_x = rect.x + rect.width if self.facing_right else rect.x - bullet_w
-        self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, 4)
+        bullet_h = 4
+        self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, bullet_h)
 
         colliders = world.get_entities_in_rect(self.active_bullet.inflate(0, 8), category="enemy")
         colliders.extend(world.get_entities_in_rect(self.active_bullet, category="wall"))
@@ -376,11 +377,18 @@ class Player(Actor):
                 colliders.sort(key=lambda x: x.get_x())
                 hit_entity = colliders[0]
                 bullet_w = hit_entity.get_x() - bullet_x
+                splash = Overlay(images.BULLET_SPLASH, 0, 0).with_lifespan(cycles=1)
+                splash.set_x(bullet_x + bullet_w - splash.width())
             else:
                 colliders.sort(key=lambda x: x.get_x() + x.width())
                 hit_entity = colliders[-1]
                 bullet_w = self.get_x() - (hit_entity.get_x() + hit_entity.width())
                 bullet_x = hit_entity.get_x() + hit_entity.width()
+                splash = Overlay(images.BULLET_SPLASH, 0, 0, modifier="flipped").with_lifespan(cycles=1)
+                splash.set_x(bullet_x)
+
+            splash.set_center_y(int(bullet_y + bullet_h / 2))
+            world.add_entity(splash)
             self.active_bullet.x = bullet_x
             self.active_bullet.width = bullet_w
 
@@ -555,8 +563,6 @@ class Spawner(Entity):
 
         if len(world.get_entities_in_rect(spawned.get_rect(), not_category="ground")) == 0:
             world.add_entity(spawned)
-            sparkles = Overlay(images.SPAWN_SPARKLES, 40, rand_x, rand_y, target=spawned)
-            world.add_entity(sparkles)
 
         self.current_cooldown = self.spawn_cooldown
 
@@ -699,27 +705,58 @@ class PuzzleTerminal(Terminal):
 
 
 class Overlay(Entity):
-    def __init__(self, animation, lifespan, x, y, target=None):
-        Entity.__init__(self, x, y, 32, 32)
-        self.target = target
+    def __init__(self, animation, x, y, modifier="normal"):
+        Entity.__init__(self, x, y, animation.width(), animation.height())
+        self._modifier = modifier
+        self.categories.update(["overlay"])
         self.animation = animation
-        self.lifespan = lifespan
+        self._tick_limit = -1
+        self._create_time = global_state.tick_counter
+        self._target = None
+
+    def sprite_modifier(self):
+        return self._modifier
+
+    def with_lifespan(self, cycles=-1, ticks=-1):
+        """
+        Sets lifespan of overlay. Exactly one of cycles or ticks should
+        be nonnegative, or else behavior is unspecified. Restarts animation.
+
+        """
+        self._create_time = global_state.tick_counter
+        if cycles >= 0:
+            tpf = self.animation.ticks_per_frame()
+            num_frames = self.animation.num_frames()
+            self._tick_limit = tpf * num_frames * cycles
+        else:
+            self._tick_limit = ticks
+        return self
+
+    def with_target(self, target):
+        self._target = target
+        return self
 
     def sprite(self):
-        return self.animation
-
-    def sprite_offset(self):
-        return (0, -32)
+        current_tick = global_state.tick_counter
+        spawn_tick = self._create_time
+        lifetime = current_tick - spawn_tick
+        tpf = self.animation.ticks_per_frame()
+        cur_frame = lifetime % (tpf * self.animation.num_frames())
+        cur_frame = int(cur_frame / tpf)
+        return self.animation.single_frame(cur_frame)
 
     def update(self, input_state, world):
-        if self.lifespan <= 0 or self.target is not None and not self.target.is_alive:
+        if self._target is not None and not self._target.is_alive:
             self.is_alive = False
-        else:
-            self.lifespan -= 1
-            if self.target is not None:
-                pos = self.target.center()
-                self.set_center_x(pos[0])
-                self.set_center_y(pos[1])
+        elif self._tick_limit >= 0:
+            current_tick = global_state.tick_counter
+            spawn_tick = self._create_time
+            lifetime = current_tick - spawn_tick
+            if lifetime >= self._tick_limit:
+                self.is_alive = False
+        elif self._target is not None:
+            pos = self._target.center()
+            self.set_center(pos[0], pos[1])
 
 
 class Ladder(Entity):
@@ -770,6 +807,7 @@ class EntityCollection:
         self.add_category("wall", lambda x: x.is_wall())
         self.add_category("decoration", lambda x: x.is_decoration())
         self.add_category("light_source", lambda x: x.is_light_source())
+        self.add_category("overlay", lambda x: x.is_("overlay"))
 
         for e in entities:
             self.add(e)
