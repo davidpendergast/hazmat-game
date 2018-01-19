@@ -49,7 +49,7 @@ def remove_cached_image(key):
 
 
 def put_cached_image(key, image):
-    print("caching image: ", key)
+    # print("caching image: ", key)
     data_blob = [image, global_state.tick_counter, global_state.tick_counter]
     BIG_OL_IMG_CACHE[key] = data_blob
 

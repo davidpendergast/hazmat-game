@@ -18,7 +18,7 @@ pygame.display.set_icon(images.get_window_icon())
 screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.RESIZABLE)
 
 sounds.init_sounds()
-#  sounds.play_song(sounds.SONG_CREEPY, loops=-1)
+sounds.play_song(sounds.SONG_CREEPY, loops=-1)
 
 still_running = True
 clock = pygame.time.Clock()

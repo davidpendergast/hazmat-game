@@ -401,7 +401,7 @@ class Enemy(Actor):
     def __init__(self, x, y):
         Actor.__init__(self, x, y, 16, 48)
         self.categories.update(["enemy"])
-        self.speed = 0.75 + random.random()
+        self.speed = 0.75 + random.random()/2
         self.current_dir = (0, 0)
         self._randint = random.randint(0, 999)
         self.radius = 140  # starts chasing player within this distance

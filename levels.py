@@ -86,6 +86,8 @@ class _SampleLevel(Level):
         ref_items.append(self.fetch_ref("enemy_1", entities.Enemy(0, 0), refs))
         ref_items.append(self.fetch_ref("enemy_2", entities.Enemy(0, 0), refs))
 
+        ref_items.append(self.fetch_ref("terminal_3", entities.Terminal(0, 0, "this is only the beginning."), refs))
+
         for item in ref_items:
             world.add_entity(item)
 

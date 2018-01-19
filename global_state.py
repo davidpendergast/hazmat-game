@@ -37,7 +37,7 @@ def update(input_state):
         global last_timing, last_tick_count, current_fps
         cur_time = time.time()
         if cur_time - last_timing >= 1:
-            current_fps = tick_counter - last_tick_count
+            current_fps = round((tick_counter-last_tick_count)/(cur_time - last_timing))
             last_timing = cur_time
             last_tick_count = tick_counter
             
