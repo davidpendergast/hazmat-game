@@ -61,8 +61,11 @@ lightbulb, 2672, -336
 lightbulb, 2768, -288
 lightbulb, 2848, -288
 lightbulb, 2960, -320
+lightbulb, 3104, -352
 lightbulb, 3184, -480
 lightbulb, 3232, -480
+lightbulb, 3376, -416
+lightbulb, 3488, -416
 lightbulb, 352, 352
 lightbulb, 48, 352
 lightbulb, 512, 352

@@ -42,6 +42,7 @@ class HUD:
 
         self.active_puzzle = None
         self.puzzle_state_callback = None
+        self.puzzle_surface = None
 
     def display_text(self, lines):
         """lines: string or list of strings to display"""
@@ -78,7 +79,11 @@ class HUD:
         if self.active_puzzle is not None:
             puzzle_rect = self._get_puzzle_rect()
             text_stuff.draw_pretty_bordered_rect(screen, puzzle_rect)
-            self.active_puzzle.draw(screen, puzzle_rect)
+            self.puzzle_surface.fill(puzzles.BLACK)
+            draw_w = self.puzzle_surface.get_width()
+            draw_h = self.puzzle_surface.get_height()
+            self.active_puzzle.draw(self.puzzle_surface, draw_w, draw_h)
+            screen.blit(self.puzzle_surface, (puzzle_rect[0], puzzle_rect[1]))
         else:
             to_place = self.selected_item_to_place
             placeable = self.selected_item_placeable
@@ -132,6 +137,9 @@ class HUD:
         else:
             self.active_puzzle = puzzle
             self.puzzle_state_callback = [puzzles.IN_PROGRESS]
+            if self.puzzle_surface is None or self.puzzle_surface.get_size() != puzzle.size():
+                print("regenning puzzle surface to size=",puzzle.size())
+                self.puzzle_surface = pygame.Surface(puzzle.size())
             return self.puzzle_state_callback
 
     def _get_item_to_place(self, index, alt):

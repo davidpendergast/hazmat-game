@@ -10,7 +10,7 @@ tick_counter = 0
 
 show_debug_rects = False
 show_chunk_redraws = False
-show_fps = True
+show_fps = False
 show_no_darkness = False
 show_items_to_place = False
 

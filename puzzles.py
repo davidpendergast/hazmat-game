@@ -60,31 +60,31 @@ class Puzzle:
                 traceback.print_exc()
                 self.set_status(ERROR)
 
-    def draw(self, screen, rect):
+    def draw(self, screen, w, h):
         if self.status == TITLE_START or self.status == TITLE_EXIT:
-            self.draw_title_screen(screen, rect)
+            self.draw_title_screen(screen, w, h)
         elif self.status == FAILURE:
-            self._draw_centered_text(screen, rect, "FAILURE", 48, RED)
+            self._draw_centered_text(screen, [0, 0, w, h], "FAILURE", 48, RED)
         elif self.status == SUCCESS:
-            self._draw_centered_text(screen, rect, "SUCCESS", 48, GREEN)
+            self._draw_centered_text(screen, [0, 0, w, h], "SUCCESS", 48, GREEN)
         elif self.status == ERROR:
-            self._draw_centered_text(screen, rect, "ERROR", 48, RED)
+            self._draw_centered_text(screen, [0, 0, w, h], "ERROR", 48, RED)
         elif self.status == QUIT:
             pass  # just a black screen for quitty-type exits
         elif self.status == IN_PROGRESS:
             try:
-                self.draw_puzzle(screen, rect)
+                self.draw_puzzle(screen, w, h)
             except:
                 print("exception thrown while drawing puzzle: ", self.puzzle_id)
                 traceback.print_exc()
                 self.set_status(ERROR)
 
-    def draw_title_screen(self, screen, rect):
-        title_height = int(rect[3] / 4)
-        title_rect = [rect[0], rect[1], rect[2], title_height]
-        instruction_height = int(rect[3] / 2 + rect[3] / 8)
-        instruction_rect = [rect[0], rect[1] + title_height, rect[2], instruction_height]
-        options_rect = [rect[0], int(rect[1] + 7*rect[3]/8), rect[2], int(rect[3]/8)]
+    def draw_title_screen(self, screen, screen_w, screen_h):
+        title_height = int(screen_h / 4)
+        title_rect = [0, 0, screen_w, title_height]
+        instruction_height = int(screen_h / 2 + screen_h / 8)
+        instruction_rect = [0, title_height, screen_w, instruction_height]
+        options_rect = [0, int(0 + 7*screen_h/8), screen_w, int(screen_h/8)]
 
         title_font = text_stuff.get_font("standard", title_height - 10)
         title_img = title_font.render(self.title, False, WHITE, (0, 0, 0))
@@ -131,9 +131,10 @@ class Puzzle:
         return self.is_closing() and self.close_delay <= 0
 
     def size(self):
+        """preferred size of puzzle. May not be respected during draw calls."""
         return DRAW_SIZE
 
-    def draw_puzzle(self, screen, rect):
+    def draw_puzzle(self, screen, w, h):
         pass
 
     def update_puzzle(self, input_state):
@@ -147,13 +148,13 @@ class DummyPuzzle(Puzzle):
                         "This isn't a real puzzle. It's only here for testing.")
         Puzzle.__init__(self, "dummy_puzzle", "Dummy Puzzle", instructions)
 
-    def draw_puzzle(self, screen, rect):
+    def draw_puzzle(self, screen, w, h):
         text = "press A to complete puzzle"
         font = text_stuff.get_font("standard", 32)
         color = (255, 255, 255)
         bg_color = (0, 0, 0)
         text_img = font.render(text, False, color, bg_color)
-        screen.blit(text_img, (rect[0], rect[1]), [0, 0, rect[2], rect[3]])
+        screen.blit(text_img, (0, 0))
 
     def update_puzzle(self, input_state):
         if input_state.was_pressed(pygame.K_a):
@@ -179,24 +180,24 @@ class SnakePuzzle(Puzzle):
         self.move_dir = (0, -1)
         self.grow = False
 
-    def _grid_rect(self, screen_rect, x, y):
-        board_w = int(self.grid_w * screen_rect[3] / self.grid_h)
-        board_x = screen_rect[0] + int(screen_rect[2]/2 - board_w/2)
+    def _grid_rect(self, screen_w, screen_h, x, y):
+        board_w = int(self.grid_w * screen_h / self.grid_h)
+        board_x = int(screen_w/2 - board_w/2)
         rx = board_x + int(board_w * x / self.grid_w)
-        ry = screen_rect[1] + int(screen_rect[3] * y / self.grid_h)
+        ry = int(screen_h * y / self.grid_h)
         rw = int(board_w / self.grid_w)
-        rh = int(screen_rect[3] / self.grid_h)
+        rh = int(screen_h / self.grid_h)
         return pygame.Rect(rx, ry, rw, rh)
 
-    def draw_puzzle(self, screen, rect):
+    def draw_puzzle(self, screen, w, h):
         for x in range(0, self.grid_w):
             for y in range(0, self.grid_h):
                 if x == 0 or x == self.grid_w - 1 or y == 0 or y == self.grid_h - 1:
-                    pygame.draw.rect(screen, WHITE, self._grid_rect(rect, x, y), 0)
+                    pygame.draw.rect(screen, WHITE, self._grid_rect(w, h, x, y), 0)
                 elif (x, y) in self.snake:
-                    pygame.draw.rect(screen, WHITE, self._grid_rect(rect, x, y), 0)
+                    pygame.draw.rect(screen, WHITE, self._grid_rect(w, h, x, y), 0)
                 elif (x, y) == self.apple:
-                    pygame.draw.rect(screen, BLUE, self._grid_rect(rect, x, y), 0)
+                    pygame.draw.rect(screen, BLUE, self._grid_rect(w, h, x, y), 0)
 
     def update_puzzle(self, input_state):
         if self.apple is None:
