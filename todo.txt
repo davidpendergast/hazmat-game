@@ -10,6 +10,7 @@ Player Mechanics
     + stick to walls a bit when sliding
     + delay before sliding animation to prevent janky one framers on corner clips
     + health system
+    + actionstates instead of booleans
         
 
     
@@ -36,6 +37,12 @@ Level System
 Puzzles
     + indication that puzzle has already been completed
     + damage for failing puzzle
+    + puzzle render self on it's own surface
+    + difficulty settings
+    + seeds for randomness
+
+    snake puzzle
+        + score display
 
 
 Art
@@ -84,7 +91,7 @@ Optimizations
 
 
 Maintenence
-    + seperate classes for entities
+    + seperate files for enemies, player, walls, misc stuff
 
     
 Bugs

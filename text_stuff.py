@@ -37,7 +37,7 @@ def wrap_text(text_string, rect_width, font):
             i = 1
         else:
             i += 1
-    if next_word < len(words)-1:
+    if next_word <= len(words)-1:
         lines.append(" ".join(words[next_word:]))             
     
     box_h = len(lines) * 32

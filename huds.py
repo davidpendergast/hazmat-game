@@ -25,7 +25,7 @@ class HUD:
             entities.Enemy(0, 0),
             decorations.get_decoration("lightbulb"),
             decorations.get_decoration("wire_vert"),
-            entities.PuzzleTerminal(0, 0)
+            entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle())
         ]
 
         self.alt_items = [  # accessed by hitting shift + numkuy

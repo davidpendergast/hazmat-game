@@ -1,7 +1,16 @@
 import pygame
+
 import text_stuff
 import cool_math
 import traceback
+
+import random
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (75, 255, 75)
+RED = (255, 75, 75)
+BLUE = (120, 120, 200)
 
 DRAW_SIZE = 600, 300
 
@@ -55,11 +64,11 @@ class Puzzle:
         if self.status == TITLE_START or self.status == TITLE_EXIT:
             self.draw_title_screen(screen, rect)
         elif self.status == FAILURE:
-            self._draw_centered_text(screen, rect, "FAILURE", 48, (255, 75, 75))
+            self._draw_centered_text(screen, rect, "FAILURE", 48, RED)
         elif self.status == SUCCESS:
-            self._draw_centered_text(screen, rect, "SUCCESS", 48, (75, 255, 75))
+            self._draw_centered_text(screen, rect, "SUCCESS", 48, GREEN)
         elif self.status == ERROR:
-            self._draw_centered_text(screen, rect, "ERROR", 48, (255, 75, 75))
+            self._draw_centered_text(screen, rect, "ERROR", 48, RED)
         elif self.status == QUIT:
             pass  # just a black screen for quitty-type exits
         elif self.status == IN_PROGRESS:
@@ -78,7 +87,7 @@ class Puzzle:
         options_rect = [rect[0], int(rect[1] + 7*rect[3]/8), rect[2], int(rect[3]/8)]
 
         title_font = text_stuff.get_font("standard", title_height - 10)
-        title_img = title_font.render(self.title, False, (255, 255, 255), (0, 0, 0))
+        title_img = title_font.render(self.title, False, WHITE, (0, 0, 0))
         screen.blit(title_img, title_rect)
 
         instruction_line_height = int(title_height/2)
@@ -86,12 +95,12 @@ class Puzzle:
         box, instruction_lines = text_stuff.wrap_text(self.instructions, instruction_rect[2], instruction_font)
         for i in range(0, len(instruction_lines)):
             line = instruction_lines[i]
-            line_img = instruction_font.render(line, False, (255, 255, 255), (0, 0, 0))
+            line_img = instruction_font.render(line, False, WHITE, (0, 0, 0))
             screen.blit(line_img, (instruction_rect[0], instruction_rect[1] + i*instruction_line_height))
 
         options_height = int(2*title_height/3)
-        start_color = (120, 120, 200) if self.get_status() == TITLE_START else (255, 255, 255)
-        exit_color = (120, 120, 200) if self.get_status() != TITLE_START else (255, 255, 255)
+        start_color = BLUE if self.get_status() == TITLE_START else WHITE
+        exit_color = (120, 120, 200) if self.get_status() != TITLE_START else WHITE
         r = options_rect
         options_left = [r[0], r[1], int(r[2]/2), r[3]]
         options_right = [int(r[0]+r[2]/2), r[1], int(r[2]/2), r[3]]
@@ -153,6 +162,95 @@ class DummyPuzzle(Puzzle):
             self.set_status(FAILURE)
         elif input_state.was_pressed(pygame.K_e):
             raise ValueError("eww you pressed E")
+
+
+class SnakePuzzle(Puzzle):
+    def __init__(self, difficulty):
+        self.num_to_collect = (difficulty + 1) * 5
+        self.grid_w = 30
+        self.grid_h = 20
+        self.ticks_per_move = 20
+        instructions = ("Collect " + str(self.num_to_collect) + " without hitting a wall or yourself. " +
+                        "Use movement keys to change direction.")
+        Puzzle.__init__(self, "snake_puzzle", "Snake", instructions)
+        self.snake = [(15, 15), (15, 16)]
+        self.apple = (15, 4)
+        self.last_moved_count = 0
+        self.move_dir = (0, -1)
+        self.grow = False
+
+    def _grid_rect(self, screen_rect, x, y):
+        board_w = int(self.grid_w * screen_rect[3] / self.grid_h)
+        board_x = screen_rect[0] + int(screen_rect[2]/2 - board_w/2)
+        rx = board_x + int(board_w * x / self.grid_w)
+        ry = screen_rect[1] + int(screen_rect[3] * y / self.grid_h)
+        rw = int(board_w / self.grid_w)
+        rh = int(screen_rect[3] / self.grid_h)
+        return pygame.Rect(rx, ry, rw, rh)
+
+    def draw_puzzle(self, screen, rect):
+        for x in range(0, self.grid_w):
+            for y in range(0, self.grid_h):
+                if x == 0 or x == self.grid_w - 1 or y == 0 or y == self.grid_h - 1:
+                    pygame.draw.rect(screen, WHITE, self._grid_rect(rect, x, y), 0)
+                elif (x, y) in self.snake:
+                    pygame.draw.rect(screen, WHITE, self._grid_rect(rect, x, y), 0)
+                elif (x, y) == self.apple:
+                    pygame.draw.rect(screen, BLUE, self._grid_rect(rect, x, y), 0)
+
+    def update_puzzle(self, input_state):
+        if self.apple is None:
+            pos = (1 + int(random.random() * (self.grid_w-2)), 1 + int(random.random() * (self.grid_h-2)))
+            if pos not in self.snake:
+                self.apple = pos
+
+        if self.snake[0] == self.apple:
+            self.num_to_collect -= 1
+            self.apple = None
+            self.grow = True
+            self.ticks_per_move = max(self.ticks_per_move-1, 5)
+
+        if self.num_to_collect <= 0:
+            self.set_status(SUCCESS)
+
+        input_x = 0
+        if input_state.was_pressed(pygame.K_a):
+            input_x -= 1
+        if input_state.was_pressed(pygame.K_d):
+            input_x += 1
+        input_y = 0
+        if input_x == 0 and input_state.was_pressed(pygame.K_w):
+            input_y -= 1
+        if input_x == 0 and input_state.was_pressed(pygame.K_s):
+            input_y += 1
+
+        if (input_x, input_y) != (0, 0):
+            self.move_dir = (input_x, input_y)
+
+        self.last_moved_count += 1
+        if self.last_moved_count >= self.ticks_per_move:
+            self.last_moved_count = 0
+            head = self.snake[0]
+            new_head = (head[0]+self.move_dir[0], head[1]+self.move_dir[1])
+            if new_head == self.snake[1]:
+                # disallow insta turnaround deaths
+                new_head = (head[0] - self.move_dir[0], head[1] - self.move_dir[1])
+            if new_head in self.snake or new_head[0] <= 0 or new_head[1] <= 0 or \
+                    new_head[0] >= self.grid_w - 1 or new_head[1] >= self.grid_h - 1:
+                self.set_status(FAILURE)
+            else:
+                self.snake.insert(0, new_head)
+                if not self.grow:
+                    self.snake.pop(-1)
+                else:
+                    self.grow = False
+
+
+
+
+
+
+
 
 
 

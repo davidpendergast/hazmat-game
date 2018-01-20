@@ -3,6 +3,7 @@ import entities
 import decorations
 import file_stuff
 import settings
+import puzzles
 
 ALL_LEVELS = {}  # name -> level
 
@@ -68,13 +69,15 @@ class _SampleLevel(Level):
     def build_refs(self, refs, world):
         ref_items = list()
         ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, "you don't belong here."), refs))
-        ref_items.append(self.fetch_ref("puzzle_terminal_1", entities.PuzzleTerminal(0, 0), refs))
+        puzzle_terminal_1 = entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle())
+        ref_items.append(self.fetch_ref("puzzle_terminal_1", puzzle_terminal_1, refs))
         msg = ["you'll die in this place.", "is that what you want?"]
         ref_items.append(self.fetch_ref("jump_tip_terminal", entities.Terminal(0, 0, msg), refs))
 
         rm_wall_1 = self.fetch_ref("rm_wall_1", entities.Wall(0, 0), refs)
         rm_wall_2 = self.fetch_ref("rm_wall_2", entities.Wall(0, 0), refs)
-        puzzle2 = self.fetch_ref("puzzle_2", entities.PuzzleTerminal(0, 0), refs)
+        puzzle2 = entities.PuzzleTerminal(0, 0, lambda: puzzles.SnakePuzzle(3))
+        puzzle2 = self.fetch_ref("puzzle_2", puzzle2, refs)
 
         def rm_walls():
             rm_wall_1.is_alive = False

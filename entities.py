@@ -689,11 +689,12 @@ class Terminal(Entity):
 
 
 class PuzzleTerminal(Terminal):
-    def __init__(self, x, y):
+    def __init__(self, x, y, puzzle_giver):
         Terminal.__init__(self, x, y)
         self.categories.update(["puzzle_terminal"])
         self.active_callback = None
         self.on_success = None  # no-arg lambda
+        self.puzzle_creator = puzzle_giver
 
     def update(self, input_state, world):
         if self.active_callback is not None:
@@ -716,7 +717,8 @@ class PuzzleTerminal(Terminal):
 
     def interact(self):
         print("activated puzzle terminal")
-        self.active_callback = global_state.hud.set_puzzle(puzzles.DummyPuzzle())
+        puzzle = self.puzzle_creator()
+        self.active_callback = global_state.hud.set_puzzle(puzzle)
 
 
 class Overlay(Entity):

@@ -10,7 +10,7 @@ import decorations
 import settings
 
 CHUNK_SIZE = 256
-AMBIENT_DARKNESS = 125
+AMBIENT_DARKNESS = 200
 
 
 class Chunk:
