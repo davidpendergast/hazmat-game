@@ -76,6 +76,7 @@ class HUD:
                 self._handle_removing_item(input_state, world)
 
     def draw(self, screen, offset=(0, 0)):
+        self._draw_hearts(screen, (0, 0), 5, 10)
         if self.active_puzzle is not None:
             puzzle_rect = self._get_puzzle_rect()
             text_stuff.draw_pretty_bordered_rect(screen, puzzle_rect)
@@ -103,6 +104,16 @@ class HUD:
             text = "FPS: " + str(global_state.current_fps)
             fps_text = basicfont.render(text, True, (255, 0, 0), (255, 255, 255))
             screen.blit(fps_text, (0, 0))
+
+    def _draw_hearts(self, screen, pos, full, total):
+        heart_w = images.HEART_FULL.width()
+        for i in range(0, total):
+            dest_x = pos[0] + i*(heart_w + 6)
+            dest = (dest_x, pos[1])
+            sprite = images.HEART_FULL
+            if (i+1) > full:
+                sprite = images.HEART_EMPTY if i >= full else images.HEART_HALF
+            images.draw_animated_sprite(screen, dest, sprite)
 
     def _draw_placeable_items(self, screen):
         w = global_state.WIDTH

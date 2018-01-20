@@ -189,6 +189,10 @@ TEXT_BORDER_BR      = create("tb_br", [R(32, 160, 16, 16)])
 TEXT_BORDER_B       = create("tb_b", [R(16, 160, 16, 16)])
 TEXT_BORDER_BL      = create("tb_bl", [R(0, 160, 16, 16)])
 
+HEART_FULL          = create("heart_full", [R(160, 112, 13, 13)])
+HEART_HALF          = create("heart_half", [R(176, 112, 13, 13)])
+HEART_EMPTY         = create("heart_empty", [R(192, 112, 13, 13)])
+
 
 def _flip_rect(rect):
     sheet_w = get_sheet(modifier="flipped").get_width()
@@ -196,19 +200,19 @@ def _flip_rect(rect):
     return [x, rect[1], rect[2], rect[3]]
 
 
-def draw_animated_sprite(screen, dest_rect, animation, modifier="normal"):
+def draw_animated_sprite(screen, dest, animation, modifier="normal"):
     """animation: either an Animation or a Rect"""
     if type(animation) is Animation:
         frame = (global_state.tick_counter // animation.TPF) % len(animation.rects)
-        draw_sprite(screen, dest_rect, animation.rects[frame], modifier)
+        draw_sprite(screen, dest, animation.rects[frame], modifier)
     else:
-        draw_sprite(screen, dest_rect, animation, modifier)
+        draw_sprite(screen, dest, animation, modifier)
 
 
-def draw_sprite(screen, dest_rect, source_rect, modifier="normal"):
+def draw_sprite(screen, dest, source_rect, modifier="normal"):
     if modifier == "flipped":
         source_rect = _flip_rect(source_rect)
-    screen.blit(get_sheet(modifier), dest_rect, source_rect)
+    screen.blit(get_sheet(modifier), dest, source_rect)
 
 
 def get_sheet(modifier="normal"):
