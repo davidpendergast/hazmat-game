@@ -12,12 +12,14 @@ import settings
 CHUNK_SIZE = 256
 AMBIENT_DARKNESS = 200
 
+DUMMY_CHUNK = None
+
 
 class Chunk:
     def __init__(self, x, y):
         cs = CHUNK_SIZE
         self.rect = pygame.Rect(x, y, cs, cs)
-        self.entities = entities.EntityCollection()
+        self.entities = entities.EntityCollection(name_for_debug="Chunk("+str(x)+", "+str(y)+") collection")
 
         dirs = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
         self._neighbors = [(x + d[0] * cs, y + d[1] * cs) for d in dirs]
@@ -190,7 +192,7 @@ class World:
             for entity in chunk.entities:
                 if not entity.is_alive:
                     dead.append(entity)
-                elif not chunk.get_rect().collidepoint(entity.center()):
+                elif not chunk.get_rect().collidepoint(entity.xy()):
                     moved_out.append(entity)
             for entity in dead:
                 print(entity, " has died.")
@@ -270,7 +272,10 @@ class World:
             screen_rect,
             and_above_and_left=False)
 
-        dummy_chunk = None
+        global DUMMY_CHUNK
+        if DUMMY_CHUNK is None:
+            DUMMY_CHUNK = Chunk(0, 0)
+
         for key in onscreen_keys:
             chunk = self.get_chunk_from_key(key)
             if chunk is not None:
@@ -278,12 +283,10 @@ class World:
                     chunk.draw_darkness(self, screen, offset)
                 chunk.draw_debug_stuff(screen, offset)
             else:
-                if dummy_chunk is None:
-                    dummy_chunk = Chunk(0, 0)
-                dummy_chunk.rect.x = key[0]  # uhh lel
-                dummy_chunk.rect.y = key[1]
                 if not global_state.show_no_darkness:
-                    dummy_chunk.draw_darkness(self, screen, offset)
+                    DUMMY_CHUNK.rect.x = key[0]
+                    DUMMY_CHUNK.rect.y = key[1]
+                    DUMMY_CHUNK.draw_darkness(self, screen, offset)
 
     def add_entity(self, entity):
         if entity.is_player():

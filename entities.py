@@ -946,18 +946,22 @@ def _safe_remove(item, collection, print_err=False):
 
 
 class EntityCollection:
-    def __init__(self, entities=()):
+    VOLATILE_CATEGORIES = set(["actor", "enemy", "player", "overlay"])
+
+    def __init__(self, entities=(), name_for_debug="unnamed collection"):
         self.all_stuff = []
         self.category_tests = {}    # category_name -> lambda(entity->bool)
         self.categories = {}        # category_name -> set of entities
+        self.name_for_debug = name_for_debug
 
         for e in entities:
             self.add(e)
 
     def _add_category(self, name, test):
         if name in self.categories:
-            print("Warning: Attempted to add category twice: ", name)
+            print("Warning: ", self.name_for_debug, " attempted to add category twice: ", name)
         else:
+            print(self.name_for_debug, " adding category: ", name)
             self.category_tests[name] = test
             self.categories[name] = set()
 
@@ -979,12 +983,13 @@ class EntityCollection:
         for catkey in e_cats:
             if self.has_category(catkey):
                 _safe_remove(entity, self.categories[catkey])
-                if len(self.categories[catkey]) == 0:
+                if catkey not in EntityCollection.VOLATILE_CATEGORIES and len(self.categories[catkey]) == 0:
                     self._remove_category(catkey)
             else:
                 raise ValueError("entity has a category that collection is missing? cat=" + str(catkey))
 
     def _remove_category(self, catkey):
+        print(self.name_for_debug, " removing category: ", catkey)
         if catkey in self.categories:
             del self.categories[catkey]
         if catkey in self.category_tests:
