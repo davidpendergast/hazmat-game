@@ -44,6 +44,11 @@ Puzzles
     snake puzzle
         + score display
 
+    + block push puzzle
+        move single pixel with WASD, push movable blocks to cover target positions
+        X (=difficulty) retries before failure, infinite time
+
+
 
 Art
     background
@@ -56,6 +61,7 @@ Art
         + pls make better it's painful to watch
     + more wall sprites
     + bullet splash in center of enemy
+    + better looking health bar UI
 
         
 Sound
@@ -67,6 +73,7 @@ Sound
         + sliding
         + text show/dismiss
         + puzzle fail/success/quit
+        + gain/lose health
 
 
 Camera
@@ -77,10 +84,10 @@ Light
     + flickering lights
         this can be done pretty simply by just overriding the get_light_profile
     + turning lights on and off
-    ? ring of light around player
     ? light when bullet hits walls
     ? configurable ambient light zones in levels
     + ambient light zones in levels
+    + make it so anything can emit light (esp. machines)
 
     
 Optimizations

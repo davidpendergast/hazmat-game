@@ -25,7 +25,8 @@ class HUD:
             entities.Enemy(0, 0),
             decorations.get_decoration("lightbulb"),
             decorations.get_decoration("wire_vert"),
-            entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle())
+            entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle()),
+            entities.HealthMachine(0, 0, 4)
         ]
 
         self.alt_items = [  # accessed by hitting shift + numkuy
@@ -43,6 +44,7 @@ class HUD:
         self.active_puzzle = None
         self.puzzle_state_callback = None
         self.puzzle_surface = None
+        self.active_player = None
 
     def display_text(self, lines):
         """lines: string or list of strings to display"""
@@ -53,6 +55,9 @@ class HUD:
         self.show_text_time = global_state.tick_counter
 
     def update(self, input_state, world):
+
+        self.active_player = world.player()
+
         if self.active_puzzle is not None:
             # if puzzle is active block everything else
             if self.active_puzzle.ready_to_close():
@@ -76,7 +81,10 @@ class HUD:
                 self._handle_removing_item(input_state, world)
 
     def draw(self, screen, offset=(0, 0)):
-        self._draw_hearts(screen, (0, 0), 5, 10)
+        if self.active_player is not None:
+            cur_health = max(0, self.active_player.health)
+            max_health = max(0, self.active_player.max_health)
+            self._draw_hearts(screen, (0, 0), cur_health/2, int(max_health/2))
         if self.active_puzzle is not None:
             puzzle_rect = self._get_puzzle_rect()
             text_stuff.draw_pretty_bordered_rect(screen, puzzle_rect)
@@ -108,7 +116,7 @@ class HUD:
     def _draw_hearts(self, screen, pos, full, total):
         heart_w = images.HEART_FULL.width()
         for i in range(0, total):
-            dest_x = pos[0] + i*(heart_w + 6)
+            dest_x = pos[0] + i*heart_w
             dest = (dest_x, pos[1])
             sprite = images.HEART_FULL
             if (i+1) > full:

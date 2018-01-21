@@ -133,7 +133,7 @@ class Entity:
     def can_interact(self):
         return False
 
-    def interact(self):
+    def interact(self, world):
         pass
 
     def is_decoration(self):
@@ -160,8 +160,9 @@ class Actor(Entity):
         self.facing_right = True
         self.max_speed = (5, 10)
         self.jump_height = 64 + 32
-        self.max_health = 50
-        self.health = 50
+
+        self.max_health = 8  # four hearts
+        self.health = 8
 
         self.vel = [0, 0]
 
@@ -200,6 +201,8 @@ class Actor(Entity):
             self.facing_right = False
 
     def deal_damage(self, damage, direction=None):
+        if damage > 0 and damage % 2 == 0 and self.health % 2 == 1:
+            damage -= 1  # if you've got a half heart, it'll eat a whole heart of damage
         self.health -= damage
         if direction is not None and abs(direction[0]) > 0.25:
             self.set_vel_x(3 * direction[0])
@@ -325,7 +328,7 @@ class Player(Actor):
             cntr = self.center()
             if len(interactables) > 0:
                 interactables.sort(key=lambda x: cool_math.dist(cntr, x.center()))
-                interactables[0].interact()
+                interactables[0].interact(world)
 
         if self.is_left_walled or self.is_right_walled:
             if self.vel[1] > self.max_slide_speed:
@@ -356,7 +359,7 @@ class Player(Actor):
                 hit_entity = self._create_bullet(world)
                 if hit_entity is not None and hit_entity.is_enemy():
                     direction = (1, 0) if self.facing_right else (-1, 0)
-                    hit_entity.deal_damage(10, direction)
+                    hit_entity.deal_damage(1, direction)
                 sounds.play(sounds.ENERGY_PULSE)
 
         if self.shoot_cooldown < self.shoot_on_frame - 4 or self.shoot_cooldown > self.shoot_on_frame:
@@ -468,7 +471,7 @@ class Enemy(Actor):
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
         v = cool_math.normalize(v)
-        player.deal_damage(5, direction=v)
+        player.deal_damage(1, direction=v)
 
     def deal_damage(self, damage, direction=None):
         Actor.deal_damage(self, damage, direction=direction)
@@ -640,7 +643,7 @@ class Door(Entity):
         # can't interact after it's already been interacted with
         return self.open_cooldown == 0
 
-    def interact(self):
+    def interact(self, world):
         if not self.locked:
             self.open_cooldown = self.open_max_cooldown
         else:
@@ -684,7 +687,7 @@ class Terminal(Entity):
         """
         self.message = message
 
-    def interact(self):
+    def interact(self, world):
         global_state.hud.display_text(self.message)
 
 
@@ -715,10 +718,45 @@ class PuzzleTerminal(Terminal):
     def screen_sprite(self):
         return images.PUZZ_TERM_SCREEN
 
-    def interact(self):
+    def interact(self, world):
         print("activated puzzle terminal")
         puzzle = self.puzzle_creator()
         self.active_callback = global_state.hud.set_puzzle(puzzle)
+
+
+class HealthMachine(Entity):
+    def __init__(self, x, y, num_hearts=3):
+        Entity.__init__(self, x, y, 32, 64)
+        self.categories.update(["interactable", "health_machine"])
+        self.hearts_left = max(0, min(4, num_hearts))  # gotta be between zero and four hearts
+
+    def sprite(self):
+        return images.HEALTH_MACHINE
+
+    def draw(self, screen, offset=(0, 0), modifier="normal"):
+        Entity.draw(self, screen, offset, modifier=modifier)
+        bar_1_pos = (self.get_x() + offset[0] + 6*2, self.get_y() + offset[1] + 24*2)
+        for i in range(0, self.hearts_left):
+            dest = (bar_1_pos[0], bar_1_pos[1] - i*4)
+            images.draw_animated_sprite(screen, dest, images.HEALTH_MACHINE_BAR, modifier=modifier)
+
+    def interact(self, world):
+        if self.hearts_left <= 0:
+            global_state.hud.display_text("It's empty.")
+        else:
+            player = world.player()
+            if player is not None:
+                if player.health >= player.max_health:
+                    global_state.hud.display_text("Health is full.")
+                else:
+                    if player.health % 2 == 1:
+                        # heals half a heart for free, even if machine is empty
+                        player.health += 1
+                    elif self.hearts_left > 0:
+                        player.health += 2
+                        self.hearts_left -= 1
+                    else:
+                        global_state.hud.display_text("Machine is empty.")
 
 
 class Overlay(Entity):

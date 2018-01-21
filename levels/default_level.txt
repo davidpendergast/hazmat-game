@@ -8,6 +8,7 @@ enemy_2, 3136, -320
 terminal_3, 3424, -416
 enemy_1, 480, 192
 terminal_1, 672, 384
+health_machine, 768, 224
 
 ##  DECORATIONS  ##
 wire_vert, 1024, 32

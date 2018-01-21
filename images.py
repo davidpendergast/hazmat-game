@@ -163,6 +163,8 @@ CHALKBOARD          = create("chalkboard", [R(96, 96, 32, 16)])
 PUZZLE_TERMINAL     = create("puzzle_terminal", [R(128, 96, 16, 32)])
 PUZZ_TERM_SCREEN    = create("puzzle_terminal_screen", [R(144, 96 + 9*i, 10, 9) for i in range(0, 3)])
 BULLET_SPLASH       = create("bullet_splash", [R(160 + 8*i, 96, 8, 16) for i in range(0, 4)], tpf=3)
+HEALTH_MACHINE      = create("health_machine", [R(208, 96, 16, 32)])
+HEALTH_MACHINE_BAR  = create("health_machine_bar", [R(224, 112 + i*2, 4, 2) for i in range(0, 6)])
 
 PLAYER_IDLE         = create("player_idle", [R(176, 32, 16, 32), R(192, 32, 16, 32)])
 PLAYER_GUN          = create("player_gun", [R(208 + 32*i, 32, 24, 32) for i in range(0, 3)], tpf=10)
