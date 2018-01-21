@@ -36,6 +36,7 @@ class HUD:
             decorations.get_decoration("ground_grass"),
             decorations.get_decoration("ground_wall"),
             decorations.get_decoration("ground_dark"),
+            entities.LevelEndDoor(0, 0, "level_2")
         ]
 
         self.text_queue = collections.deque()

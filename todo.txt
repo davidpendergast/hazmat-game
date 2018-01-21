@@ -74,6 +74,7 @@ Sound
         + text show/dismiss
         + puzzle fail/success/quit
         + gain/lose health
+        + door opening, door finish opening
 
 
 Camera

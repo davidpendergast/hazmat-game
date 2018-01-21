@@ -7,6 +7,7 @@ import cool_math
 import images
 import global_state
 import puzzles
+import text_stuff
 
 
 class Entity:
@@ -133,6 +134,12 @@ class Entity:
     def can_interact(self):
         return False
 
+    def interact_action_text(self, world):
+        return "interact with entity"
+
+    def interact_message(self, world):
+        return "press [k] to " + self.interact_action_text(world)
+
     def interact(self, world):
         pass
 
@@ -229,6 +236,8 @@ class Player(Actor):
         self.interact_radius = 32
         self.is_crouching = False
 
+        self.hover_overhead_text = None
+
     def sprite(self):
         if self._is_shooting():
             anim = images.PLAYER_GUN
@@ -271,6 +280,15 @@ class Player(Actor):
         if self.active_bullet is not None:
             bullet_pos = self.active_bullet.move(offset[0], offset[1])
             pygame.draw.rect(screen, (255, 255, 255), bullet_pos, 0)
+
+        if self.hover_overhead_text is not None:
+            text_size = 25
+            font = text_stuff.get_font("standard", text_size)
+            text_img = font.render(self.hover_overhead_text, False, (255, 255, 125))
+            x = self.center()[0] + offset[0] - int(text_img.get_width() / 2)
+            y = self.get_y() + offset[1] - text_size - 4
+            screen.blit(text_img, (x, y))
+
         Actor.draw(self, screen, offset, modifier)
 
     def update(self, input_state, world):
@@ -322,13 +340,17 @@ class Player(Actor):
         if keyboard_shoot and not keyboard_jump and self.is_grounded:
             self.shoot_cooldown = self.shoot_max_cooldown
 
-        if keyboard_interact and not self._is_shooting():
+        self.hover_overhead_text = None
+        if not self._is_shooting():
             box = self.get_rect().inflate((self.interact_radius, 0))
             interactables = world.get_entities_in_rect(box, category="interactable")
             cntr = self.center()
             if len(interactables) > 0:
                 interactables.sort(key=lambda x: cool_math.dist(cntr, x.center()))
-                interactables[0].interact(world)
+                if keyboard_interact:
+                    interactables[0].interact(world)
+                else:
+                    self.hover_overhead_text = interactables[0].interact_message(world)
 
         if self.is_left_walled or self.is_right_walled:
             if self.vel[1] > self.max_slide_speed:
@@ -649,6 +671,9 @@ class Door(Entity):
         else:
             global_state.hud.display_text("It's locked.")
 
+    def interact_action_text(self, world):
+        return "enter door"
+
 
 class Terminal(Entity):
     def __init__(self, x, y, message="It's a computer terminal"):
@@ -690,6 +715,9 @@ class Terminal(Entity):
     def interact(self, world):
         global_state.hud.display_text(self.message)
 
+    def interact_action_text(self, world):
+        return "read terminal"
+
 
 class PuzzleTerminal(Terminal):
     def __init__(self, x, y, puzzle_giver):
@@ -698,12 +726,14 @@ class PuzzleTerminal(Terminal):
         self.active_callback = None
         self.on_success = None  # no-arg lambda
         self.puzzle_creator = puzzle_giver
+        self.has_been_completed = False
 
     def update(self, input_state, world):
         if self.active_callback is not None:
             print("recieved puzzle callback: ", self.active_callback)
 
             if self.active_callback[0] == puzzles.SUCCESS:
+                self.has_been_completed = True
                 if self.on_success is not None:
                     self.on_success()
 
@@ -719,9 +749,17 @@ class PuzzleTerminal(Terminal):
         return images.PUZZ_TERM_SCREEN
 
     def interact(self, world):
-        print("activated puzzle terminal")
-        puzzle = self.puzzle_creator()
-        self.active_callback = global_state.hud.set_puzzle(puzzle)
+        if self.is_complete():
+            global_state.hud.display_text("This puzzle has already been completed.")
+        else:
+            puzzle = self.puzzle_creator()
+            self.active_callback = global_state.hud.set_puzzle(puzzle)
+
+    def is_complete(self):
+        return self.has_been_completed
+
+    def interact_action_text(self, world):
+        return "attempt puzzle"
 
 
 class HealthMachine(Entity):
@@ -757,6 +795,65 @@ class HealthMachine(Entity):
                         self.hearts_left -= 1
                     else:
                         global_state.hud.display_text("Machine is empty.")
+
+    def interact_action_text(self, world):
+        return "use healing machine"
+
+
+class LevelEndDoor(Entity):
+    def __init__(self, x, y, dest_level_id):
+        Entity.__init__(self, x, y, 64, 96)
+        self.categories.update(["interactable", "level_ddoor"])
+        self.dest_level_id = dest_level_id
+        self.is_locked = True
+        self.is_open = False
+        self.max_opening_cooldown = 60
+        self.opening_cooldown = -1
+
+    def update(self, input_state, world):
+        if not self.is_locked and self.opening_cooldown > 0:
+            self.opening_cooldown -= 1
+        if not self.is_locked and self.opening_cooldown <= 0:
+            self.is_open = True
+            # TODO - play sound
+
+    def draw(self, screen, offset=(0, 0), modifier="normal"):
+        pygame.draw.rect(screen, (0, 0, 0), self.get_rect().move(offset[0], offset[1]))
+        x = self.get_x() + offset[0]
+        top_y = self.get_y() + offset[1]
+        bot_y = self.get_y() + offset[1] + self.height() - images.BLAST_DOOR_BOTTOM.height()
+        images.draw_animated_sprite(screen, (x, top_y), images.BLAST_DOOR_TOP)
+        images.draw_animated_sprite(screen, (x, bot_y), images.BLAST_DOOR_BOTTOM)
+
+    def can_interact(self):
+        return True
+
+    def interact(self, world):
+        print("interacted with door")
+        if self.is_open:
+            print("Going to next level")
+        elif self.is_locked:
+            all_puzzles = world.get_entities_with(category="puzzle_terminal")
+            incomplete = len([x for x in all_puzzles if not x.is_complete()])
+            if incomplete > 0:
+                if incomplete == 1:
+                    msg = "There is one puzzle remaining. Finish it to unlock the door."
+                else:
+                    msg = "There are " + str(incomplete) + " puzzles remaining. Finish them to unlock the door."
+                global_state.hud.display_text(msg)
+            else:
+                self.is_locked = False
+                self.opening_cooldown = self.max_opening_cooldown
+                # TODO - play sound
+        else:
+            # door is opening
+            pass
+
+    def interact_action_text(self, world):
+        if self.is_locked:
+            return "unlock door"
+        else:
+            return "enter door"
 
 
 class Overlay(Entity):
@@ -853,50 +950,58 @@ class EntityCollection:
         self.all_stuff = []
         self.category_tests = {}    # category_name -> lambda(entity->bool)
         self.categories = {}        # category_name -> set of entities
-        self.add_category("actor", lambda x: x.is_actor())
-        self.add_category("enemy", lambda x: x.is_enemy())
-        self.add_category("player", lambda x: x.is_player())
-        self.add_category("ground", lambda x: x.is_ground())
-        self.add_category("door", lambda x: x.is_door())
-        self.add_category("interactable", lambda x: x.is_interactable())
-        self.add_category("wall", lambda x: x.is_wall())
-        self.add_category("decoration", lambda x: x.is_decoration())
-        self.add_category("light_source", lambda x: x.is_light_source())
-        self.add_category("overlay", lambda x: x.is_("overlay"))
 
         for e in entities:
             self.add(e)
 
-    def add_category(self, name, test):
+    def _add_category(self, name, test):
         if name in self.categories:
             print("Warning: Attempted to add category twice: ", name)
         else:
             self.category_tests[name] = test
             self.categories[name] = set()
 
+    def has_category(self, cat_name):
+        return cat_name in self.categories
+
     def add(self, entity):
         self.all_stuff.append(entity)
-        cats = self._get_categories(entity)
-        for catkey in cats:
-            self.categories[catkey].add(entity)
+
+        e_cats = entity.categories
+        for category in e_cats:
+            if not self.has_category(category):
+                self._add_category(category, lambda x: x.is_(category))
+            self.categories[category].add(entity)
 
     def remove(self, entity):
         _safe_remove(entity, self.all_stuff, True)
-        cats = self._get_categories(entity)
-        for catkey in cats:
-            _safe_remove(entity, self.categories[catkey])
+        e_cats = entity.categories
+        for catkey in e_cats:
+            if self.has_category(catkey):
+                _safe_remove(entity, self.categories[catkey])
+                if len(self.categories[catkey]) == 0:
+                    self._remove_category(catkey)
+            else:
+                raise ValueError("entity has a category that collection is missing? cat=" + str(catkey))
+
+    def _remove_category(self, catkey):
+        if catkey in self.categories:
+            del self.categories[catkey]
+        if catkey in self.category_tests:
+            del self.category_tests[catkey]
 
     def get_all(self, category=None, not_category=None, rect=None, cond=None):
         """
             category: Single category or a list of categories from which the 
-                results must belong. If null, all categories are allowed.
+                results must belong to at least one. If None, all categories
+                are allowed.
             
             not_category: Single category or a list of categories from which
                 the results may not belong. Overpowers the category parameter.
             
             rect: if given, all returned entities must intersect this rect.
             
-            cond: boolean lambda. if given, entities must satisfy the condition.   
+            cond: boolean lambda. if given, results must satisfy the condition.
                       
         """
         res_set = set()
@@ -916,13 +1021,14 @@ class EntityCollection:
         else:
             to_test = set()
             for cat in category:
-                for x in self.categories[cat]:
-                    to_test.add(x)
+                if self.has_category(cat):
+                    for x in self.categories[cat]:
+                        to_test.add(x)
 
         for e in to_test:
             accept = True
             for not_cat in not_category:
-                if self.category_tests[not_cat](e):
+                if self.has_category(not_cat) and self.category_tests[not_cat](e):
                     accept = False
                     break
             accept = accept and (rect is None or e.get_rect().colliderect(rect))
@@ -934,9 +1040,6 @@ class EntityCollection:
 
     def all_categories(self):
         return self.categories.keys()
-
-    def _get_categories(self, entity):
-        return [x for x in self.categories if self.category_tests[x](entity)]
 
     def __contains__(self, key):
         return key in self.all_stuff  # TODO ehh
