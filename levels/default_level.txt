@@ -6,6 +6,7 @@ rm_wall_2, 3040, -256
 rm_wall_1, 3040, -288
 enemy_2, 3136, -320
 terminal_3, 3424, -416
+finish_door_1, 4000, -448
 enemy_1, 480, 192
 terminal_1, 672, 384
 health_machine, 768, 224
@@ -68,6 +69,8 @@ lightbulb, 3232, -480
 lightbulb, 3376, -416
 lightbulb, 3488, -416
 lightbulb, 352, 352
+lightbulb, 3968, -480
+lightbulb, 4080, -480
 lightbulb, 48, 352
 lightbulb, 512, 352
 lightbulb, 560, 208
@@ -584,6 +587,28 @@ white_wall, 3872, -352, 32, 32
 white_wall, 3872, -448, 32, 32
 white_wall, 3904, -352, 32, 32
 white_wall, 3904, -448, 32, 32
+white_wall, 3904, -480, 32, 32
+white_wall, 3904, -512, 32, 32
+white_wall, 3904, -544, 32, 32
+white_wall, 3936, -352, 32, 32
+white_wall, 3936, -544, 32, 32
+white_wall, 3968, -352, 32, 32
+white_wall, 3968, -544, 32, 32
+white_wall, 4000, -352, 32, 32
+white_wall, 4000, -544, 32, 32
+white_wall, 4032, -352, 32, 32
+white_wall, 4032, -544, 32, 32
+white_wall, 4064, -352, 32, 32
+white_wall, 4064, -544, 32, 32
+white_wall, 4096, -352, 32, 32
+white_wall, 4096, -544, 32, 32
+white_wall, 4128, -352, 32, 32
+white_wall, 4128, -384, 32, 32
+white_wall, 4128, -416, 32, 32
+white_wall, 4128, -448, 32, 32
+white_wall, 4128, -480, 32, 32
+white_wall, 4128, -512, 32, 32
+white_wall, 4128, -544, 32, 32
 white_wall, 416, 0, 32, 32
 white_wall, 416, 128, 32, 32
 white_wall, 416, 160, 32, 32
@@ -1341,6 +1366,36 @@ ground_wall, 3872, -384
 ground_wall, 3872, -416
 ground_wall, 3904, -384
 ground_wall, 3904, -416
+ground_sand, 3936, -384
+ground_sand, 3936, -416
+ground_sand, 3936, -448
+ground_sand, 3936, -480
+ground_sand, 3936, -512
+ground_sand, 3968, -384
+ground_sand, 3968, -416
+ground_sand, 3968, -448
+ground_sand, 3968, -480
+ground_sand, 3968, -512
+ground_sand, 4000, -384
+ground_sand, 4000, -416
+ground_sand, 4000, -448
+ground_sand, 4000, -480
+ground_sand, 4000, -512
+ground_sand, 4032, -384
+ground_sand, 4032, -416
+ground_sand, 4032, -448
+ground_sand, 4032, -480
+ground_sand, 4032, -512
+ground_sand, 4064, -384
+ground_sand, 4064, -416
+ground_sand, 4064, -448
+ground_sand, 4064, -480
+ground_sand, 4064, -512
+ground_sand, 4096, -384
+ground_sand, 4096, -416
+ground_sand, 4096, -448
+ground_sand, 4096, -480
+ground_sand, 4096, -512
 ground_stone, 416, 160
 ground_stone, 416, 192
 ground_stone, 416, 224

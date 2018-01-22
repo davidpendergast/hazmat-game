@@ -92,6 +92,8 @@ class _SampleLevel(Level):
         ref_items.append(self.fetch_ref("terminal_3", entities.Terminal(0, 0, "this is only the beginning."), refs))
         ref_items.append(self.fetch_ref("health_machine", entities.HealthMachine(0, 0, 3), refs))
 
+        ref_items.append(self.fetch_ref("finish_door_1", entities.LevelEndDoor(0, 0, "level_2"), refs))
+
         for item in ref_items:
             world.add_entity(item)
 
