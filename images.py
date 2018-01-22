@@ -139,7 +139,8 @@ def R(x, y, w, h):
 
 RED_GUY             = create("red_guy", [r(0, 0, 1, 2), r(1, 0, 1, 2)])
 PURPLE_GUY          = create("purple_guy", [r(2, 0, 1, 2), r(3, 0, 1, 2)])
-BLUE_GUY            = create("blue_guy", [r(8, 0, 1, 2), r(9, 0, 1, 2)])
+BLUE_GUY_UP         = create("blue_guy", [R(48 + i*16, 128, 16, 32) for i in range(0, 2)])
+BLUE_GUY_DOWN       = create("blue_guy_down", [R(80 + i*16, 128, 16, 32) for i in range(0, 2)])
 BROWN_GUY           = create("brown_guy", [r(10, 0, 1, 2), r(11, 0, 1, 2)])
 WHITE_WALL          = create("white_wall", [r(7, 1, 1, 1)])
 WHITE_WALL_SMOL     = create("white_wall_small", [R(88, 16, 8, 8)])
@@ -167,6 +168,7 @@ HEALTH_MACHINE      = create("health_machine", [R(208, 96, 16, 32)])
 HEALTH_MACHINE_BAR  = create("health_machine_bar", [R(224, 112 + i*2, 4, 2) for i in range(0, 6)])
 BLAST_DOOR_TOP      = create("blast_door_top", [R(240, 96, 32, 32)])
 BLAST_DOOR_BOTTOM   = create("blast_door_bottom", [R(272, 96, 32, 32)])
+BLAST_DOOR_BKGR     = create("blast_door_background", [R(304, 96, 32, 48)])
 
 PLAYER_IDLE         = create("player_idle", [R(176, 32, 16, 32), R(192, 32, 16, 32)])
 PLAYER_GUN          = create("player_gun", [R(208 + 32*i, 32, 24, 32) for i in range(0, 3)], tpf=10)

@@ -1,3 +1,4 @@
+import enemies
 import images
 import entities
 import decorations
@@ -86,8 +87,8 @@ class _SampleLevel(Level):
         puzzle2.set_on_success(rm_walls)
         ref_items.extend([rm_wall_1, rm_wall_2, puzzle2])
 
-        ref_items.append(self.fetch_ref("enemy_1", entities.Enemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("enemy_2", entities.Enemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("enemy_1", enemies.DodgeEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("enemy_2", enemies.Enemy(0, 0), refs))
 
         ref_items.append(self.fetch_ref("terminal_3", entities.Terminal(0, 0, "this is only the beginning."), refs))
         ref_items.append(self.fetch_ref("health_machine", entities.HealthMachine(0, 0, 3), refs))

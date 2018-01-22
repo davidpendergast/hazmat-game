@@ -3,6 +3,7 @@ import pygame
 import copy
 import collections
 
+import enemies
 import entities
 import global_state
 import cool_math
@@ -22,7 +23,7 @@ class HUD:
             entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL),
             entities.Terminal(0, 0),
             entities.ReferenceEntity(0, 0, ref_id=None),
-            entities.Enemy(0, 0),
+            enemies.Enemy(0, 0),
             decorations.get_decoration("lightbulb"),
             decorations.get_decoration("wire_vert"),
             entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle()),

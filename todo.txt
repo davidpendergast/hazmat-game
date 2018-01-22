@@ -11,15 +11,21 @@ Player Mechanics
     + delay before sliding animation to prevent janky one framers on corner clips
     + health system
     + actionstates instead of booleans
-        
 
     
 Game Mechanics
     damage
         + death animation
             generated crumple effect? I ain't drawing all that
-    enemies
-        + attacking
+
+Enemies
+    + wall crawler
+        walks in one direction, sticks to surfaces
+    + jumper
+        jumps randomly, and when player gets near
+    + dodger
+        goes higher/lower to avoid player's shots
+
 
     
 Level System
@@ -62,6 +68,7 @@ Art
     + more wall sprites
     + bullet splash in center of enemy
     + better looking health bar UI
+    + open door sprite
 
         
 Sound
@@ -100,6 +107,7 @@ Optimizations
 
 Maintenence
     + seperate files for enemies, player, walls, misc stuff
+    + logging framework
 
     
 Bugs
@@ -108,7 +116,8 @@ Bugs
     + light entering nonexistant chunks is not rendered
     + can't turn around if standing in a 0.5 x 0.5 hole
     + knockback shouldn't play walking sprite
-    + *sometimes* light sprites are not rendered (caching issue probably)
+    + pretty sure that the FPS counter is lying
+    + crouch walking into a wall causes all kinds of sprite jitteriness
 
 
 

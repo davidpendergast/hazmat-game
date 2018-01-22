@@ -395,7 +395,9 @@ class Player(Actor):
         bullet_h = 4
         self.active_bullet = pygame.Rect(bullet_x, bullet_y, bullet_w, bullet_h)
 
-        colliders = world.get_entities_in_rect(self.active_bullet.inflate(0, 8), category="enemy")
+        hitbox = self.active_bullet.inflate(0, 8)
+        hitting_hurtbox = lambda x: hitbox.colliderect(x.get_hurtbox())
+        colliders = world.get_entities_in_rect(hitbox, category="enemy", cond=hitting_hurtbox)
         colliders.extend(world.get_entities_in_rect(self.active_bullet, category="wall"))
 
         hit_entity = None
@@ -420,88 +422,6 @@ class Player(Actor):
             self.active_bullet.width = bullet_w
 
         return hit_entity
-
-
-class Enemy(Actor):
-    def __init__(self, x, y):
-        Actor.__init__(self, x, y, 16, 48)
-        self.categories.update(["enemy"])
-        self.speed = 0.75 + random.random()/2
-        self.current_dir = (0, 0)
-        self._randint = random.randint(0, 999)
-        self.radius = 140  # starts chasing player within this distance
-        self.forget_radius = 300  # stops chasing at this distance
-        self.is_chasing = False
-        self.start_chasing_time = 0
-        self.forget_time = 240  # fps dependent
-
-    sprites = [images.BLUE_GUY, images.PURPLE_GUY, images.BROWN_GUY]
-
-    def sprite(self):
-        return Enemy.sprites[self._randint % len(Enemy.sprites)]
-
-    def sprite_offset(self):
-        spr = self.sprite()
-        w = self.get_rect().width
-        h = self.get_rect().height
-        return [(w - spr.width()) / 2, (h - spr.height()) / 2 - (64 - h) / 2]
-
-    def draw(self, screen, offset=(0, 0), modifier=None):
-        Entity.draw(self, screen, offset, modifier)
-        if self.health < self.max_health:
-            health_x = self.get_rect().x + offset[0]
-            health_y = self.get_rect().y + self.sprite_offset()[1] - 6 + offset[1]
-            health_width = self.get_rect().width
-            health_rect = [health_x, health_y, health_width, 4]
-            pygame.draw.rect(screen, (255, 50, 50), health_rect, 0)
-            health_rect[2] = max(0, round(health_width * self.health / self.max_health))
-            pygame.draw.rect(screen, (50, 255, 50), health_rect, 0)
-
-    def update(self, input_state, world):
-        self._update_status_tags(world, input_state)
-
-        if self.health <= 0:
-            self.is_alive = False
-            return
-
-        p = world.player()
-        if p is not None:
-            dist = cool_math.dist(self.center(), p.center())
-            if dist <= self.radius:
-                self.start_chasing()  # it's ok to call this every frame
-            elif dist > self.forget_radius:
-                follow_time = global_state.tick_counter - self.start_chasing_time
-                if follow_time >= self.forget_time:
-                    self.is_chasing = False
-
-        if self.is_chasing and p is not None:
-            direction = cool_math.sub(p.center(), self.center())
-            direction = cool_math.normalize(direction)
-            self.current_dir = direction
-        else:
-            # change directions approx every 30 ticks
-            if random.random() < 1 / 60:
-                if random.random() < 0.25:
-                    self.current_dir = (0, 0)
-                else:
-                    self.current_dir = cool_math.rand_direction()
-        new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
-        self.set_vel_x(new_vel)
-        self.apply_gravity()
-        self.apply_physics()
-
-    def touched_player(self, player, world):
-        v = cool_math.sub(player.center(), self.center())
-        v = cool_math.normalize(v)
-        player.deal_damage(1, direction=v)
-
-    def deal_damage(self, damage, direction=None):
-        Actor.deal_damage(self, damage, direction=direction)
-        self.start_chasing()
-
-    def start_chasing(self):
-        self.start_chasing_time = global_state.tick_counter
-        self.is_chasing = True
 
 
 class Wall(Entity):
@@ -559,66 +479,6 @@ class Wall(Entity):
                 r[0] = rect.width - 2
                 r[1] = y
                 pygame.draw.rect(self._cached_outline, (0, 0, 0), r, 0)
-
-
-class Spawner(Entity):
-    def __init__(self, x, y, radius):
-        Entity.__init__(self, x, y, 24, 24)
-        self.radius = radius
-        self.spawn_cooldown = 40
-        self.current_cooldown = 0
-        self.categories.update(["wall"])
-
-    def sprite(self):
-        if self.current_cooldown > 0:
-            return images.SPAWNER_SKULL_OPEN
-        else:
-            return images.SPAWNER_SKULL
-
-    def sprite_offset(self):
-        if self.current_cooldown > 0:
-            return (-4, -40)
-        else:
-            return (-4, -4)
-
-    def update(self, input_state, world):
-        if self.current_cooldown > 0:
-            self.current_cooldown -= 1
-        else:
-            if random.random() < 1 / 30:
-                self.do_spawn(world)
-
-    def create_spawned(self):
-        return Enemy(0, 0)
-
-    def do_spawn(self, world):
-        c = self.center()
-        r = random.random() * self.radius
-        angle = random.random() * 2 * math.pi
-        rand_x = round(r * math.cos(angle) + c[0])
-        rand_y = round(r * math.sin(angle) + c[1])
-        spawned = self.create_spawned()
-        spawned.set_center_x(rand_x)
-        spawned.set_center_y(rand_y)
-
-        if len(world.get_entities_in_rect(spawned.get_rect(), not_category="ground")) == 0:
-            world.add_entity(spawned)
-
-        self.current_cooldown = self.spawn_cooldown
-
-
-class EnergyTank(Entity):
-    def __init__(self, x, y, health):
-        Entity.__init__(self, x, y, 24, 24)
-        self.max_health = health
-        self.health = health
-        self.categories.update(["wall"])
-
-    def sprite(self):
-        return images.ENERGY_TANK
-
-    def sprite_offset(self):
-        return (-4, -40)
 
 
 class Door(Entity):
@@ -803,7 +663,7 @@ class HealthMachine(Entity):
 class LevelEndDoor(Entity):
     def __init__(self, x, y, dest_level_id):
         Entity.__init__(self, x, y, 64, 96)
-        self.categories.update(["interactable", "level_ddoor"])
+        self.categories.update(["interactable", "level_door"])
         self.dest_level_id = dest_level_id
         self.is_locked = True
         self.is_open = False
@@ -818,7 +678,6 @@ class LevelEndDoor(Entity):
             # TODO - play sound
 
     def draw(self, screen, offset=(0, 0), modifier="normal"):
-        pygame.draw.rect(screen, (0, 0, 0), self.get_rect().move(offset[0], offset[1]))
         x = self.get_x() + offset[0]
         top_sprite = images.BLAST_DOOR_TOP
         bot_sprite = images.BLAST_DOOR_BOTTOM
@@ -828,10 +687,10 @@ class LevelEndDoor(Entity):
             images.draw_animated_sprite(screen, (x, top_y_closed), top_sprite, modifier=modifier)
             images.draw_animated_sprite(screen, (x, bot_y_closed), bot_sprite, modifier=modifier)
         elif self.is_open or self.opening_cooldown <= 0:
-            # TODO - sprite for fully opened door
-            pass
+            images.draw_animated_sprite(screen, self.get_rect().move(offset[0], offset[1]), images.BLAST_DOOR_BKGR)
         else:
             # door is opening
+            images.draw_animated_sprite(screen, self.get_rect().move(offset[0], offset[1]), images.BLAST_DOOR_BKGR)
             progress = 1 - self.opening_cooldown / self.max_opening_cooldown
             top_cut_off = int(progress * top_sprite.height())
             bot_cut_off = int(progress * bot_sprite.height())
@@ -1087,7 +946,8 @@ class EntityCollection:
 
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
-                     "health_machine", "wall", "overlay", "player", "interactable", "light_source"}
+                     "health_machine", "wall", "overlay", "player", "interactable", "light_source",
+                     "level_door"}
 
 
 def validate_category(category):
