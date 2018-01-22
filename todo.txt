@@ -108,6 +108,7 @@ Bugs
     + light entering nonexistant chunks is not rendered
     + can't turn around if standing in a 0.5 x 0.5 hole
     + knockback shouldn't play walking sprite
+    + *sometimes* light sprites are not rendered (caching issue probably)
 
 
 

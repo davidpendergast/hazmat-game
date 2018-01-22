@@ -204,13 +204,24 @@ def _flip_rect(rect):
     return [x, rect[1], rect[2], rect[3]]
 
 
-def draw_animated_sprite(screen, dest, animation, modifier="normal"):
+def draw_animated_sprite(screen, dest, animation, modifier="normal", src_subset=None):
     """animation: either an Animation or a Rect"""
     if type(animation) is Animation:
         frame = (global_state.tick_counter // animation.TPF) % len(animation.rects)
-        draw_sprite(screen, dest, animation.rects[frame], modifier)
+        src_rect = animation.rects[frame]
     else:
-        draw_sprite(screen, dest, animation, modifier)
+        src_rect = animation
+    if src_subset is not None:
+        if src_subset[0] >= src_rect[2] or src_subset[1] >= src_rect[3]:
+            print("src_subset is out of range: src_subset=", src_subset, "src_rect=", src_rect)
+            return
+        else:
+            x = src_rect[0] + src_subset[0]
+            y = src_rect[1] + src_subset[1]
+            w = src_subset[2] if src_subset[0] + src_subset[2] <= src_rect[2] else src_rect[2] - src_subset[0]
+            h = src_subset[3] if src_subset[1] + src_subset[3] <= src_rect[3] else src_rect[3] - src_subset[1]
+            src_rect = [x, y, w, h]
+    draw_sprite(screen, dest, src_rect, modifier)
 
 
 def draw_sprite(screen, dest, source_rect, modifier="normal"):

@@ -820,10 +820,27 @@ class LevelEndDoor(Entity):
     def draw(self, screen, offset=(0, 0), modifier="normal"):
         pygame.draw.rect(screen, (0, 0, 0), self.get_rect().move(offset[0], offset[1]))
         x = self.get_x() + offset[0]
-        top_y = self.get_y() + offset[1]
-        bot_y = self.get_y() + offset[1] + self.height() - images.BLAST_DOOR_BOTTOM.height()
-        images.draw_animated_sprite(screen, (x, top_y), images.BLAST_DOOR_TOP)
-        images.draw_animated_sprite(screen, (x, bot_y), images.BLAST_DOOR_BOTTOM)
+        top_sprite = images.BLAST_DOOR_TOP
+        bot_sprite = images.BLAST_DOOR_BOTTOM
+        top_y_closed = self.get_y() + offset[1]
+        bot_y_closed = self.get_y() + offset[1] + self.height() - top_sprite.height()
+        if self.is_locked or self.opening_cooldown == self.max_opening_cooldown:
+            images.draw_animated_sprite(screen, (x, top_y_closed), top_sprite, modifier=modifier)
+            images.draw_animated_sprite(screen, (x, bot_y_closed), bot_sprite, modifier=modifier)
+        elif self.is_open or self.opening_cooldown <= 0:
+            # TODO - sprite for fully opened door
+            pass
+        else:
+            # door is opening
+            progress = 1 - self.opening_cooldown / self.max_opening_cooldown
+            top_cut_off = int(progress * top_sprite.height())
+            bot_cut_off = int(progress * bot_sprite.height())
+            top_subset = [0, top_cut_off, top_sprite.width(), top_sprite.height() - top_cut_off]
+            bot_subset = [0, 0, bot_sprite.width(), bot_sprite.height() - bot_cut_off]
+            top_pos = (x, top_y_closed)
+            bot_pos = (x, bot_y_closed + bot_cut_off)
+            images.draw_animated_sprite(screen, top_pos, top_sprite, modifier=modifier, src_subset=top_subset)
+            images.draw_animated_sprite(screen, bot_pos, bot_sprite, modifier=modifier, src_subset=bot_subset)
 
     def can_interact(self):
         return True
@@ -835,7 +852,7 @@ class LevelEndDoor(Entity):
         elif self.is_locked:
             all_puzzles = world.get_entities_with(category="puzzle_terminal")
             incomplete = len([x for x in all_puzzles if not x.is_complete()])
-            if incomplete > 0:
+            if incomplete > 0 and False:
                 if incomplete == 1:
                     msg = "There is one puzzle remaining. Finish it to unlock the door."
                 else:
@@ -946,7 +963,7 @@ def _safe_remove(item, collection, print_err=False):
 
 
 class EntityCollection:
-    VOLATILE_CATEGORIES = set(["actor", "enemy", "player", "overlay"])
+    VOLATILE_CATEGORIES = {"actor", "enemy", "player", "overlay"}
 
     def __init__(self, entities=(), name_for_debug="unnamed collection"):
         self.all_stuff = []
@@ -958,14 +975,16 @@ class EntityCollection:
             self.add(e)
 
     def _add_category(self, name, test):
+        validate_category(name)
         if name in self.categories:
             print("Warning: ", self.name_for_debug, " attempted to add category twice: ", name)
         else:
-            print(self.name_for_debug, " adding category: ", name)
+            # print(self.name_for_debug, " adding category: ", name)
             self.category_tests[name] = test
             self.categories[name] = set()
 
     def has_category(self, cat_name):
+        validate_category(cat_name)
         return cat_name in self.categories
 
     def add(self, entity):
@@ -989,7 +1008,8 @@ class EntityCollection:
                 raise ValueError("entity has a category that collection is missing? cat=" + str(catkey))
 
     def _remove_category(self, catkey):
-        print(self.name_for_debug, " removing category: ", catkey)
+        validate_category(catkey)
+        # print(self.name_for_debug, " removing category: ", catkey)
         if catkey in self.categories:
             del self.categories[catkey]
         if catkey in self.category_tests:
@@ -1026,6 +1046,7 @@ class EntityCollection:
         else:
             to_test = set()
             for cat in category:
+                validate_category(cat)
                 if self.has_category(cat):
                     for x in self.categories[cat]:
                         to_test.add(x)
@@ -1033,9 +1054,9 @@ class EntityCollection:
         for e in to_test:
             accept = True
             for not_cat in not_category:
-                if self.has_category(not_cat) and self.category_tests[not_cat](e):
+                validate_category(not_cat)
+                if e.is_(not_cat):
                     accept = False
-                    break
             accept = accept and (rect is None or e.get_rect().colliderect(rect))
             accept = accept and (cond is None or cond(e))
             if accept:
@@ -1054,3 +1075,24 @@ class EntityCollection:
 
     def __iter__(self):
         return iter(self.all_stuff)
+
+    def get_debug_string(self):
+        lines = ["EntityCollection: " + self.name_for_debug,
+                 "\tsize = " + str(len(self)) + ", categories = " + str(self.categories.keys()),
+                 "\tall_stuff: " + str(self.all_stuff)]
+        for category in self.categories:
+            lines.append("\t" + category + ": " + str([x for x in self.categories[category]]))
+        return "\n".join(lines)
+
+
+_INVALIDS = set()
+_VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
+                     "health_machine", "wall", "overlay", "player", "interactable", "light_source"}
+
+
+def validate_category(category):
+    if category not in _VALID_CATEGORIES and category not in _INVALIDS:
+        print("WARN\tinvalid category: ", category)
+        _INVALIDS.add(category)
+
+
