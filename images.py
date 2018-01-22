@@ -34,6 +34,18 @@ def wipe_caches():
     BIG_OL_IMG_CACHE.clear()
 
 
+def refresh_caches(too_old_thresh_secs=10):
+    thresh_ticks = too_old_thresh_secs * 60
+    cur_time = global_state.tick_counter
+    to_remove = list()
+    for x in BIG_OL_IMG_CACHE:
+        if cur_time - BIG_OL_IMG_CACHE[x][2] >= thresh_ticks:
+            to_remove.append(x)
+    print("removing ", len(to_remove), " image(s) from cache... ", (len(BIG_OL_IMG_CACHE)-len(to_remove)), " remain.")
+    for x in to_remove:
+        del BIG_OL_IMG_CACHE[x]
+
+
 def get_cached_image(key):
     if key in BIG_OL_IMG_CACHE:
         datablob = BIG_OL_IMG_CACHE[key]
@@ -286,6 +298,10 @@ def update():
     global RAINBOW
     i = random.randint(0, 2)
     RAINBOW[i] = (RAINBOW[i] + 5) % 256
+
+    refresh_secs = 10
+    if global_state.tick_counter % (60 * refresh_secs) == 0:
+        refresh_caches(too_old_thresh_secs=refresh_secs)
 
 
 def dye_sheet(sheet, color, base_color=(0, 0, 0), alpha=255):
