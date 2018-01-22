@@ -86,8 +86,7 @@ class Puzzle:
         instruction_rect = [0, title_height, screen_w, instruction_height]
         options_rect = [0, int(0 + 7*screen_h/8), screen_w, int(screen_h/8)]
 
-        title_font = text_stuff.get_font("standard", title_height - 10)
-        title_img = title_font.render(self.title, False, WHITE, (0, 0, 0))
+        title_img = text_stuff.get_text_image(self.title, "standard", title_height-10, WHITE, bg_color=BLACK)
         screen.blit(title_img, title_rect)
 
         instruction_line_height = int(title_height/2)
@@ -95,7 +94,7 @@ class Puzzle:
         box, instruction_lines = text_stuff.wrap_text(self.instructions, instruction_rect[2], instruction_font)
         for i in range(0, len(instruction_lines)):
             line = instruction_lines[i]
-            line_img = instruction_font.render(line, False, WHITE, (0, 0, 0))
+            line_img = text_stuff.get_text_image(line, "standard", instruction_line_height, WHITE, bg_color=BLACK)
             screen.blit(line_img, (instruction_rect[0], instruction_rect[1] + i*instruction_line_height))
 
         options_height = int(2*title_height/3)
@@ -108,8 +107,7 @@ class Puzzle:
         self._draw_centered_text(screen, options_right, "exit", options_height, exit_color)
 
     def _draw_centered_text(self, screen, rect, text, text_size, text_color):
-        font = text_stuff.get_font("standard", text_size)
-        text_img = font.render(text, False, text_color, (0, 0, 0))
+        text_img = text_stuff.get_text_image(text, "standard", text_size, text_color, bg_color=BLACK)
         text_rect = cool_math.recenter_rect_in([0, 0, text_img.get_width(), text_img.get_height()], rect)
         screen.blit(text_img, text_rect)
 
@@ -150,10 +148,9 @@ class DummyPuzzle(Puzzle):
 
     def draw_puzzle(self, screen, w, h):
         text = "press A to complete puzzle"
-        font = text_stuff.get_font("standard", 32)
         color = (255, 255, 255)
         bg_color = (0, 0, 0)
-        text_img = font.render(text, False, color, bg_color)
+        text_img = text_stuff.get_text_image(text, "standard", 32, color, bg_color=bg_color)
         screen.blit(text_img, (0, 0))
 
     def update_puzzle(self, input_state):

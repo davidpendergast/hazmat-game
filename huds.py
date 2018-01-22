@@ -110,9 +110,8 @@ class HUD:
                 text_stuff.draw_text(screen, text_string, "standard", 32, 512)
 
         if global_state.show_fps:
-            basicfont = text_stuff.get_font("standard", 32)
             text = "FPS: " + str(global_state.current_fps)
-            fps_text = basicfont.render(text, True, (255, 0, 0), (255, 255, 255))
+            fps_text = text_stuff.get_text_image(text, "standard", 32, (255, 0, 0), bg_color=(255, 255, 255))
             screen.blit(fps_text, (0, 0))
 
     def _draw_hearts(self, screen, pos, full, total):
@@ -159,7 +158,7 @@ class HUD:
             self.active_puzzle = puzzle
             self.puzzle_state_callback = [puzzles.IN_PROGRESS]
             if self.puzzle_surface is None or self.puzzle_surface.get_size() != puzzle.size():
-                print("regenning puzzle surface to size=",puzzle.size())
+                print("regenning puzzle surface to size=", puzzle.size())
                 self.puzzle_surface = pygame.Surface(puzzle.size())
             return self.puzzle_state_callback
 

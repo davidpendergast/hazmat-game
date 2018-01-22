@@ -46,6 +46,23 @@ def wrap_text(text_string, rect_width, font):
     return (box, lines)
 
 
+def get_text_image(text_string, font_name, font_size, color, bg_color=None):
+    key_params = (text_string, font_name, font_size, color, bg_color)
+    cache_key = "text_img[" + str(key_params) + "]"
+    cached_img = images.get_cached_image(cache_key)
+    if cached_img is None:
+        font = get_font(font_name, font_size)
+        if bg_color is not None:
+            text_img = font.render(text_string, False, color, bg_color)
+        else:
+            text_img = font.render(text_string, False, color)
+
+        images.put_cached_image(cache_key, text_img)
+        return text_img
+    else:
+        return cached_img
+
+
 def draw_text(screen, text_string, font_name, font_size, width):
     font = get_font(font_name, font_size)
     rect, lines = wrap_text(text_string, width, font)
