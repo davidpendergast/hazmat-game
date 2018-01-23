@@ -2,8 +2,9 @@ import pygame
 
 import text_stuff
 import cool_math
-import traceback
+import settings
 
+import traceback
 import random
 
 WHITE = (255, 255, 255)
@@ -54,7 +55,10 @@ class Puzzle:
 
         elif self.status == IN_PROGRESS:
             try:
-                self.update_puzzle(input_state)
+                if settings.is_debug() and input_state.was_pressed(pygame.K_TAB):
+                    self.set_status(SUCCESS)
+                else:
+                    self.update_puzzle(input_state)
             except:
                 print("Exception thrown while updating puzzle: ", self.puzzle_id)
                 traceback.print_exc()

@@ -26,7 +26,6 @@ Enemies
     + dodger
         goes higher/lower to avoid player's shots
 
-
     
 Level System
     level editting
@@ -43,7 +42,6 @@ Level System
 Puzzles
     + indication that puzzle has already been completed
     + damage for failing puzzle
-    + puzzle render self on it's own surface
     + difficulty settings
     + seeds for randomness
 
@@ -54,6 +52,7 @@ Puzzles
         move single pixel with WASD, push movable blocks to cover target positions
         X (=difficulty) retries before failure, infinite time
 
+    ? subset sum
 
 
 Art

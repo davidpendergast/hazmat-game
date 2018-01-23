@@ -283,7 +283,7 @@ class Player(Actor):
 
         if self.hover_overhead_text is not None:
             text_size = 25
-            text_color = (255, 255, 125)
+            text_color = (255, 0, 0)
             text_img = text_stuff.get_text_image(self.hover_overhead_text, "standard", text_size, text_color)
             x = self.center()[0] + offset[0] - int(text_img.get_width() / 2)
             y = self.get_y() + offset[1] - text_size - 4
