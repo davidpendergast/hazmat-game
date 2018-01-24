@@ -11,7 +11,7 @@ from entities import Entity, Overlay
 
 
 class Actor(Entity):
-    gravity = 0.75
+    gravity = 0.65
 
     def __init__(self, x, y, w, h):
         Entity.__init__(self, x, y, w, h)

@@ -21,16 +21,10 @@ TICKS_PER_FRAME = 20    # default animation speed
 
 ALL_ANIMATIONS = {}     # anim_id -> Animation
 
-
-CACHED_LIGHTMAPS = {}           # radius -> Surface
-CACHED_DARKNESS_CHUNKS = {}     # light profile -> Surface
-
-BIG_OL_IMG_CACHE = {}           # string -> [Surface, cache_time, last_accessed_time]
+BIG_OL_IMG_CACHE = {}   # string -> [Surface, cache_time, last_accessed_time]
 
 
 def wipe_caches():
-    CACHED_LIGHTMAPS.clear()
-    CACHED_DARKNESS_CHUNKS.clear()
     BIG_OL_IMG_CACHE.clear()
 
 
@@ -259,12 +253,15 @@ def get_window_icon():
 
 
 def get_lightmap(radius):
-    if radius not in CACHED_LIGHTMAPS:
-        num_lightmaps = len(CACHED_LIGHTMAPS) + 1
-        print("computing lightmap of radius: ", radius, " (", num_lightmaps, " total)")
+    cache_key = "lightmap_" + str(radius)
+    cached_img = get_cached_image(cache_key)
+
+    if cached_img is None:
         size = (radius * 2 + 1, radius * 2 + 1)
-        CACHED_LIGHTMAPS[radius] = pygame.transform.scale(LIGHTMAP, size)
-    return CACHED_LIGHTMAPS[radius]
+        cached_img = pygame.transform.scale(LIGHTMAP, size)
+        put_cached_image(cache_key, cached_img)
+
+    return cached_img
 
 
 def reload_sheet():
@@ -291,6 +288,8 @@ def reload_sheet():
             with_alpha = (255, 255, 255, color[0])
             LIGHTMAP.set_at((x, y), with_alpha)
     LIGHTMAP.unlock()
+
+    wipe_caches()
 
     print("done.")
 
@@ -332,22 +331,21 @@ def get_darkness_overlay(rect, sources, ambient_darkness):
         ambient_darkness: number from 0 to 1, with 1 being completely dark
     """
     # we gotta recompute light if something changes
-    # TODO - put limit on number of cached light images
     sources.sort()
-    key = tuple([(lp[0] - rect[0], lp[1] - rect[1], lp[2], lp[3]) for lp in sources])
-    if key not in CACHED_DARKNESS_CHUNKS or CACHED_DARKNESS_CHUNKS[key] is None:
+    relative_sources = tuple([(lp[0] - rect[0], lp[1] - rect[1], lp[2], lp[3]) for lp in sources])
+    cache_key = "darkness_overlay_" + str(relative_sources)
 
-        if len(CACHED_DARKNESS_CHUNKS) > 1000:
-            print("Warning: there are LOTS of darkness overlays in memory...")
-
-        res = pygame.Surface((rect[2], rect[3]), flags=pygame.SRCALPHA)
-        res.fill((0, 0, 0, ambient_darkness))
-        for src in key:
+    cached_img = get_cached_image(cache_key)
+    if cached_img is None:
+        cached_img = pygame.Surface((rect[2], rect[3]), flags=pygame.SRCALPHA)
+        cached_img.fill((0, 0, 0, ambient_darkness))
+        for src in relative_sources:
             sized_lightmap = get_lightmap(src[3])
             dest = (src[0] - src[3], src[1] - src[3])
-            res.blit(sized_lightmap, dest, special_flags=pygame.BLEND_RGBA_SUB)
-        CACHED_DARKNESS_CHUNKS[key] = res
-    return CACHED_DARKNESS_CHUNKS[key]
+            cached_img.blit(sized_lightmap, dest, special_flags=pygame.BLEND_RGBA_SUB)
+        put_cached_image(cache_key, cached_img)
+
+    return cached_img
 
 
 reload_sheet()
