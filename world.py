@@ -421,9 +421,9 @@ class World:
                     res_x = right_shift_x
         return (res_x, res_y)
 
-    def is_touching_wall(self, actor, direction):
+    def is_touching_wall(self, actor, direction, dist=1):
         rect = actor.get_rect()
-        detector_rect = cool_math.sliver_adjacent(rect, direction)
+        detector_rect = cool_math.sliver_adjacent(rect, direction, thickness=dist)
         detected = self.get_entities_in_rect(detector_rect, category="wall")
         return len(detected) > 0
 

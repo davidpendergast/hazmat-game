@@ -110,15 +110,15 @@ def same_direction(v1, v2):
         return angle_between(v1, v2) <= math.pi / 2
 
 
-def sliver_adjacent(rect, direction):
+def sliver_adjacent(rect, direction, thickness=1):
     if direction[0] < 0:
-        return (rect.x - 1, rect.y, 1, rect.height)
+        return (rect.x - thickness, rect.y, thickness, rect.height)
     elif direction[0] > 0:
-        return (rect.x + rect.width, rect.y, 1, rect.height)
+        return (rect.x + rect.width, rect.y, thickness, rect.height)
     elif direction[1] < 0:
-        return (rect.x, rect.y - 1, rect.width, 1)
+        return (rect.x, rect.y - thickness, rect.width, thickness)
     else:
-        return (rect.x, rect.y + rect.height, rect.width, 1)
+        return (rect.x, rect.y + rect.height, rect.width, thickness)
 
 
 def recenter_rect_in(rect1, rect2):

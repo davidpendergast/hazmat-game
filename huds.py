@@ -53,7 +53,7 @@ class HUD:
 
         self.level_title_card = None  # (title, subtitle)
         self.level_title_card_countdown = -1
-        self.level_title_card_max_countdown = 120
+        self.level_title_card_max_countdown = 80
 
     def display_text(self, lines):
         """lines: string or list of strings to display"""

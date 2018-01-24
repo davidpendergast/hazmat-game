@@ -126,9 +126,6 @@ class Player(Actor):
         if spr is images.PLAYER_WALLSLIDE:
             sign = 1 if self.facing_right else -1
             res[0] = res[0] + sign * 12
-        if self.is_crouching:
-            # res[1] -= 8
-            pass
 
         return res
 
@@ -218,12 +215,15 @@ class Player(Actor):
     def _update_status_tags(self, world, input_state):
         Actor._update_status_tags(self, world, input_state)
 
-        was_crouching = self.is_crouching
-        self.is_crouching = self.is_grounded and input_state.is_held(pygame.K_s)
-        if was_crouching and self.is_grounded and not self.is_crouching:
-            blocked_above = world.is_touching_wall(self, (0, -1))
-            if blocked_above:
-                self.is_crouching = True
+        # if finishing shooting animation, maintain crouchedness
+        if not self._is_shooting() or self.shoot_cooldown > self.shoot_on_frame:
+            will_be_crouching = self.is_grounded and input_state.is_held(pygame.K_s)
+            if self.is_crouching and self.is_grounded and not will_be_crouching:
+                crouch_height_diff = self.full_height - self.crouch_height
+                blocked_above = world.is_touching_wall(self, (0, -1), dist=crouch_height_diff)
+                if blocked_above:
+                    will_be_crouching = True
+            self.is_crouching = will_be_crouching
 
     def _is_shooting(self):
         return self.shoot_cooldown > 0
