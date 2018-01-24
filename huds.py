@@ -13,6 +13,9 @@ import decorations
 import puzzles
 
 
+LEVEL_TITLE_SIZE = 128
+
+
 class HUD:
     def __init__(self):
         self.selected_item_to_place = None
@@ -48,6 +51,10 @@ class HUD:
         self.puzzle_surface = None
         self.active_player = None
 
+        self.level_title_card = None  # (title, subtitle)
+        self.level_title_card_countdown = -1
+        self.level_title_card_max_countdown = 120
+
     def display_text(self, lines):
         """lines: string or list of strings to display"""
         if isinstance(lines, str):
@@ -56,11 +63,20 @@ class HUD:
         self.text_queue.extend(lines)
         self.show_text_time = global_state.tick_counter
 
-    def update(self, input_state, world):
+    def set_level_title_card(self, level_name, level_subtitle):
+        self.level_title_card = (level_name, level_subtitle)
+        self.level_title_card_countdown = self.level_title_card_max_countdown
 
+    def is_showing_title_card(self):
+        return self.level_title_card_countdown > 0 and self.level_title_card is not None
+
+    def update(self, input_state, world):
         self.active_player = world.player()
 
-        if self.active_puzzle is not None:
+        if self.is_showing_title_card():
+            self.level_title_card_countdown -= 1
+
+        elif self.active_puzzle is not None:
             # if puzzle is active block everything else
             if self.active_puzzle.ready_to_close():
                 self.puzzle_state_callback[0] = self.active_puzzle.get_status()
@@ -83,10 +99,16 @@ class HUD:
                 self._handle_removing_item(input_state, world)
 
     def draw(self, screen, offset=(0, 0)):
+
+        if self.is_showing_title_card():
+            self._draw_title_card(screen)
+            return
+
         if self.active_player is not None:
             cur_health = max(0, self.active_player.health)
             max_health = max(0, self.active_player.max_health)
             self._draw_hearts(screen, (0, 0), cur_health/2, int(max_health/2))
+
         if self.active_puzzle is not None:
             puzzle_rect = self._get_puzzle_rect()
             text_stuff.draw_pretty_bordered_rect(screen, puzzle_rect)
@@ -113,6 +135,28 @@ class HUD:
             text = "FPS: " + str(global_state.current_fps)
             fps_text = text_stuff.get_text_image(text, "standard", 32, (255, 0, 0), bg_color=(255, 255, 255))
             screen.blit(fps_text, (0, 0))
+
+    def _draw_title_card(self, screen):
+        white = (255, 255, 255)
+        black = (0, 0, 0)
+        screen.fill(black)
+        title = self.level_title_card[0]
+        border = 32
+        title_h = LEVEL_TITLE_SIZE
+        title_font = text_stuff.get_font("standard", title_h)
+        title_lines = text_stuff.wrap_text(title, global_state.WIDTH - border*2, title_font)
+        title_y = int(global_state.HEIGHT / 4)
+        for i in range(0, len(title_lines)):
+            line = title_lines[i]
+            img = text_stuff.get_text_image(line, "standard", title_h, white, bg_color=black)
+            screen.blit(img, (border, title_y + title_h*i))
+
+        subtitle = self.level_title_card[1]
+        if subtitle is not None:
+            subtitle_h = int(title_h * 2 / 3)
+            subtitle_img = text_stuff.get_text_image(subtitle, "standard", subtitle_h, white, bg_color=black)
+            subtitle_y = title_y + title_h*len(title_lines) + 16
+            screen.blit(subtitle_img, (border, subtitle_y))
 
     def _draw_hearts(self, screen, pos, full, total):
         heart_w = images.HEART_FULL.width()
@@ -243,8 +287,12 @@ class HUD:
         return False
 
     def is_absorbing_inputs(self):
-        freshly_closed = global_state.tick_counter - self.show_text_time < 2
-        return self.is_showing_text() or freshly_closed or self.active_puzzle is not None
+        absorbing =  global_state.tick_counter - self.show_text_time < 2
+        absorbing = absorbing or self.is_showing_text()
+        absorbing = absorbing or self.active_puzzle is not None
+        absorbing = absorbing or self.is_showing_title_card()
+
+        return absorbing
 
     def is_showing_text(self):
         return len(self.text_queue) > 0

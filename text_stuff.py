@@ -20,9 +20,8 @@ def get_font(style, size):
 
 
 def wrap_text(text_string, rect_width, font):
-    """returns: (rectangle, list of lines)"""
+    """returns: list of lines"""
     box_w = rect_width
-    box_x = int(global_state.WIDTH/2 - box_w/2) 
     lines = []
     
     words = text_string.split(" ")
@@ -39,11 +38,8 @@ def wrap_text(text_string, rect_width, font):
             i += 1
     if next_word <= len(words)-1:
         lines.append(" ".join(words[next_word:]))             
-    
-    box_h = len(lines) * 32
-    box_y = global_state.HEIGHT - box_h
-    box = [box_x, box_y, box_w, box_h]
-    return (box, lines)
+
+    return lines
 
 
 def get_text_image(text_string, font_name, font_size, color, bg_color=None):
@@ -65,7 +61,12 @@ def get_text_image(text_string, font_name, font_size, color, bg_color=None):
 
 def draw_text(screen, text_string, font_name, font_size, width):
     font = get_font(font_name, font_size)
-    rect, lines = wrap_text(text_string, width, font)
+    lines = wrap_text(text_string, width, font)
+
+    rect_h = font_size * len(lines)
+    rect_y = global_state.HEIGHT - rect_h
+    rect_x = int(global_state.WIDTH/2 - width/2)
+    rect = [rect_x, rect_y, width, rect_h]
 
     draw_pretty_bordered_rect(screen, rect, bottom=False)
 

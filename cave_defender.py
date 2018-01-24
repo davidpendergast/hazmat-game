@@ -25,8 +25,8 @@ clock = pygame.time.Clock()
 FPS = 60
 
 input_state = inputs.InputState()
-world = world.gimme_a_sample_world(load_from_file=True)
 gs.hud = huds.HUD()
+world = world.gimme_a_sample_world(load_from_file=True)
 
 
 def stop_running():

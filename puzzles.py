@@ -95,7 +95,7 @@ class Puzzle:
 
         instruction_line_height = int(title_height/2)
         instruction_font = text_stuff.get_font("standard", instruction_line_height)
-        box, instruction_lines = text_stuff.wrap_text(self.instructions, instruction_rect[2], instruction_font)
+        instruction_lines = text_stuff.wrap_text(self.instructions, instruction_rect[2], instruction_font)
         for i in range(0, len(instruction_lines)):
             line = instruction_lines[i]
             line_img = text_stuff.get_text_image(line, "standard", instruction_line_height, WHITE, bg_color=BLACK)

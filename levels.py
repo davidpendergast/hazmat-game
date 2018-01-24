@@ -5,6 +5,7 @@ import decorations
 import file_stuff
 import settings
 import puzzles
+import global_state
 
 ALL_LEVELS = {}  # name -> level
 
@@ -25,14 +26,26 @@ def get_level(level_id):
 
 
 class Level:
-    def __init__(self, level_id):
+    def __init__(self, level_id, name, subtitle):
+        """
+        :param level_id: filename of level. Also used by levels to link to each other via doors.
+        """
         self.level_id = level_id
+        self.name = name
+        self.subtitle = subtitle
+
         ALL_LEVELS[level_id] = self
 
         self._used_refs = set()
 
     def get_id(self):
         return self.level_id
+
+    def get_name(self):
+        return self.name
+
+    def get_subtitle(self):
+        return self.subtitle
 
     def fetch_ref(self, ref_id, entity, refs):
         if ref_id in self._used_refs:
@@ -49,6 +62,7 @@ class Level:
     def build(self, world):
         refs = load_from_level_file(world, self.get_id())
         self.build_refs(refs, world)
+        global_state.hud.set_level_title_card(self.get_name(), self.get_subtitle())
 
         for ref_id in refs:
             if ref_id not in self._used_refs:
@@ -65,7 +79,7 @@ class Level:
 
 class _SampleLevel(Level):
     def __init__(self):
-        Level.__init__(self, "default_level")
+        Level.__init__(self, "default_level", "Entry", "1-1")
 
     def build_refs(self, refs, world):
         ref_items = list()
