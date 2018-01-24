@@ -1,6 +1,7 @@
 import pygame
 import random
 
+import actors
 import images
 import entities
 import global_state
@@ -446,9 +447,9 @@ def gimme_a_sample_world(load_from_file=True):
         filename = settings.CONFIGS["level_file_load"]
         level = levels.get_level(filename)
         level.build(world)
-        world.add_entity(entities.Player(50, 50))
+        world.add_entity(actors.Player(50, 50))
     else:
-        other_junk = [entities.Player(50, 50)]
+        other_junk = [actors.Player(50, 50)]
         for i in range(0, 640, 32):
             other_junk.append(entities.Wall(i, 0))
             other_junk.append(entities.Wall(i, 480 - 32))

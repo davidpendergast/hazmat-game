@@ -2,15 +2,16 @@ import random
 
 import pygame
 
+import actors
 import cool_math
 import global_state
 import images
 import entities
 
 
-class Enemy(entities.Actor):
+class Enemy(actors.Actor):
     def __init__(self, x, y):
-        entities.Actor.__init__(self, x, y, 16, 48)
+        actors.Actor.__init__(self, x, y, 16, 48)
         self.categories.update(["enemy"])
         self.speed = 0.75 + random.random()/2
         self.current_dir = (0, 0)
@@ -82,7 +83,7 @@ class Enemy(entities.Actor):
         player.deal_damage(1, direction=v)
 
     def deal_damage(self, damage, direction=None):
-        entities.Actor.deal_damage(self, damage, direction=direction)
+        actors.Actor.deal_damage(self, damage, direction=direction)
         self.start_chasing()
 
     def start_chasing(self):
