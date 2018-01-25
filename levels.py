@@ -20,9 +20,20 @@ ALL_HEADERS = [WALLS_HEADER, DECOR_HEADER, GROUND_HEADER, REF_HEADER]
 
 def get_level(level_id):
     if level_id not in ALL_LEVELS:
-        raise ValueError("No level exists for id: " + str(level_id))
+        # raise ValueError("No level exists for id: " + str(level_id))
+        print("ERROR\tunrecognized level id: ", level_id)
+        return ALL_LEVELS["void"]
     else:
         return ALL_LEVELS[level_id]
+
+
+def build_first_level(world, player):
+    level = get_level("sample_level")
+    level.build(world)
+
+    start_pos = level.get_player_start_pos()
+    player.set_xy(start_pos[0], start_pos[1])
+    world.add_entity(player)
 
 
 class Level:
@@ -47,6 +58,9 @@ class Level:
     def get_subtitle(self):
         return self.subtitle
 
+    def get_player_start_pos(self):
+        return (0, 0)
+
     def fetch_ref(self, ref_id, entity, refs):
         if ref_id in self._used_refs:
             raise ValueError("reference id has already been used: ", ref_id)
@@ -70,6 +84,8 @@ class Level:
                 ref_entity = self.fetch_ref(ref_id, entities.ReferenceEntity(0, 0, ref_id=ref_id), refs)
                 world.add_entity(ref_entity)
 
+        self._used_refs = set()
+
     def build_refs(self, refs, world):
         """
         Should be overriden for level classes
@@ -80,6 +96,9 @@ class Level:
 class _SampleLevel(Level):
     def __init__(self):
         Level.__init__(self, "default_level", "Entry", "1-1")
+
+    def get_player_start_pos(self):
+        return (50, 50)
 
     def build_refs(self, refs, world):
         ref_items = list()
@@ -120,7 +139,30 @@ class _SampleLevel(Level):
 _SampleLevel()
 
 
+class _VoidLevel(Level):
+
+    def __init__(self):
+        Level.__init__(self, "void", "Void", "level failed to load.")
+
+    def build(self, world):
+        global_state.hud.set_level_title_card(self.get_name(), self.get_subtitle())
+        world.add_all_entities([entities.Wall(i*32, 120) for i in range(0, 3)])
+
+    def get_player_start_position(self):
+        return (0, 0)
+
+    def build_refs(self):
+        pass
+
+
+_VoidLevel()
+
+
 def load_from_level_file(world, filename):
+    if filename == "void":
+        print("WARN\ttried to load void level...?")
+        return
+
     refs = {}  # ref_id -> (x, y)
     last_header = None
     cnt = 1
@@ -165,6 +207,10 @@ def load_from_level_file(world, filename):
 
 
 def save_to_level_file(world, filename):
+    if filename == "void":
+        print("WARN\ttried to save void level...?")
+        return
+
     walls = []
     decorations = []
     ground = []

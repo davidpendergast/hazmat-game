@@ -9,6 +9,7 @@ import cool_math
 import levels
 import settings
 import sounds
+import actors
 
 pygame.mixer.pre_init(22050, 16, 1, 4096)
 pygame.init()
@@ -26,7 +27,9 @@ FPS = 60
 
 input_state = inputs.InputState()
 gs.hud = huds.HUD()
-world = world.gimme_a_sample_world(load_from_file=True)
+active_world = world.World()
+active_world.add_entity(actors.Player(0, 0))
+gs.queued_next_level_name = "level_2"
 
 
 def stop_running():
@@ -37,17 +40,33 @@ def stop_running():
 def draw(screen):
     screen_rect = (0, 0, gs.WIDTH, gs.HEIGHT)
     pygame.draw.rect(screen, (120, 120, 120), screen_rect, 0)
-    world.draw_all(screen)
-    gs.hud.draw(screen, offset=cool_math.neg(world.get_camera()))
+    active_world.draw_all(screen)
+    gs.hud.draw(screen, offset=cool_math.neg(active_world.get_camera()))
 
 
 def update():
+    global active_world, input_state
+
     input_state.update()
 
     gs.update(input_state)
-    gs.hud.update(input_state, world)
+    gs.hud.update(input_state, active_world)
     if not gs.hud.is_absorbing_inputs():
-        world.update_all(input_state)
+        active_world.update_all(input_state)
+
+    if gs.queued_next_level_name is not None:
+        level = levels.get_level(gs.queued_next_level_name)
+        gs.queued_next_level_name = None
+
+        player = active_world.player()
+        pos = level.get_player_start_pos()
+        player.set_xy(pos[0], pos[1])
+
+        active_world = world.World()  # start anew
+        level.build(active_world)
+        active_world.add_entity(player)
+
+        images.wipe_caches()
 
     images.update()
 
@@ -69,9 +88,12 @@ while still_running:
                 pygame.image.save(screen, "screenshots/screenshot.png")
                 print("saved screenshot: screenshot.png")
             elif event.key == pygame.K_F5:
-                filename = settings.CONFIGS["level_file_save"]
-                print("saving world to: ", filename)
-                levels.save_to_level_file(world, filename)
+                filename = gs.level_save_dest
+                if filename is not None:
+                    print("saving world to: ", filename)
+                    levels.save_to_level_file(active_world, filename)
+                else:
+                    print("ERROR\tgs.level_save_dest is None! Not saving.")
         elif event.type == pygame.KEYUP:
             input_state.set_key(event.key, False)
         elif event.type == pygame.MOUSEMOTION:
