@@ -223,13 +223,15 @@ class Door(Entity):
         #   >1: door is opening.
         #   <0: door is closing
         self.open_cooldown = 0
-        self.open_max_cooldown = 20
+        self.open_max_cooldown = 30
 
     def sprite(self):
-        if self.open_cooldown > 0:
-            return images.DOOR_OPENING
-        elif self.open_cooldown < 0:
-            return images.DOOR_CLOSING
+        if self.open_cooldown != 0 and abs(self.open_cooldown) < self.open_max_cooldown:
+            cd = self.open_cooldown if self.open_cooldown > 0 else self.open_max_cooldown + self.open_cooldown
+            progress = cd / self.open_max_cooldown
+            animation = images.DOOR_CLOSING
+            frame = int(progress * animation.num_frames())
+            return animation.single_frame(frame)
         else:
             if self.locked:
                 return images.DOOR_LOCKED

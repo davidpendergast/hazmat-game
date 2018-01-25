@@ -10,7 +10,9 @@ Player Mechanics
     + stick to walls a bit when sliding
     + delay before sliding animation to prevent janky one framers on corner clips
     + health system
-    + actionstates instead of booleans
+    ? actionstates instead of booleans
+    + walking off edge while crouching snaps player into wallslide
+
 
     
 Game Mechanics
@@ -23,9 +25,11 @@ Enemies
         walks in one direction, sticks to surfaces
     + jumper
         jumps randomly, and when player gets near
-    + dodger
-        goes higher/lower to avoid player's shots
+    + intermediate crouch frames for dodger enemy
 
+Entities
+    + compulsory terminal
+        or TextOverlay?
     
 Level System
     level editting
@@ -45,14 +49,12 @@ Puzzles
     + difficulty settings
     + seeds for randomness
 
-    snake puzzle
-        + score display
-
-    + block push puzzle
+    ? block push puzzle
         move single pixel with WASD, push movable blocks to cover target positions
         X (=difficulty) retries before failure, infinite time
 
     ? subset sum
+        cmon' this sucks
 
 
 Art
@@ -111,7 +113,8 @@ Maintenence
     
 Bugs
     + sprites aren't always being drawn pixel perfect, not sure why
-    + can't jump while crouch-walking
+    ? can't jump while crouch-walking
+        maybe ok, kinda awkward to input anyways
     + light entering nonexistant chunks is not rendered
     + can't turn around if standing in a 0.5 x 0.5 hole
     + knockback shouldn't play walking sprite

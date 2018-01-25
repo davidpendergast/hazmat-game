@@ -109,6 +109,10 @@ class _SampleLevel(Level):
 
         ref_items.append(self.fetch_ref("finish_door_1", entities.LevelEndDoor(0, 0, "level_2"), refs))
 
+        ref_items.append(self.fetch_ref("door_a", entities.Door(0, 0, "door_a", "door_b"), refs))
+        ref_items.append(self.fetch_ref("door_b", entities.Door(0, 0, "door_b", "door_a"), refs))
+        ref_items.append(self.fetch_ref("hidden_terminal", entities.Terminal(0, 0, "this room isn't very useful, is it?"), refs))
+
         for item in ref_items:
             world.add_entity(item)
 

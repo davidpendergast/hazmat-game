@@ -18,6 +18,8 @@ current_fps = 0
 last_timing = 0
 last_tick_count = 0
 
+current_level = None
+
 
 def update(input_state):
     global tick_counter

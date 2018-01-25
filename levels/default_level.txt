@@ -1,6 +1,9 @@
 ##  REFERENCES  ##
 puzzle_terminal_1, 1056, 448
+hidden_terminal, 1376, 448
+door_a, 1472, 448
 jump_tip_terminal, 1920, 224
+door_b, 2368, 224
 puzzle_2, 2976, -288
 rm_wall_2, 3040, -256
 rm_wall_1, 3040, -288
@@ -44,7 +47,9 @@ lightbulb, 1024, 96
 lightbulb, 1040, 416
 lightbulb, 1168, 256
 lightbulb, 1216, 96
+lightbulb, 1392, 432
 lightbulb, 1440, 128
+lightbulb, 1504, 432
 lightbulb, 1600, 144
 lightbulb, 1728, 192
 lightbulb, 1808, -48
@@ -53,9 +58,13 @@ lightbulb, 1920, 48
 lightbulb, 1952, 240
 lightbulb, 208, 352
 lightbulb, 2080, -224
+lightbulb, 2080, 96
 lightbulb, 2224, -32
+lightbulb, 2224, 224
 lightbulb, 2240, -192
+lightbulb, 2336, 192
 lightbulb, 2384, -192
+lightbulb, 2416, 192
 lightbulb, 2496, -192
 lightbulb, 2496, -336
 lightbulb, 2640, -192
@@ -162,12 +171,19 @@ white_wall, 1312, 192, 32, 32
 white_wall, 1344, 0, 32, 32
 white_wall, 1344, 192, 32, 32
 white_wall, 1344, 224, 32, 32
+white_wall, 1344, 384, 32, 32
+white_wall, 1344, 416, 32, 32
+white_wall, 1344, 448, 32, 32
+white_wall, 1344, 480, 32, 32
+white_wall, 1344, 512, 32, 32
 white_wall, 1376, 0, 32, 32
 white_wall, 1376, 128, 32, 32
 white_wall_small, 1376, 192, 16, 16
 white_wall_small, 1376, 208, 16, 16
 white_wall, 1376, 224, 32, 32
 white_wall, 1376, 32, 32, 32
+white_wall, 1376, 384, 32, 32
+white_wall, 1376, 512, 32, 32
 white_wall, 1376, 64, 32, 32
 white_wall, 1376, 96, 32, 32
 white_wall_small, 1392, 192, 16, 16
@@ -177,6 +193,8 @@ white_wall_small, 1408, 144, 16, 16
 white_wall_small, 1408, 192, 16, 16
 white_wall_small, 1408, 208, 16, 16
 white_wall, 1408, 224, 32, 32
+white_wall, 1408, 384, 32, 32
+white_wall, 1408, 512, 32, 32
 white_wall, 1408, 64, 32, 32
 white_wall, 1408, 96, 32, 32
 white_wall_small, 1424, 128, 16, 16
@@ -187,6 +205,8 @@ white_wall_small, 1440, 144, 16, 16
 white_wall_small, 1440, 192, 16, 16
 white_wall_small, 1440, 208, 16, 16
 white_wall, 1440, 224, 32, 32
+white_wall, 1440, 384, 32, 32
+white_wall, 1440, 512, 32, 32
 white_wall, 1440, 64, 32, 32
 white_wall, 1440, 96, 32, 32
 white_wall_small, 1456, 128, 16, 16
@@ -196,13 +216,22 @@ white_wall_small, 1456, 208, 16, 16
 white_wall, 1472, 128, 32, 32
 white_wall, 1472, 192, 32, 32
 white_wall, 1472, 224, 32, 32
+white_wall, 1472, 384, 32, 32
+white_wall, 1472, 512, 32, 32
 white_wall, 1472, 64, 32, 32
 white_wall, 1472, 96, 32, 32
 white_wall, 1504, 192, 32, 32
 white_wall, 1504, 224, 32, 32
+white_wall, 1504, 384, 32, 32
+white_wall, 1504, 512, 32, 32
 white_wall, 1504, 64, 32, 32
 white_wall_small, 1536, 208, 16, 16
 white_wall, 1536, 224, 32, 32
+white_wall, 1536, 384, 32, 32
+white_wall, 1536, 416, 32, 32
+white_wall, 1536, 448, 32, 32
+white_wall, 1536, 480, 32, 32
+white_wall, 1536, 512, 32, 32
 white_wall, 1536, 64, 32, 32
 white_wall_small, 1552, 256, 16, 16
 white_wall_small, 1568, 240, 16, 16
@@ -317,8 +346,6 @@ white_wall, 2144, 0, 32, 32
 white_wall, 2144, 128, 32, 32
 white_wall, 2144, 160, 32, 32
 white_wall, 2144, 192, 32, 32
-white_wall, 2144, 224, 32, 32
-white_wall, 2144, 256, 32, 32
 white_wall, 2144, 288, 32, 32
 white_wall, 2144, 32, 32, 32
 white_wall, 2144, 64, 32, 32
@@ -333,6 +360,8 @@ white_wall_small, 2176, -80, 16, 16
 white_wall_small, 2176, -96, 16, 16
 chain_small, 2176, 0, 16, 16
 chain_small, 2176, 16, 16, 16
+white_wall, 2176, 192, 32, 32
+white_wall, 2176, 288, 32, 32
 chain_small, 2176, 32, 16, 16
 chain_small, 2176, 48, 16, 16
 white_wall_small, 2176, 64, 16, 16
@@ -357,6 +386,8 @@ chain_small, 2208, -80, 16, 16
 white_wall_small, 2208, -96, 16, 16
 chain_small, 2208, 0, 16, 16
 chain_small, 2208, 16, 16, 16
+white_wall, 2208, 192, 32, 32
+white_wall, 2208, 288, 32, 32
 white_wall, 2208, 32, 32, 32
 chain_small, 2224, -16, 16, 16
 chain_small, 2224, -48, 16, 16
@@ -377,6 +408,8 @@ chain_small, 2240, -80, 16, 16
 chain_small, 2240, -96, 16, 16
 chain_small, 2240, 0, 16, 16
 white_wall_small, 2240, 16, 16, 16
+white_wall, 2240, 192, 32, 32
+white_wall, 2240, 288, 32, 32
 chain_small, 2256, -16, 16, 16
 chain_small, 2256, -32, 16, 16
 chain_small, 2256, -48, 16, 16
@@ -391,6 +424,8 @@ chain_small, 2272, -48, 16, 16
 chain_small, 2272, -64, 16, 16
 chain_small, 2272, -80, 16, 16
 chain_small, 2272, -96, 16, 16
+white_wall, 2272, 192, 32, 32
+white_wall, 2272, 288, 32, 32
 chain_small, 2288, -48, 16, 16
 chain_small, 2288, -64, 16, 16
 chain_small, 2288, -80, 16, 16
@@ -403,10 +438,15 @@ chain_small, 2304, -64, 16, 16
 chain_small, 2304, -80, 16, 16
 chain_small, 2304, -96, 16, 16
 white_wall_small, 2304, 0, 16, 16
+white_wall_small, 2304, 176, 16, 16
+white_wall_small, 2304, 192, 16, 16
+white_wall, 2304, 288, 32, 32
 chain_small, 2320, -48, 16, 16
 chain_small, 2320, -64, 16, 16
 chain_small, 2320, -80, 16, 16
 chain_small, 2320, -96, 16, 16
+white_wall_small, 2320, 176, 16, 16
+white_wall_small, 2320, 192, 16, 16
 white_wall, 2336, -128, 32, 32
 white_wall, 2336, -224, 32, 32
 white_wall_small, 2336, -32, 16, 16
@@ -414,6 +454,8 @@ chain_small, 2336, -48, 16, 16
 chain_small, 2336, -64, 16, 16
 chain_small, 2336, -80, 16, 16
 chain_small, 2336, -96, 16, 16
+white_wall, 2336, 160, 32, 32
+white_wall, 2336, 288, 32, 32
 white_wall_small, 2352, -48, 16, 16
 white_wall_small, 2352, -64, 16, 16
 chain_small, 2352, -80, 16, 16
@@ -422,10 +464,14 @@ white_wall, 2368, -128, 32, 32
 white_wall, 2368, -224, 32, 32
 white_wall_small, 2368, -80, 16, 16
 white_wall_small, 2368, -96, 16, 16
+white_wall, 2368, 160, 32, 32
+white_wall, 2368, 288, 32, 32
 white_wall_small, 2384, -240, 16, 16
 white_wall, 2400, -128, 32, 32
 white_wall_small, 2400, -224, 16, 16
 white_wall, 2400, -256, 32, 32
+white_wall, 2400, 160, 32, 32
+white_wall, 2400, 288, 32, 32
 white_wall_small, 2416, -272, 16, 16
 white_wall_small, 2432, -112, 16, 16
 white_wall_small, 2432, -128, 16, 16
@@ -437,11 +483,20 @@ white_wall, 2432, -384, 32, 32
 white_wall, 2432, -416, 32, 32
 white_wall, 2432, -64, 32, 32
 white_wall, 2432, -96, 32, 32
+white_wall_small, 2432, 176, 16, 16
+white_wall_small, 2432, 192, 16, 16
+white_wall, 2432, 288, 32, 32
 white_wall_small, 2448, -128, 16, 16
 white_wall_small, 2448, -32, 16, 16
+white_wall_small, 2448, 176, 16, 16
+white_wall_small, 2448, 192, 16, 16
 white_wall, 2464, -32, 32, 32
 white_wall, 2464, -416, 32, 32
 white_wall_small, 2464, -48, 16, 16
+white_wall, 2464, 192, 32, 32
+white_wall, 2464, 224, 32, 32
+white_wall, 2464, 256, 32, 32
+white_wall, 2464, 288, 32, 32
 white_wall_small, 2480, -48, 16, 16
 white_wall, 2496, -32, 32, 32
 white_wall, 2496, -416, 32, 32
@@ -863,11 +918,26 @@ ground_stone, 1344, 32
 ground_stone, 1344, 64
 ground_stone, 1344, 96
 ground_dark, 1376, 160
+ground_grass, 1376, 416
+ground_grass, 1376, 448
+ground_grass, 1376, 480
 ground_dark, 1408, 160
+ground_grass, 1408, 416
+ground_grass, 1408, 448
+ground_grass, 1408, 480
 ground_dark, 1440, 160
+ground_grass, 1440, 416
+ground_grass, 1440, 448
+ground_grass, 1440, 480
 ground_dark, 1472, 160
+ground_grass, 1472, 416
+ground_grass, 1472, 448
+ground_grass, 1472, 480
 ground_stone, 1504, 128
 ground_stone, 1504, 160
+ground_grass, 1504, 416
+ground_grass, 1504, 448
+ground_grass, 1504, 480
 ground_stone, 1504, 96
 ground_stone, 1536, 128
 ground_stone, 1536, 160
@@ -1107,10 +1177,16 @@ ground_wall, 2112, 64
 ground_wall, 2112, 96
 ground_wall, 2144, -160
 ground_wall, 2144, -192
+ground_dark, 2144, 224
+ground_dark, 2144, 256
 ground_wall, 2176, -160
 ground_wall, 2176, -192
+ground_purple, 2176, 224
+ground_purple, 2176, 256
 ground_wall, 2208, -160
 ground_wall, 2208, -192
+ground_purple, 2208, 224
+ground_purple, 2208, 256
 ground_stone, 224, 288
 ground_stone, 224, 320
 ground_stone, 224, 352
@@ -1119,22 +1195,41 @@ ground_stone, 224, 416
 ground_stone, 224, 448
 ground_wall, 2240, -160
 ground_wall, 2240, -192
+ground_purple, 2240, 224
+ground_purple, 2240, 256
 ground_wall, 2272, -160
 ground_wall, 2272, -192
+ground_purple, 2272, 224
+ground_purple, 2272, 256
 ground_wall, 2304, -160
 ground_wall, 2304, -192
+ground_purple, 2304, 192
+ground_purple, 2304, 224
+ground_purple, 2304, 256
 ground_wall, 2336, -160
 ground_wall, 2336, -192
+ground_purple, 2336, 192
+ground_purple, 2336, 224
+ground_purple, 2336, 256
 ground_wall, 2368, -160
 ground_wall, 2368, -192
+ground_purple, 2368, 192
+ground_grass, 2368, 224
+ground_grass, 2368, 256
 ground_wall, 2400, -160
 ground_wall, 2400, -192
 ground_wall, 2400, -224
+ground_purple, 2400, 192
+ground_purple, 2400, 224
+ground_purple, 2400, 256
 ground_dark, 2432, -128
 ground_dark, 2432, -160
 ground_dark, 2432, -192
 ground_dark, 2432, -224
 ground_dark, 2432, -256
+ground_purple, 2432, 192
+ground_purple, 2432, 224
+ground_purple, 2432, 256
 ground_dark, 2464, -128
 ground_grass, 2464, -160
 ground_grass, 2464, -192
