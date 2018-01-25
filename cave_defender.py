@@ -7,7 +7,6 @@ import huds
 import inputs
 import cool_math
 import levels
-import settings
 import sounds
 import actors
 
@@ -56,6 +55,7 @@ def update():
 
     if gs.queued_next_level_name is not None:
         level = levels.get_level(gs.queued_next_level_name)
+        gs.level_save_dest = gs.queued_next_level_name
         gs.queued_next_level_name = None
 
         player = active_world.player()
@@ -90,8 +90,12 @@ while still_running:
             elif event.key == pygame.K_F5:
                 filename = gs.level_save_dest
                 if filename is not None:
-                    print("saving world to: ", filename)
-                    levels.save_to_level_file(active_world, filename)
+                    answer = input("save world to "+filename+".txt? (y/n)\n")
+                    if answer == "y" or answer == "Y":
+                        print("saving world to: ", filename)
+                        levels.save_to_level_file(active_world, filename)
+                    else:
+                        print("aborted")
                 else:
                     print("ERROR\tgs.level_save_dest is None! Not saving.")
         elif event.type == pygame.KEYUP:

@@ -7,6 +7,8 @@ import settings
 import puzzles
 import global_state
 
+import traceback
+
 ALL_LEVELS = {}  # name -> level
 
 LEVELS_DIR = "levels/"
@@ -20,7 +22,6 @@ ALL_HEADERS = [WALLS_HEADER, DECOR_HEADER, GROUND_HEADER, REF_HEADER]
 
 def get_level(level_id):
     if level_id not in ALL_LEVELS:
-        # raise ValueError("No level exists for id: " + str(level_id))
         print("ERROR\tunrecognized level id: ", level_id)
         return ALL_LEVELS["void"]
     else:
@@ -61,6 +62,10 @@ class Level:
     def get_player_start_pos(self):
         return (0, 0)
 
+    def next_levels(self):
+        """All the ids of levels that can be reached from this one."""
+        return []
+
     def fetch_ref(self, ref_id, entity, refs):
         if ref_id in self._used_refs:
             raise ValueError("reference id has already been used: ", ref_id)
@@ -74,9 +79,17 @@ class Level:
             return entity
 
     def build(self, world):
-        refs = load_from_level_file(world, self.get_id())
-        self.build_refs(refs, world)
         global_state.hud.set_level_title_card(self.get_name(), self.get_subtitle())
+
+        try:
+            refs = load_from_level_file(world, self.get_id())
+            self.build_refs(refs, world)
+        except:
+            print("ERROR\tfailed to load level: ", self.get_id())
+            traceback.print_exc()
+            pos = self.get_player_start_pos()
+            world.add_entity(entities.Wall(pos[0], pos[1] + 128))
+            return
 
         for ref_id in refs:
             if ref_id not in self._used_refs:
@@ -95,10 +108,13 @@ class Level:
 
 class _SampleLevel(Level):
     def __init__(self):
-        Level.__init__(self, "default_level", "Entry", "1-1")
+        Level.__init__(self, "level_1", "Entry", "1-1")
 
     def get_player_start_pos(self):
         return (50, 50)
+
+    def next_levels(self):
+        return ["level_2"]
 
     def build_refs(self, refs, world):
         ref_items = list()
@@ -126,7 +142,7 @@ class _SampleLevel(Level):
         ref_items.append(self.fetch_ref("terminal_3", entities.Terminal(0, 0, "this is only the beginning."), refs))
         ref_items.append(self.fetch_ref("health_machine", entities.HealthMachine(0, 0, 3), refs))
 
-        ref_items.append(self.fetch_ref("finish_door_1", entities.LevelEndDoor(0, 0, "level_2"), refs))
+        ref_items.append(self.fetch_ref("finish_door_1", entities.LevelEndDoor(0, 0, self.next_levels()[0]), refs))
 
         ref_items.append(self.fetch_ref("door_a", entities.Door(0, 0, "door_a", "door_b"), refs))
         ref_items.append(self.fetch_ref("door_b", entities.Door(0, 0, "door_b", "door_a"), refs))
@@ -137,6 +153,31 @@ class _SampleLevel(Level):
 
 
 _SampleLevel()
+
+
+class Level_1_2(Level):
+
+    def __init__(self):
+        Level.__init__(self, "level_2", "Decay", "1-2")
+
+    def build_refs(self, refs, world):
+        ref_items = list()
+        puzzle1 = entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle())
+        ref_items.append(self.fetch_ref("puzzle_1", puzzle1, refs))
+        terminal_1 = entities.Terminal(0, 0, ["this level is pretty boring, isn't it?",
+                                              "maybe some pointless exposition would help.",
+                                              "...",
+                                              "i can't think of any right now..."])
+        ref_items.append(self.fetch_ref("terminal_1", terminal_1, refs))
+
+        for item in ref_items:
+            world.add_entity(item)
+
+    def get_player_start_position(self):
+        return (0, 0)
+
+
+Level_1_2()
 
 
 class _VoidLevel(Level):
@@ -151,7 +192,7 @@ class _VoidLevel(Level):
     def get_player_start_position(self):
         return (0, 0)
 
-    def build_refs(self):
+    def build_refs(self, refs, world):
         pass
 
 

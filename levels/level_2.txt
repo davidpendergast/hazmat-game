@@ -1,0 +1,344 @@
+##  REFERENCES  ##
+terminal_1, 32, -320
+puzzle_1, 416, 0
+
+##  DECORATIONS  ##
+wire_vert, -64, -112
+wire_vert, -64, -128
+wire_vert, -64, -16
+wire_vert, -64, -32
+wire_vert, -64, -48
+wire_vert, -64, -64
+wire_vert, -64, -80
+wire_vert, -64, -96
+wire_vert, -64, 0
+wire_vert, -64, 16
+wire_vert, 176, -32
+wire_vert, 208, -304
+wire_vert, 208, -320
+wire_vert, 384, -160
+wire_vert, 464, -160
+wire_vert, 560, -224
+wire_vert, 64, -32
+wire_vert, 64, -368
+wire_vert, 64, -384
+wire_vert, 64, -400
+wire_vert, 64, -416
+wire_vert, 64, -48
+wire_vert, 64, -64
+wire_vert, 64, -80
+wire_vert, 640, -224
+lightbulb, -192, 0
+lightbulb, -64, 32
+lightbulb, 176, -16
+lightbulb, 208, -288
+lightbulb, 288, -208
+lightbulb, 304, -64
+lightbulb, 352, -352
+lightbulb, 384, -144
+lightbulb, 464, -144
+lightbulb, 464, 0
+lightbulb, 480, -384
+lightbulb, 496, -288
+lightbulb, 560, -208
+lightbulb, 624, 0
+lightbulb, 64, -16
+lightbulb, 64, -352
+lightbulb, 640, -208
+lightbulb, 640, -384
+lightbulb, 800, -384
+lightbulb, 816, -208
+
+##  WALLS  ##
+white_wall, -128, -160, 32, 32
+white_wall, -128, 128, 32, 32
+white_wall, -160, -160, 32, 32
+white_wall, -160, 128, 32, 32
+white_wall, -192, -160, 32, 32
+white_wall_small, -192, 112, 16, 16
+white_wall, -192, 128, 32, 32
+white_wall, -224, -128, 32, 32
+white_wall, -224, -160, 32, 32
+white_wall, -224, -32, 32, 32
+white_wall, -224, -64, 32, 32
+white_wall, -224, -96, 32, 32
+white_wall, -224, 0, 32, 32
+white_wall, -224, 128, 32, 32
+white_wall, -224, 96, 32, 32
+chain_small, -240, 16, 16, 16
+chain_small, -240, 96, 16, 16
+chain_small, -256, 16, 16, 16
+chain_small, -256, 96, 16, 16
+chain_small, -272, 16, 16, 16
+chain_small, -272, 96, 16, 16
+chain_small, -288, 16, 16, 16
+chain_small, -288, 96, 16, 16
+white_wall, -32, -160, 32, 32
+white_wall, -32, 128, 32, 32
+white_wall, -320, 0, 32, 32
+white_wall, -320, 32, 32, 32
+white_wall, -320, 64, 32, 32
+white_wall, -320, 96, 32, 32
+white_wall, -64, -160, 32, 32
+white_wall, -64, 128, 32, 32
+white_wall, -96, -160, 32, 32
+white_wall, -96, 128, 32, 32
+white_wall_small, 0, -128, 16, 16
+white_wall_small, 0, -144, 16, 16
+white_wall, 0, -256, 32, 32
+white_wall, 0, -288, 32, 32
+white_wall, 0, -320, 32, 32
+white_wall, 0, -352, 32, 32
+white_wall, 0, -384, 32, 32
+white_wall, 0, -416, 32, 32
+white_wall, 0, -448, 32, 32
+white_wall, 0, 128, 32, 32
+white_wall_small, 112, -208, 16, 16
+white_wall_small, 112, -224, 16, 16
+white_wall_small, 112, -240, 16, 16
+white_wall_small, 128, -192, 16, 16
+white_wall_small, 128, -208, 16, 16
+white_wall_small, 128, -224, 16, 16
+white_wall, 128, -448, 32, 32
+white_wall, 128, -64, 32, 32
+white_wall, 128, 64, 32, 32
+white_wall_small, 144, -176, 16, 16
+white_wall_small, 144, -192, 16, 16
+white_wall_small, 144, -208, 16, 16
+white_wall_small, 16, -128, 16, 16
+white_wall_small, 16, -144, 16, 16
+white_wall, 160, -192, 32, 32
+white_wall, 160, -448, 32, 32
+white_wall, 160, -64, 32, 32
+white_wall, 160, 64, 32, 32
+white_wall, 192, -128, 32, 32
+white_wall, 192, -160, 32, 32
+white_wall, 192, -192, 32, 32
+white_wall, 192, -352, 32, 32
+white_wall, 192, -384, 32, 32
+white_wall, 192, -416, 32, 32
+white_wall, 192, -448, 32, 32
+white_wall, 192, -64, 32, 32
+white_wall, 192, -96, 32, 32
+white_wall, 192, 64, 32, 32
+white_wall, 224, -352, 32, 32
+white_wall_small, 224, -48, 16, 16
+chain_small, 224, -64, 16, 16
+chain_small, 224, -80, 16, 16
+white_wall_small, 224, -96, 16, 16
+white_wall, 224, 64, 32, 32
+white_wall_small, 240, -64, 16, 16
+chain_small, 240, -80, 16, 16
+white_wall_small, 240, -96, 16, 16
+white_wall, 256, -352, 32, 32
+white_wall, 256, -96, 32, 32
+white_wall, 256, 64, 32, 32
+white_wall, 288, -352, 32, 32
+white_wall, 288, -384, 32, 32
+white_wall, 288, -416, 32, 32
+white_wall, 288, -448, 32, 32
+white_wall, 288, -480, 32, 32
+white_wall, 288, -512, 32, 32
+white_wall, 288, -96, 32, 32
+white_wall, 288, 64, 32, 32
+white_wall_small, 32, -112, 16, 16
+white_wall_small, 32, -128, 16, 16
+white_wall, 32, -256, 32, 32
+white_wall, 32, -448, 32, 32
+chain_small, 32, 112, 16, 16
+white_wall, 32, 128, 32, 32
+white_wall, 320, -512, 32, 32
+white_wall, 320, 64, 32, 32
+white_wall, 352, -512, 32, 32
+white_wall, 352, 64, 32, 32
+white_wall, 384, -192, 32, 32
+white_wall, 384, -32, 32, 32
+white_wall, 384, -512, 32, 32
+white_wall_small, 384, 0, 16, 16
+white_wall_small, 384, 16, 16, 16
+white_wall_small, 384, 32, 16, 16
+white_wall_small, 384, 48, 16, 16
+white_wall, 384, 64, 32, 32
+white_wall, 416, -192, 32, 32
+white_wall, 416, -32, 32, 32
+white_wall, 416, -512, 32, 32
+white_wall, 416, 64, 32, 32
+white_wall, 448, -192, 32, 32
+white_wall, 448, -32, 32, 32
+white_wall, 448, -512, 32, 32
+white_wall, 448, 64, 32, 32
+white_wall_small, 48, -112, 16, 16
+white_wall_small, 48, -128, 16, 16
+chain_small, 48, 96, 16, 16
+white_wall, 480, -32, 32, 32
+white_wall, 480, -512, 32, 32
+white_wall, 480, 64, 32, 32
+white_wall, 512, -32, 32, 32
+white_wall, 512, -512, 32, 32
+white_wall, 512, 64, 32, 32
+white_wall, 544, -256, 32, 32
+white_wall, 544, -32, 32, 32
+white_wall, 544, -512, 32, 32
+white_wall, 544, 64, 32, 32
+chain_small, 576, -256, 16, 16
+white_wall, 576, -32, 32, 32
+white_wall, 576, -512, 32, 32
+white_wall, 576, 64, 32, 32
+chain_small, 592, -256, 16, 16
+chain_small, 608, -256, 16, 16
+white_wall, 608, -32, 32, 32
+white_wall, 608, -512, 32, 32
+white_wall, 608, 64, 32, 32
+chain_small, 624, -256, 16, 16
+white_wall_small, 64, -112, 16, 16
+white_wall, 64, -256, 32, 32
+white_wall, 64, -448, 32, 32
+white_wall_small, 64, -96, 16, 16
+white_wall, 64, 128, 32, 32
+chain_small, 64, 80, 16, 16
+white_wall, 640, -256, 32, 32
+white_wall, 640, -32, 32, 32
+white_wall, 640, -512, 32, 32
+white_wall, 640, 64, 32, 32
+white_wall, 672, -128, 32, 32
+white_wall, 672, -160, 32, 32
+white_wall, 672, -192, 32, 32
+white_wall, 672, -224, 32, 32
+white_wall, 672, -256, 32, 32
+white_wall, 672, -32, 32, 32
+white_wall, 672, -512, 32, 32
+white_wall, 672, -64, 32, 32
+white_wall, 672, -96, 32, 32
+white_wall, 672, 64, 32, 32
+white_wall, 704, -256, 32, 32
+white_wall, 704, -512, 32, 32
+white_wall, 704, 64, 32, 32
+chain_small, 736, -256, 16, 16
+white_wall, 736, -512, 32, 32
+white_wall, 736, 64, 32, 32
+chain_small, 752, -256, 16, 16
+chain_small, 768, -256, 16, 16
+white_wall, 768, -512, 32, 32
+chain_small, 784, -256, 16, 16
+white_wall_small, 80, -112, 16, 16
+white_wall_small, 80, -96, 16, 16
+chain_small, 80, 64, 16, 16
+white_wall, 800, -256, 32, 32
+white_wall, 800, -512, 32, 32
+white_wall, 800, -64, 32, 32
+white_wall, 832, -512, 32, 32
+white_wall, 832, -64, 32, 32
+white_wall, 864, -160, 32, 32
+white_wall, 896, -160, 32, 32
+white_wall_small, 96, -224, 16, 16
+white_wall_small, 96, -240, 16, 16
+white_wall_small, 96, -256, 16, 16
+white_wall, 96, -448, 32, 32
+white_wall, 96, -64, 32, 32
+white_wall, 96, -96, 32, 32
+white_wall, 96, 128, 32, 32
+white_wall, 96, 64, 32, 32
+white_wall, 96, 96, 32, 32
+
+##  GROUND  ##
+ground_stone, -128, -128
+ground_stone, -128, -32
+ground_stone, -128, -64
+ground_stone, -128, -96
+ground_stone, -128, 0
+ground_stone, -128, 32
+ground_stone, -128, 64
+ground_stone, -128, 96
+ground_stone, -160, -128
+ground_stone, -160, -32
+ground_stone, -160, -64
+ground_stone, -160, -96
+ground_stone, -160, 0
+ground_stone, -160, 32
+ground_stone, -160, 64
+ground_stone, -160, 96
+ground_stone, -192, -128
+ground_stone, -192, -32
+ground_stone, -192, -64
+ground_stone, -192, -96
+ground_stone, -192, 0
+ground_stone, -192, 32
+ground_stone, -192, 64
+ground_stone, -192, 96
+ground_dark, -224, 32
+ground_dark, -224, 64
+ground_wall, -256, 32
+ground_wall, -256, 64
+ground_wall, -288, 32
+ground_wall, -288, 64
+ground_stone, -32, -128
+ground_stone, -32, -32
+ground_stone, -32, -64
+ground_stone, -32, -96
+ground_stone, -32, 0
+ground_stone, -32, 32
+ground_stone, -32, 64
+ground_stone, -32, 96
+ground_stone, -64, -128
+ground_stone, -64, -32
+ground_stone, -64, -64
+ground_stone, -64, -96
+ground_stone, -64, 0
+ground_stone, -64, 32
+ground_stone, -64, 64
+ground_stone, -64, 96
+ground_stone, -96, -128
+ground_stone, -96, -32
+ground_stone, -96, -64
+ground_stone, -96, -96
+ground_stone, -96, 0
+ground_stone, -96, 32
+ground_stone, -96, 64
+ground_stone, -96, 96
+ground_stone, 0, -128
+ground_stone, 0, -32
+ground_stone, 0, -64
+ground_stone, 0, -96
+ground_stone, 0, 0
+ground_stone, 0, 32
+ground_stone, 0, 64
+ground_stone, 0, 96
+ground_stone, 128, -32
+ground_stone, 128, 0
+ground_stone, 128, 32
+ground_stone, 32, -32
+ground_stone, 32, -64
+ground_stone, 32, -96
+ground_stone, 32, 0
+ground_stone, 32, 32
+ground_stone, 32, 64
+ground_stone, 32, 96
+ground_wall, 384, 0
+ground_wall, 384, 32
+ground_wall, 416, 0
+ground_wall, 416, 32
+ground_wall, 448, 0
+ground_wall, 448, 32
+ground_wall, 480, 0
+ground_wall, 480, 32
+ground_wall, 512, 0
+ground_wall, 512, 32
+ground_wall, 544, 0
+ground_wall, 544, 32
+ground_wall, 576, 0
+ground_wall, 576, 32
+ground_wall, 608, 0
+ground_wall, 608, 32
+ground_stone, 64, -32
+ground_stone, 64, -64
+ground_stone, 64, -96
+ground_stone, 64, 0
+ground_stone, 64, 32
+ground_stone, 64, 64
+ground_stone, 64, 96
+ground_wall, 640, 0
+ground_wall, 640, 32
+ground_stone, 96, -32
+ground_stone, 96, 0
+ground_stone, 96, 32
+

@@ -438,6 +438,7 @@ class LevelEndDoor(Entity):
         print("interacted with door")
         if self.is_open:
             print("Going to next level")
+            global_state.queued_next_level_name = self.dest_level_id
         elif self.is_locked:
             all_puzzles = world.get_entities_with(category="puzzle_terminal")
             incomplete = len([x for x in all_puzzles if not x.is_complete()])
