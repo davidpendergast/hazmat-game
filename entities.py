@@ -160,6 +160,9 @@ class Wall(Entity):
         self._outline_dirty = True
         self.categories.update(["wall"])
 
+    def bullet_hit(self):
+        pass
+
     def sprite(self):
         return self._sprite
 
@@ -207,6 +210,25 @@ class Wall(Entity):
                 r[0] = rect.width - 2
                 r[1] = y
                 pygame.draw.rect(self._cached_outline, (0, 0, 0), r, 0)
+
+
+class BreakableWall(Wall):
+    def __init__(self, x, y):
+        Wall.__init__(self, x, y, sprite=images.BREAKABLE_WALL)
+        self._was_hit = False
+
+    def bullet_hit(self):
+        self._was_hit = True
+
+    def update(self, input_state, world):
+        Wall.update(self, input_state, world)
+        if self._was_hit:
+            self.is_alive = False
+            explosion = Overlay(images.BREAKABLE_WALL_ANIM, 0, 0).with_lifespan(cycles=1)
+            ctr = self.center()
+            explosion.set_center(ctr[0], ctr[1])
+            world.add_entity(explosion)
+            # TODO - sound
 
 
 class Door(Entity):

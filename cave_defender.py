@@ -28,7 +28,7 @@ input_state = inputs.InputState()
 gs.hud = huds.HUD()
 active_world = world.World()
 active_world.add_entity(actors.Player(0, 0))
-gs.queued_next_level_name = "level_2"
+gs.queued_next_level_name = "level_01"
 
 
 def stop_running():
@@ -56,6 +56,7 @@ def update():
     if gs.queued_next_level_name is not None:
         level = levels.get_level(gs.queued_next_level_name)
         gs.level_save_dest = gs.queued_next_level_name
+        pygame.display.set_caption("HAZMAT (" + gs.queued_next_level_name + ".txt)")
         gs.queued_next_level_name = None
 
         player = active_world.player()
@@ -90,12 +91,8 @@ while still_running:
             elif event.key == pygame.K_F5:
                 filename = gs.level_save_dest
                 if filename is not None:
-                    answer = input("save world to "+filename+".txt? (y/n)\n")
-                    if answer == "y" or answer == "Y":
-                        print("saving world to: ", filename)
-                        levels.save_to_level_file(active_world, filename)
-                    else:
-                        print("aborted")
+                    print("saving world to: ", filename)
+                    levels.save_to_level_file(active_world, filename)
                 else:
                     print("ERROR\tgs.level_save_dest is None! Not saving.")
         elif event.type == pygame.KEYUP:

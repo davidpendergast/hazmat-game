@@ -35,7 +35,9 @@ def refresh_caches(too_old_thresh_secs=10):
     for x in BIG_OL_IMG_CACHE:
         if cur_time - BIG_OL_IMG_CACHE[x][2] >= thresh_ticks:
             to_remove.append(x)
-    print("removing ", len(to_remove), " image(s) from cache... ", (len(BIG_OL_IMG_CACHE)-len(to_remove)), " remain.")
+    if len(to_remove) > 0:
+        remaining = len(BIG_OL_IMG_CACHE)-len(to_remove)
+        print("INFO:\tremoving ", len(to_remove), " image(s) from cache... ", remaining, " remain.")
     for x in to_remove:
         del BIG_OL_IMG_CACHE[x]
 
@@ -175,6 +177,8 @@ HEALTH_MACHINE_BAR  = create("health_machine_bar", [R(224, 112 + i*2, 4, 2) for 
 BLAST_DOOR_TOP      = create("blast_door_top", [R(240, 96, 32, 32)])
 BLAST_DOOR_BOTTOM   = create("blast_door_bottom", [R(272, 96, 32, 32)])
 BLAST_DOOR_BKGR     = create("blast_door_background", [R(304, 96, 32, 48)])
+BREAKABLE_WALL      = create("breakable_wall", [R(128, 0, 16, 16)])
+BREAKABLE_WALL_ANIM = create("breakable_wall_animation", [R(48 + i*20, 160, 20, 20) for i in range(0, 4)], tpf=4)
 
 PLAYER_IDLE         = create("player_idle", [R(176, 32, 16, 32), R(192, 32, 16, 32)])
 PLAYER_GUN          = create("player_gun", [R(208 + 32*i, 32, 24, 32) for i in range(0, 3)], tpf=10)

@@ -83,7 +83,10 @@ class Level:
 
         try:
             refs = load_from_level_file(world, self.get_id())
-            self.build_refs(refs, world)
+            ref_entities = self.build_refs(refs, world)
+
+            for e in ref_entities:
+                world.add_entity(e)
         except:
             print("ERROR\tfailed to load level: ", self.get_id())
             traceback.print_exc()
@@ -137,7 +140,7 @@ class _SampleLevel(Level):
         ref_items.extend([rm_wall_1, rm_wall_2, puzzle2])
 
         ref_items.append(self.fetch_ref("enemy_1", enemies.DodgeEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("enemy_2", enemies.Enemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("enemy_2", enemies.DumbEnemy(0, 0), refs))
 
         ref_items.append(self.fetch_ref("terminal_3", entities.Terminal(0, 0, "this is only the beginning."), refs))
         ref_items.append(self.fetch_ref("health_machine", entities.HealthMachine(0, 0, 3), refs))
@@ -148,11 +151,7 @@ class _SampleLevel(Level):
         ref_items.append(self.fetch_ref("door_b", entities.Door(0, 0, "door_b", "door_a"), refs))
         ref_items.append(self.fetch_ref("hidden_terminal", entities.Terminal(0, 0, "this room isn't very useful, is it?"), refs))
 
-        for item in ref_items:
-            world.add_entity(item)
-
-
-_SampleLevel()
+        return ref_items
 
 
 class Level_1_2(Level):
@@ -170,14 +169,48 @@ class Level_1_2(Level):
                                               "i can't think of any right now..."])
         ref_items.append(self.fetch_ref("terminal_1", terminal_1, refs))
 
-        for item in ref_items:
-            world.add_entity(item)
+        return ref_items
 
-    def get_player_start_position(self):
+    def get_player_start_pos(self):
         return (0, 0)
 
 
-Level_1_2()
+class Level01(Level):
+
+    def __init__(self):
+        Level.__init__(self, "level_01", "The Beginning", "1-1")
+
+    def get_player_start_pos(self):
+        return (10, -128)
+
+    def next_levels(self):
+        return ["level_1"]
+
+    def build_refs(self, refs, world):
+        ref_items = list()
+
+        txt = "you shouldn't be here"
+        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, txt), refs))
+
+        wall = self.fetch_ref("breakable_walls", entities.BreakableWall(0, 0), refs)
+        break_walls = [wall]
+        break_walls.extend([entities.BreakableWall(wall.get_x() + i*wall.width(), wall.get_y()) for i in range(1, 4)])
+        break_walls.extend([entities.BreakableWall(wall.get_x() + i*wall.width(), wall.get_y() + wall.height()) for i in range(0, 4)])
+        for w in break_walls:
+            w.set_ref_id("breakable_walls")
+            ref_items.append(w)
+
+        txt = "you'll die in this place, like the others"
+        ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(0, 0, txt), refs))
+
+        wall_2 = self.fetch_ref("breakable_2", entities.BreakableWall(0, 0), refs)
+        wall_3 = entities.BreakableWall(wall_2.get_x(), wall_2.get_y() + wall_2.height())
+        wall_3.set_ref_id("breakable_2")
+        ref_items.extend([wall_2, wall_3])
+
+        ref_items.append(self.fetch_ref("finish_door", entities.LevelEndDoor(0, 0, self.next_levels()[0]), refs))
+
+        return ref_items
 
 
 class _VoidLevel(Level):
@@ -194,9 +227,6 @@ class _VoidLevel(Level):
 
     def build_refs(self, refs, world):
         pass
-
-
-_VoidLevel()
 
 
 def load_from_level_file(world, filename):
@@ -300,7 +330,11 @@ def save_to_level_file(world, filename):
     file_stuff.write_lines_to_file(lines, levels_dir + filename + LEVEL_EXT)
 
 
-
+print("INFO\tBuilding levels...")
+g = globals().copy()
+for level in Level.__subclasses__():
+    lvl = level()
+    print("INFO\tBuilt: ", lvl.get_id())
 
 
 

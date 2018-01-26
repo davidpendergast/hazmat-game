@@ -26,7 +26,7 @@ class HUD:
             entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL),
             entities.Terminal(0, 0),
             entities.ReferenceEntity(0, 0, ref_id=None),
-            enemies.Enemy(0, 0),
+            enemies.DumbEnemy(0, 0),
             decorations.get_decoration("lightbulb"),
             decorations.get_decoration("wire_vert"),
             entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle()),
@@ -40,7 +40,9 @@ class HUD:
             decorations.get_decoration("ground_grass"),
             decorations.get_decoration("ground_wall"),
             decorations.get_decoration("ground_dark"),
-            entities.LevelEndDoor(0, 0, "level_2")
+            entities.LevelEndDoor(0, 0, "level_2"),
+            entities.BreakableWall(0, 0)
+
         ]
 
         self.text_queue = collections.deque()

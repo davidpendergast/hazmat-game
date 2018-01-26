@@ -235,9 +235,13 @@ class Player(Actor):
             self.shoot_cooldown -= 1
             if self.shoot_cooldown == self.shoot_on_frame:
                 hit_entity = self._create_bullet(world)
-                if hit_entity is not None and hit_entity.is_enemy():
-                    direction = (1, 0) if self.facing_right else (-1, 0)
-                    hit_entity.deal_damage(1, direction)
+                if hit_entity is not None:
+                    if hit_entity.is_enemy():
+                        direction = (1, 0) if self.facing_right else (-1, 0)
+                        hit_entity.deal_damage(1, direction)
+                    elif hit_entity.is_wall():
+                        hit_entity.bullet_hit()
+
                 sounds.play(sounds.ENERGY_PULSE)
 
         if self.shoot_cooldown < self.shoot_on_frame - 4 or self.shoot_cooldown > self.shoot_on_frame:
