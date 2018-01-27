@@ -78,6 +78,23 @@ def update():
         stop_running()
 
 
+def set_fullscreen(val):
+    print("INFO\tsetting fullscreen to: ", val)
+    gs.is_fullscreen = val
+
+    if gs.is_fullscreen:
+        # TODO - aparently resolution=(0, 0) raises an exception on certain hardware? need to investigate
+        new_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    else:
+        pygame.display.quit()   # TODO - this is kinda janky, need to make sure this works on other systems
+        pygame.display.init()
+        size = (gs.WIDTH, gs.HEIGHT)
+        new_screen = pygame.display.set_mode(size, pygame.DOUBLEBUF)
+
+    global screen
+    screen = new_screen
+
+
 while still_running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -93,11 +110,13 @@ while still_running:
                 images.reload_sheet()
             elif event.key == pygame.K_F2:
                 pygame.image.save(screen, "screenshots/screenshot.png")
-                print("saved screenshot: screenshot.png")
+                print("INFO\tsaved screenshot: screenshot.png")
+            elif event.key == pygame.K_F4:
+                set_fullscreen(not gs.is_fullscreen)
             elif event.key == pygame.K_F5:
                 filename = gs.level_save_dest
                 if filename is not None:
-                    print("saving world to: ", filename)
+                    print("INFO\tsaving world to: ", filename)
                     levels.save_to_level_file(active_world, filename)
                 else:
                     print("ERROR\tgs.level_save_dest is None! Not saving.")

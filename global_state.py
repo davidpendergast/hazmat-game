@@ -18,6 +18,7 @@ current_fps = 0
 last_timing = 0
 last_tick_count = 0
 
+is_fullscreen = False
 
 level_save_dest = None          # TODO - move to LevelManager
 queued_next_level_name = None
