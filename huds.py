@@ -8,9 +8,11 @@ import entities
 import global_state
 import cool_math
 import images
+import settings
 import text_stuff
 import decorations
 import puzzles
+import menus
 
 
 LEVEL_TITLE_SIZE = 128
@@ -57,6 +59,16 @@ class HUD:
         self.level_title_card_countdown = -1
         self.level_title_card_max_countdown = 80
 
+        self.active_menu = None
+
+    def set_active_menu(self, menu_id):
+        if menu_id is None:
+            self.active_menu = None
+        else:
+            menu = menus.get_menu(menu_id)
+            menu.prepare_to_show(self.active_menu)
+            self.active_menu = menu
+
     def display_text(self, lines):
         """lines: string or list of strings to display"""
         if isinstance(lines, str):
@@ -73,6 +85,11 @@ class HUD:
         return self.level_title_card_countdown > 0 and self.level_title_card is not None
 
     def update(self, input_state, world):
+
+        if self.active_menu is not None:
+            self.active_menu.update(input_state)
+            return
+
         self.active_player = world.player()
 
         if self.is_showing_title_card():
@@ -101,6 +118,9 @@ class HUD:
                 self._handle_removing_item(input_state, world)
 
     def draw(self, screen, offset=(0, 0)):
+        if self.active_menu is not None:
+            self.active_menu.draw(screen)
+            return
 
         if self.is_showing_title_card():
             self._draw_title_card(screen)
@@ -114,7 +134,7 @@ class HUD:
         if self.active_puzzle is not None:
             puzzle_rect = self._get_puzzle_rect()
             text_stuff.draw_pretty_bordered_rect(screen, puzzle_rect)
-            self.puzzle_surface.fill(puzzles.BLACK)
+            self.puzzle_surface.fill(settings.BLACK)
             draw_w = self.puzzle_surface.get_width()
             draw_h = self.puzzle_surface.get_height()
             self.active_puzzle.draw(self.puzzle_surface, draw_w, draw_h)

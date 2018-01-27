@@ -22,6 +22,8 @@ last_tick_count = 0
 level_save_dest = None          # TODO - move to LevelManager
 queued_next_level_name = None
 
+exit_requested = False
+
 
 def update(input_state):
     global tick_counter

@@ -9,11 +9,12 @@ import cool_math
 import levels
 import sounds
 import actors
+import menus
 
 pygame.mixer.pre_init(22050, 16, 1, 4096)
 pygame.init()
 
-pygame.display.set_caption("Hazardous Materials", "HAZMAT")
+pygame.display.set_caption("HATE")
 pygame.display.set_icon(images.get_window_icon())
 screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.RESIZABLE)
 
@@ -25,10 +26,11 @@ clock = pygame.time.Clock()
 FPS = 60
 
 input_state = inputs.InputState()
-gs.hud = huds.HUD()
 active_world = world.World()
 active_world.add_entity(actors.Player(0, 0))
-gs.queued_next_level_name = "level_01"
+
+gs.hud = huds.HUD()
+gs.hud.set_active_menu(menus.MAIN_MENU)
 
 
 def stop_running():
@@ -56,10 +58,11 @@ def update():
     if gs.queued_next_level_name is not None:
         level = levels.get_level(gs.queued_next_level_name)
         gs.level_save_dest = gs.queued_next_level_name
-        pygame.display.set_caption("HAZMAT (" + gs.queued_next_level_name + ".txt)")
+        pygame.display.set_caption("HATE (editing " + gs.queued_next_level_name + ".txt)")
         gs.queued_next_level_name = None
 
         player = active_world.player()
+        player.health = player.max_health  # heal to full after level completion
         pos = level.get_player_start_pos()
         player.set_xy(pos[0], pos[1])
 
@@ -70,6 +73,9 @@ def update():
         images.wipe_caches()
 
     images.update()
+
+    if gs.exit_requested:
+        stop_running()
 
 
 while still_running:
@@ -83,7 +89,7 @@ while still_running:
             screen = pygame.display.set_mode(new_size, pygame.RESIZABLE)
         elif event.type == pygame.KEYDOWN:
             input_state.set_key(event.key, True)
-            if event.key == pygame.K_RETURN:
+            if event.key == pygame.K_F1:
                 images.reload_sheet()
             elif event.key == pygame.K_F2:
                 pygame.image.save(screen, "screenshots/screenshot.png")
@@ -113,4 +119,5 @@ while still_running:
     pygame.display.flip()
     clock.tick(FPS)
 
+print("INFO\texit imminent")
 pygame.quit()

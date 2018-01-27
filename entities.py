@@ -700,7 +700,7 @@ class EntityCollection:
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
                      "health_machine", "wall", "overlay", "player", "interactable", "light_source",
-                     "level_door"}
+                     "level_door", "door"}
 
 
 def validate_category(category):

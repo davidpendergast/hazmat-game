@@ -6,8 +6,13 @@ import images
 
 _FONT_NAMES = {
     "fancy": "res/Fipps-Regular.otf",
-    "standard": "res/coders_crux.ttf"
+    "standard": "res/coders_crux.ttf",
+    "scary": "res/Rabid Science.ttf"
 }
+
+FONT_STANDARD = "standard"
+FONT_FANCY = "fancy"
+FONT_SCARY = "scary"
 
 _CACHED_FONTS = {}
 

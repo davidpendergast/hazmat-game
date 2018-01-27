@@ -7,11 +7,7 @@ import settings
 import traceback
 import random
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GREEN = (75, 255, 75)
-RED = (255, 75, 75)
-BLUE = (120, 120, 200)
+from settings import WHITE, BLACK, GREEN, RED, BLUE
 
 DRAW_SIZE = 600, 300
 
@@ -90,7 +86,7 @@ class Puzzle:
         instruction_rect = [0, title_height, screen_w, instruction_height]
         options_rect = [0, int(0 + 7*screen_h/8), screen_w, int(screen_h/8)]
 
-        title_img = text_stuff.get_text_image(self.title, "standard", title_height-10, WHITE, bg_color=BLACK)
+        title_img = text_stuff.get_text_image(self.title, "standard", title_height - 10, WHITE, bg_color=BLACK)
         screen.blit(title_img, title_rect)
 
         instruction_line_height = int(title_height/2)
