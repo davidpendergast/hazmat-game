@@ -1,4 +1,5 @@
 import math
+import random
 
 import pygame
 
@@ -6,7 +7,6 @@ import cool_math
 import global_state
 import images
 import sounds
-import text_stuff
 from entities import Entity, Overlay
 
 
@@ -63,13 +63,15 @@ class Actor(Entity):
         if self.vel[0] < -0.75 or (not self.is_grounded and self.is_right_walled):
             self.facing_right = False
 
-    def deal_damage(self, damage, direction=None):
+    def deal_damage(self, damage, source=None, direction=None):
         if damage > 0 and damage % 2 == 0 and self.health % 2 == 1:
             damage -= 1  # if you've got a half heart, it'll eat a whole heart of damage
         self.health -= damage
-        if direction is not None and abs(direction[0]) > 0.25:
-            self.set_vel_x(3 * direction[0])
-        print(self, " was damaged by ", damage)
+
+    def knock_back(self, speed, direction):
+        vect = cool_math.set_length(direction, speed)
+        self.set_vel_x(vect[0])
+        self.set_vel_y(vect[1])
 
 
 class Player(Actor):
@@ -91,6 +93,12 @@ class Player(Actor):
 
         self.interact_radius = 32
         self.is_crouching = False
+
+        self.post_dmg_invincibility_max_cooldown = 45
+        self.post_dmg_invincibility_cooldown = 0
+        self.flying_uncontrollably = False
+        self.flying_uncontrollably_time = 0
+        self.flying_uncontrollably_max_time = 500  # just to be safe, i don't want to softlock the game
 
         self.hover_overhead_text = None
 
@@ -118,6 +126,9 @@ class Player(Actor):
         else:
             return images.PLAYER_AIR
 
+    def sprite_modifier(self):
+        return Actor.sprite_modifier(self)
+
     def sprite_offset(self):
         spr = self.sprite()
         w = self.get_rect().width
@@ -134,18 +145,23 @@ class Player(Actor):
             bullet_pos = self.active_bullet.move(offset[0], offset[1])
             pygame.draw.rect(screen, (255, 255, 255), bullet_pos, 0)
 
-        if self.hover_overhead_text is not None:
-            text_size = 25
-            text_color = (255, 0, 0)
-            text_img = text_stuff.get_text_image(self.hover_overhead_text, "standard", text_size, text_color)
-            x = self.center()[0] + offset[0] - int(text_img.get_width() / 2)
-            y = self.get_y() + offset[1] - text_size - 4
-            screen.blit(text_img, (x, y))
-
         Actor.draw(self, screen, offset, modifier)
 
     def update(self, input_state, world):
         self._update_status_tags(world, input_state)
+
+        if self.post_dmg_invincibility_cooldown > 0:
+            self.post_dmg_invincibility_cooldown -= 1
+
+        if self.flying_uncontrollably:
+            on_ground = self.is_grounded or self.is_left_walled or self.is_right_walled
+            if on_ground and self.flying_uncontrollably_time > 15:
+                self.flying_uncontrollably = False
+            elif self.flying_uncontrollably_time > self.flying_uncontrollably_max_time:
+                print("WARN\tPlayer was uncontrollable for max duration, had to break forcefully")
+                self.flying_uncontrollably = False
+            else:
+                self.flying_uncontrollably_time += 1
 
         h = self.height()
         expected_h = self.crouch_height if self.is_crouching else self.full_height
@@ -157,16 +173,21 @@ class Player(Actor):
         self._handle_shooting(world)
 
         keyboard_x = 0
-        if input_state.is_held(pygame.K_a):
-            keyboard_x -= 1
-        if input_state.is_held(pygame.K_d):
-            keyboard_x += 1
+        keyboard_jump = False
+        keyboard_shoot = False
+        keyboard_interact = False
 
-        keyboard_jump = input_state.was_pressed(pygame.K_w) and not self._is_shooting()
-        keyboard_shoot = input_state.was_pressed(pygame.K_j) and not self._is_shooting()
-        keyboard_interact = input_state.was_pressed(pygame.K_k)
+        if self._has_control_of_character():
+            if input_state.is_held(pygame.K_a):
+                keyboard_x -= 1
+            if input_state.is_held(pygame.K_d):
+                keyboard_x += 1
 
-        if keyboard_x == 0 or self._is_shooting():
+            keyboard_jump = input_state.was_pressed(pygame.K_w) and not self._is_shooting()
+            keyboard_shoot = input_state.was_pressed(pygame.K_j) and not self._is_shooting()
+            keyboard_interact = input_state.was_pressed(pygame.K_k)
+
+        if keyboard_x == 0:
             fric = 1
             if not self.is_grounded:
                 fric = 0.125
@@ -193,8 +214,7 @@ class Player(Actor):
         if keyboard_shoot and not keyboard_jump and self.is_grounded:
             self.shoot_cooldown = self.shoot_max_cooldown
 
-        self.hover_overhead_text = None
-        if not self._is_shooting():
+        if self._has_control_of_character():
             box = self.get_rect().inflate((self.interact_radius, 0))
             interactables = world.get_entities_in_rect(box, category="interactable")
             cntr = self.center()
@@ -203,7 +223,8 @@ class Player(Actor):
                 if keyboard_interact:
                     interactables[0].interact(world)
                 else:
-                    self.hover_overhead_text = interactables[0].interact_message(world)
+                    # TODO - plop down "press k" Overlay
+                    pass
 
         if self.is_left_walled or self.is_right_walled:
             if self.vel[1] > self.max_slide_speed:
@@ -216,7 +237,7 @@ class Player(Actor):
         Actor._update_status_tags(self, world, input_state)
 
         # if finishing shooting animation, maintain crouchedness
-        if not self._is_shooting() or self.shoot_cooldown > self.shoot_on_frame:
+        if self._has_control_of_character() or self.shoot_cooldown > self.shoot_on_frame:
             will_be_crouching = self.is_grounded and input_state.is_held(pygame.K_s)
             if self.is_crouching and self.is_grounded and not will_be_crouching:
                 crouch_height_diff = self.full_height - self.crouch_height
@@ -224,6 +245,26 @@ class Player(Actor):
                 if blocked_above:
                     will_be_crouching = True
             self.is_crouching = will_be_crouching
+
+    def deal_damage(self, damage, source=None, direction=None):
+        if not self._is_invincible():
+            Actor.deal_damage(self, damage, source=source, direction=direction)
+            self.post_dmg_invincibility_cooldown = self.post_dmg_invincibility_max_cooldown
+
+            x_dir = 1 if direction[0] > 0 else -1
+            y_dir = -0.75
+            self.knock_back(7, (x_dir, y_dir))
+
+            self.flying_uncontrollably = True
+            self.flying_uncontrollably_time = 0
+
+            sounds.play(sounds.PLAYER_DAMAGE)
+
+    def _has_control_of_character(self):
+        return not self.flying_uncontrollably and not self._is_shooting()
+
+    def _is_invincible(self):
+        return self.post_dmg_invincibility_cooldown > 0
 
     def _is_shooting(self):
         return self.shoot_cooldown > 0
@@ -238,7 +279,7 @@ class Player(Actor):
                 if hit_entity is not None:
                     if hit_entity.is_enemy():
                         direction = (1, 0) if self.facing_right else (-1, 0)
-                        hit_entity.deal_damage(1, direction)
+                        hit_entity.deal_damage(1, source=self, direction=direction)
                     elif hit_entity.is_wall():
                         hit_entity.bullet_hit()
 

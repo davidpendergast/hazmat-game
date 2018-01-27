@@ -15,6 +15,7 @@ def _put(name):
 
 CREEPY_LIL_NOISE    = _put("creepy.ogg")
 ENERGY_PULSE        = _put("energy_pulse.wav")
+PLAYER_DAMAGE       = _put("player_damage.wav")
 
 SONG_CREEPY         = "creepy_song.wav"
 

@@ -56,7 +56,7 @@ class Enemy(actors.Actor):
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
         v = cool_math.normalize(v)
-        player.deal_damage(1, direction=v)
+        player.deal_damage(1, source=self, direction=v)
 
     def get_hurtbox(self):
         return self.get_rect()
@@ -123,8 +123,8 @@ class SmartEnemy(Enemy):
         self.start_chasing_time = global_state.tick_counter
         self.is_chasing = True
 
-    def deal_damage(self, damage, direction=None):
-        actors.Actor.deal_damage(self, damage, direction=direction)
+    def deal_damage(self, damage, source=None, direction=None):
+        actors.Actor.deal_damage(self, damage, source=source, direction=direction)
         self.start_chasing()
 
 

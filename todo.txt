@@ -14,6 +14,22 @@ Player Mechanics
     + walking off edge while crouching snaps player into wallslide
 
 
+Start Menu
+    + new game
+    + settings
+    ? m-m-m-m-microtransactions lol
+        let's make the game first kiddo
+
+
+End Game
+    + roll credit
+
+
+Death Screen
+    + options
+        + continue
+        + exit to MM
+
     
 Game Mechanics
     damage
