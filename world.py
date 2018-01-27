@@ -74,7 +74,7 @@ class Chunk:
             screen_pos = cool_math.add(self.xy(), offset)
             screen.blit(cache_img, screen_pos)
 
-        for e in self.entities.get_all(not_category=["ground", "wall", "actor", "overlay"]):
+        for e in self.entities.get_all(not_category=["ground", "wall", "actor", "overlay", "zone"]):
             e.draw(screen, offset)
 
     def draw_actors(self, screen, offset):
@@ -121,6 +121,9 @@ class Chunk:
                 if hasattr(thing, 'radius') and thing.radius > 2:
                     center = cool_math.add(thing.center(), offset)
                     pygame.draw.circle(screen, images.RAINBOW, center, thing.radius, 2)
+
+            for zone in self.entities.get_all(category="zone"):
+                zone.draw(screen, offset)
 
     def __contains__(self, entity):
         return entity in self.entities

@@ -566,6 +566,53 @@ class ReferenceEntity(Entity):
             pygame.draw.rect(screen, (100, 100, 255), self.get_rect().move(*offset), 2)
 
 
+class Zone(Entity):
+    """Invisible area that performs some effect when actors enter"""
+    def __init__(self, x, y, w, h):
+        Entity.__init__(self, x, y, w, h)
+        self.categories.update(["zone"])
+        self.debug_color = (125, 255, 125)
+        self.actors_inside = {}
+
+    def sprite(self):
+        return None
+
+    def draw(self, screen, offset=(0, 0), modifier=None):
+        key = "zone_debug_overlay:" + str(self.size()) + "_" + str(self.debug_color)
+        cached_img = images.get_cached_image(key)
+        if cached_img is None:
+            cached_img = pygame.Surface(self.size(), pygame.SRCALPHA)
+            cached_img.set_alpha(128)
+            cached_img.fill(self.debug_color)
+            images.put_cached_image(key, cached_img)
+        dest = (self.get_x() + offset[0], self.get_y() + offset[1])
+        screen.blit(cached_img, dest)
+
+    def update(self, input_state, world):
+        current_actors = set(world.get_entities_in_rect(self.get_rect(), category="actor"))
+        actors_last_frame = self.actors_inside
+
+        for actor in current_actors:
+            if actor not in actors_last_frame:
+                self.actor_entered(actor, world)
+            else:
+                self.actor_remains(actor, world)
+        for actor in actors_last_frame:
+            if actor not in current_actors:
+                self.actor_left(actor, world)
+
+        self.actors_inside = current_actors
+
+    def actor_entered(self, actor, world):
+        print("actor entered zone: ", actor)
+
+    def actor_left(self, actor, world):
+        print("actor left zone: ", actor)
+
+    def actor_remains(self, actor, world):
+        pass
+
+
 def _safe_remove(item, collection, print_err=False):
     try:
         collection.remove(item)
@@ -700,7 +747,7 @@ class EntityCollection:
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
                      "health_machine", "wall", "overlay", "player", "interactable", "light_source",
-                     "level_door", "door"}
+                     "level_door", "door", "zone"}
 
 
 def validate_category(category):

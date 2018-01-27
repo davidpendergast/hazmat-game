@@ -189,6 +189,11 @@ class Level01(Level):
     def build_refs(self, refs, world):
         ref_items = list()
 
+        lava = self.fetch_ref("lava_zone_1", entities.Zone(0, 0, 64, 48), refs)
+        #lava.actor_entered = lambda x, y, z : print(y, " is in the zone")
+        lava.set_y(lava.get_y() + 48)
+        ref_items.append(lava)
+
         txt = "you shouldn't be here"
         ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, txt), refs))
 

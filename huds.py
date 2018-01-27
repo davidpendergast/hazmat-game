@@ -43,7 +43,9 @@ class HUD:
             decorations.get_decoration("ground_wall"),
             decorations.get_decoration("ground_dark"),
             entities.LevelEndDoor(0, 0, "level_2"),
-            entities.BreakableWall(0, 0)
+            entities.BreakableWall(0, 0),
+            decorations.get_decoration("acid_full"),
+            decorations.get_decoration("acid_top")
 
         ]
 
