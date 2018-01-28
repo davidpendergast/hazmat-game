@@ -9,6 +9,7 @@ CONFIGS = {
 #    "level_file_save": "default_level",
 
 
+STARTING_LEVEL_OVERRIDE = "platformer_test"
 
 
 def is_debug():

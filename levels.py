@@ -28,13 +28,11 @@ def get_level(level_id):
         return ALL_LEVELS[level_id]
 
 
-def build_first_level(world, player):
-    level = get_level("sample_level")
-    level.build(world)
-
-    start_pos = level.get_player_start_pos()
-    player.set_xy(start_pos[0], start_pos[1])
-    world.add_entity(player)
+def get_first_level_id():
+    if settings.is_debug() and settings.STARTING_LEVEL_OVERRIDE is not None:
+        return settings.STARTING_LEVEL_OVERRIDE
+    else:
+        return "level_1"
 
 
 class Level:
@@ -109,9 +107,17 @@ class Level:
         raise ValueError("build_refs() isn't defined.")
 
 
+class PlatformerTest(Level):
+    def __init__(self):
+        Level.__init__(self, "platformer_test", "Platforming Testing", "?-?")
+
+    def build_refs(self, refs, world):
+        return []
+
+
 class _SampleLevel(Level):
     def __init__(self):
-        Level.__init__(self, "level_1", "Entry", "1-1")
+        Level.__init__(self, "level_1", "Entry", "1-2")
 
     def get_player_start_pos(self):
         return (50, 50)
@@ -154,7 +160,7 @@ class _SampleLevel(Level):
         return ref_items
 
 
-class Level_1_2(Level):
+class Level12(Level):
 
     def __init__(self):
         Level.__init__(self, "level_2", "Decay", "1-2")
@@ -175,7 +181,7 @@ class Level_1_2(Level):
         return (0, 0)
 
 
-class Level01(Level):
+class Level11(Level):
 
     def __init__(self):
         Level.__init__(self, "level_01", "The Beginning", "1-1")
@@ -190,7 +196,6 @@ class Level01(Level):
         ref_items = list()
 
         lava = self.fetch_ref("lava_zone_1", entities.Zone(0, 0, 64, 48), refs)
-        #lava.actor_entered = lambda x, y, z : print(y, " is in the zone")
         lava.set_y(lava.get_y() + 48)
         ref_items.append(lava)
 
@@ -221,7 +226,7 @@ class Level01(Level):
 class _VoidLevel(Level):
 
     def __init__(self):
-        Level.__init__(self, "void", "Void", "level failed to load.")
+        Level.__init__(self, "void", "Void", "?-?")
 
     def build(self, world):
         global_state.hud.set_level_title_card(self.get_name(), self.get_subtitle())

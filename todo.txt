@@ -5,7 +5,6 @@ General
 
 
 Player Mechanics
-    + crouch shooting
     + walking up/down stairs
     + stick to walls a bit when sliding
     + delay before sliding animation to prevent janky one framers on corner clips
