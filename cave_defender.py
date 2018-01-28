@@ -88,8 +88,11 @@ def set_fullscreen(val):
     else:
         pygame.display.quit()   # TODO - this is kinda janky, need to make sure this works on other systems
         pygame.display.init()
+        pygame.display.set_caption("HATE")
+        pygame.display.set_icon(images.get_window_icon())
         size = (gs.WIDTH, gs.HEIGHT)
         new_screen = pygame.display.set_mode(size, pygame.DOUBLEBUF)
+
 
     global screen
     screen = new_screen

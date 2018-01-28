@@ -2,6 +2,7 @@ import pygame
 import random
 
 import global_state
+import image_util
 
 mult = 32
 
@@ -12,6 +13,12 @@ SHEETS = {
     "red_ghosts": None,
     "white_ghosts": None,
 }
+
+
+def add_sheet(name, surface):
+    print("INFO\tadding new sheet: ", name)
+    SHEETS[name] = surface
+
 
 LIGHTMAP = None
 
@@ -57,7 +64,6 @@ def remove_cached_image(key):
 
 
 def put_cached_image(key, image):
-    # print("caching image: ", key)
     data_blob = [image, global_state.tick_counter, global_state.tick_counter]
     BIG_OL_IMG_CACHE[key] = data_blob
 
@@ -84,6 +90,7 @@ class Animation:
         self.TPF = tpf
         self.anim_id = anim_id
         self._subanimations = [None] * len(rects)
+        self._custom_sheet = None
 
     def num_frames(self):
         return len(self.rects)
@@ -97,9 +104,16 @@ class Animation:
             # id just for debugging, no global lookup
             anim_id = self.get_id() + "[" + str(idx) + "]"
             animation = Animation([self.rects[idx]], anim_id=anim_id, tpf=self.TPF)
+            animation.set_custom_sheet(self.custom_sheet())
             self._subanimations[idx] = animation
 
         return self._subanimations[idx]
+
+    def set_custom_sheet(self, sheet_name):
+        self._custom_sheet = sheet_name
+
+    def custom_sheet(self):
+        return self._custom_sheet
 
     def width(self):
         return self.rects[0].width
@@ -132,11 +146,6 @@ def create(anim_id, rects, tpf=TICKS_PER_FRAME):
     return ALL_ANIMATIONS[anim_id]
 
 
-def reversify(animation):
-    anim_id = animation.get_id() + "_reversed"
-    return create(anim_id, list(reversed(animation.rects)), tpf=animation.TPF)
-
-
 def r(x, y, w, h):
     return pygame.Rect(x * mult, y * mult, w * mult, h * mult)
 
@@ -162,7 +171,7 @@ ROCK                = create("rock", [r(6, 2, 1, 2)])
 DOOR_LOCKED         = create("door_locked", [R(0, 96, 16, 32)])
 DOOR_UNLOCKED       = create("door_unlocked", [R(16, 96, 16, 32)])
 DOOR_OPENING        = create("door_opening", [R(16 + 16*i, 96, 16, 32) for i in range(0, 5)], tpf=10)
-DOOR_CLOSING        = reversify(DOOR_OPENING)
+DOOR_CLOSING        = image_util.reversify(DOOR_OPENING)
 LADDER              = create("ladder", [R(64, 80, 16, 16)])
 LIGHT_BULB          = create("light_bulb", [R(80, 88, 8, 8), R(88, 88, 8, 8)])
 WIRE_VERTICAL       = create("wire_vertical", [R(80, 80, 8, 8)])
@@ -225,11 +234,14 @@ def draw_animated_sprite(screen, dest, animation, modifier="normal", src_subset=
     if type(animation) is Animation:
         frame = (global_state.tick_counter // animation.TPF) % len(animation.rects)
         src_rect = animation.rects[frame]
+        custom_sheet = animation.custom_sheet()
+        if custom_sheet is not None:
+            modifier = custom_sheet  # kinda hacky, whatever
     else:
         src_rect = animation
     if src_subset is not None:
         if src_subset[0] >= src_rect[2] or src_subset[1] >= src_rect[3]:
-            print("src_subset is out of range: src_subset=", src_subset, "src_rect=", src_rect)
+            print("WARN\tsrc_subset is out of range: src_subset=", src_subset, "src_rect=", src_rect)
             return
         else:
             x = src_rect[0] + src_subset[0]
@@ -237,7 +249,7 @@ def draw_animated_sprite(screen, dest, animation, modifier="normal", src_subset=
             w = src_subset[2] if src_subset[0] + src_subset[2] <= src_rect[2] else src_rect[2] - src_subset[0]
             h = src_subset[3] if src_subset[1] + src_subset[3] <= src_rect[3] else src_rect[3] - src_subset[1]
             src_rect = [x, y, w, h]
-    draw_sprite(screen, dest, src_rect, modifier)
+    draw_sprite(screen, dest, src_rect, modifier=modifier)
 
 
 def draw_sprite(screen, dest, source_rect, modifier="normal"):
@@ -272,14 +284,14 @@ def get_lightmap(radius):
 
 
 def reload_sheet():
-    print("Loading sprites...")
+    print("INFO\tloading sprite sheets...")
     global SHEETS, LIGHTMAP
     actual_size = pygame.image.load("res/art_n_stuff.png")
     sprite_sheet = pygame.transform.scale2x(actual_size)
     SHEETS["normal"] = sprite_sheet
-    SHEETS["green_ghosts"] = dye_sheet(sprite_sheet, (0, 255, 0), alpha=100)
-    SHEETS["red_ghosts"] = dye_sheet(sprite_sheet, (255, 0, 0), alpha=100)
-    SHEETS["white_ghosts"] = dye_sheet(sprite_sheet, (255, 255, 255), alpha=100)
+    SHEETS["green_ghosts"] = image_util.dye_sheet(sprite_sheet, (0, 255, 0), alpha=100)
+    SHEETS["red_ghosts"] = image_util.dye_sheet(sprite_sheet, (255, 0, 0), alpha=100)
+    SHEETS["white_ghosts"] = image_util.dye_sheet(sprite_sheet, (255, 255, 255), alpha=100)
     SHEETS["flipped"] = pygame.transform.flip(sprite_sheet, True, False)
 
     raw_lightmap = pygame.image.load("res/lightmap.jpg")
@@ -298,7 +310,7 @@ def reload_sheet():
 
     wipe_caches()
 
-    print("done.")
+    print("INFO\tfinished loading sheets")
 
 
 def update():
@@ -311,48 +323,14 @@ def update():
         refresh_caches(too_old_thresh_secs=refresh_secs)
 
 
-def dye_sheet(sheet, color, base_color=(0, 0, 0), alpha=255):
-    new_sheet = sheet.copy()
-    size = new_sheet.get_size()
-    for x in range(0, size[0]):
-        for y in range(0, size[1]):
-            c = sheet.get_at((x, y))
-            if c[3] == 0:
-                continue
-            val = (0.2989 * c[0] + 0.5870 * c[1] + 0.1140 * c[2]) / 256
-            r = int(base_color[0] + (color[0] - base_color[0]) * val)
-            g = int(base_color[1] + (color[1] - base_color[1]) * val)
-            b = int(base_color[2] + (color[2] - base_color[2]) * val)
-            new_sheet.set_at((x, y), (r, g, b, alpha))
-    return new_sheet
-
-
-def get_darkness_overlay(rect, sources, ambient_darkness):
-    """
-        rect: rectangle that determines size of result, and relative positions 
-            of light sources. 
-        
-        sources: list of tuples (x, y, luminosity, radius). If unsorted, will 
-            become sorted as a side effect of calling this method.
-             
-        ambient_darkness: number from 0 to 1, with 1 being completely dark
-    """
-    # we gotta recompute light if something changes
-    sources.sort()
-    relative_sources = tuple([(lp[0] - rect[0], lp[1] - rect[1], lp[2], lp[3]) for lp in sources])
-    cache_key = "darkness_overlay_" + str(relative_sources)
-
-    cached_img = get_cached_image(cache_key)
-    if cached_img is None:
-        cached_img = pygame.Surface((rect[2], rect[3]), flags=pygame.SRCALPHA)
-        cached_img.fill((0, 0, 0, ambient_darkness))
-        for src in relative_sources:
-            sized_lightmap = get_lightmap(src[3])
-            dest = (src[0] - src[3], src[1] - src[3])
-            cached_img.blit(sized_lightmap, dest, special_flags=pygame.BLEND_RGBA_SUB)
-        put_cached_image(cache_key, cached_img)
-
-    return cached_img
-
-
 reload_sheet()
+
+# death animations can't be made until sheets are loaded
+# also, these guys don't get reloaded when sheets are reloaded, probably ok though
+print("INFO\tcreating death animations...")
+PURPLE_GUY_DYING    = image_util.create_death_animation(PURPLE_GUY, "purple_guy_dying", 4, 6)
+PLAYER_DYING        = image_util.create_death_animation(PLAYER_IDLE, "player_dying", 4, 6)
+RED_GUY_DYING       = image_util.create_death_animation(RED_GUY, "red_guy_dying", 4, 6)
+BLUE_GUY_DYING      = image_util.create_death_animation(BLUE_GUY_UP, "blue_guy_dying", 4, 6)
+BROWN_GUY_DYING     = image_util.create_death_animation(BROWN_GUY, "brown_guy_dying", 4, 6)
+print("INFO\tdone creating death animations")

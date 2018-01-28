@@ -2,6 +2,7 @@ import pygame
 import random
 
 import actors
+import image_util
 import images
 import entities
 import global_state
@@ -104,7 +105,7 @@ class Chunk:
                         sources.append(lp)
 
         rect = self.get_rect()
-        img = images.get_darkness_overlay(rect, sources, AMBIENT_DARKNESS)
+        img = image_util.get_darkness_overlay(rect, sources, AMBIENT_DARKNESS)
         screen.blit(img, cool_math.add(rect.topleft, offset))
 
     def draw_debug_stuff(self, screen, offset):
@@ -199,7 +200,6 @@ class World:
                 elif not chunk.get_rect().collidepoint(entity.xy()):
                     moved_out.append(entity)
             for entity in dead:
-                print(entity, " has died.")
                 self.remove_entity(entity, chunk=chunk)
             for entity in moved_out:
                 chunk.remove(entity)

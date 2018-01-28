@@ -43,6 +43,13 @@ class Enemy(actors.Actor):
 
         if self.health <= 0:
             self.is_alive = False
+            death_spr = self.death_sprite()
+            if death_spr is not None:
+                death_overlay = entities.Overlay(death_spr, 0, 0)
+                death_overlay.set_center_x(self.center()[0])
+                death_overlay.set_y(self.get_y() + self.height() - death_spr.height())
+                death_overlay.with_lifespan(cycles=1)
+                world.add_entity(death_overlay)
             return
 
         self.do_ai_behavior(input_state, world)
@@ -52,6 +59,9 @@ class Enemy(actors.Actor):
 
     def do_ai_behavior(self, input_state, world):
         pass
+
+    def death_sprite(self, cause=None):
+        return None
 
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
@@ -68,6 +78,9 @@ class DumbEnemy(Enemy):
 
     def sprite(self):
         return images.PURPLE_GUY
+
+    def death_sprite(self, cause=None):
+        return images.PURPLE_GUY_DYING
 
     def do_ai_behavior(self, input_state, world):
         # change directions approx every second
@@ -93,6 +106,9 @@ class SmartEnemy(Enemy):
 
     def sprite(self):
         return images.BROWN_GUY
+
+    def death_sprite(self, cause=None):
+        return images.BROWN_GUY_DYING
 
     def do_ai_behavior(self, input_state, world):
         p = world.player()
@@ -139,6 +155,9 @@ class DodgeEnemy(SmartEnemy):
             return images.BLUE_GUY_UP
         else:
             return images.BLUE_GUY_DOWN
+
+    def death_sprite(self, cause=None):
+        return images.BLUE_GUY_DYING
 
     def update(self, input_state, world):
         Enemy.update(self, input_state, world)
