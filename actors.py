@@ -64,8 +64,6 @@ class Actor(Entity):
             self.facing_right = False
 
     def deal_damage(self, damage, source=None, direction=None):
-        if damage > 0 and damage % 2 == 0 and self.health % 2 == 1:
-            damage -= 1  # if you've got a half heart, it'll eat a whole heart of damage
         self.health -= damage
 
     def knock_back(self, speed, direction):

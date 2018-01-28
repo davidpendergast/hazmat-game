@@ -23,7 +23,10 @@ is_fullscreen = False
 level_save_dest = None          # TODO - move to LevelManager
 queued_next_level_name = None
 
+show_enemy_health = False
+
 exit_requested = False
+
 
 
 def update(input_state):

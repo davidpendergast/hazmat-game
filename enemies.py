@@ -28,8 +28,10 @@ class Enemy(actors.Actor):
         return [(w - spr.width()) / 2, (h - spr.height()) / 2 - (64 - h) / 2]
 
     def draw(self, screen, offset=(0, 0), modifier=None):
+        if modifier is None:
+            modifier = "flipped" if not self.facing_right else None
         entities.Entity.draw(self, screen, offset, modifier)
-        if self.health < self.max_health:
+        if self.health < self.max_health and global_state.show_enemy_health:
             health_x = self.get_rect().x + offset[0]
             health_y = self.get_rect().y + self.sprite_offset()[1] - 6 + offset[1]
             health_width = self.get_rect().width
@@ -70,6 +72,13 @@ class Enemy(actors.Actor):
 
     def get_hurtbox(self):
         return self.get_rect()
+
+    def deal_damage(self, damage, source=None, direction=None):
+        actors.Actor.deal_damage(self, damage, source=source, direction=direction)
+
+        x_dir = 1 if direction[0] > 0 else -1
+        y_dir = -0.75
+        self.knock_back(3, (x_dir, y_dir))
 
 
 class DumbEnemy(Enemy):
