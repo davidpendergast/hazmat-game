@@ -11,6 +11,15 @@ import traceback
 
 ALL_LEVELS = {}  # name -> level
 
+# level ids
+PLATFORMER_TEST = "platformer_test"
+LEVEL_VOID = "void"
+LEVEL_01 = "level_01"
+LEVEL_02 = "level_02"
+LEVEL_03 = "level_03"
+
+LEVEL_SEQ = [LEVEL_01, LEVEL_02, LEVEL_03]
+
 LEVELS_DIR = "levels/"
 LEVEL_EXT = ".txt"
 WALLS_HEADER = "##  WALLS  ##"
@@ -33,7 +42,7 @@ def get_first_level_id():
     if settings.is_debug() and settings.STARTING_LEVEL_OVERRIDE is not None:
         return settings.STARTING_LEVEL_OVERRIDE
     else:
-        return "level_01"
+        return LEVEL_SEQ[0]
 
 
 class Level:
@@ -110,7 +119,7 @@ class Level:
 
 class PlatformerTest(Level):
     def __init__(self):
-        Level.__init__(self, "platformer_test", "Platforming Testing", "?-?")
+        Level.__init__(self, PLATFORMER_TEST, "Platforming Testing", "?-?")
 
     def build_refs(self, refs, world):
         return []
@@ -118,13 +127,13 @@ class PlatformerTest(Level):
 
 class _SampleLevel(Level):
     def __init__(self):
-        Level.__init__(self, "level_1", "Entry", "1-2")
+        Level.__init__(self, LEVEL_02, "Entry", "1-2")
 
     def get_player_start_pos(self):
         return (50, 50)
 
     def next_levels(self):
-        return ["level_2"]
+        return [LEVEL_03]
 
     def build_refs(self, refs, world):
         ref_items = list()
@@ -164,7 +173,7 @@ class _SampleLevel(Level):
 class Level12(Level):
 
     def __init__(self):
-        Level.__init__(self, "level_2", "Decay", "1-2")
+        Level.__init__(self, LEVEL_03, "Decay", "1-2")
 
     def build_refs(self, refs, world):
         ref_items = list()
@@ -185,13 +194,13 @@ class Level12(Level):
 class Level11(Level):
 
     def __init__(self):
-        Level.__init__(self, "level_01", "The Beginning", "1-1")
+        Level.__init__(self, LEVEL_01, "The Beginning", "1-1")
 
     def get_player_start_pos(self):
         return (10, -128)
 
     def next_levels(self):
-        return ["level_1"]
+        return [LEVEL_02]
 
     def build_refs(self, refs, world):
         ref_items = list()
@@ -223,7 +232,7 @@ class Level11(Level):
 class _VoidLevel(Level):
 
     def __init__(self):
-        Level.__init__(self, "void", "Void", "?-?")
+        Level.__init__(self, LEVEL_VOID, "Void", "?-?")
 
     def build(self, world):
         global_state.hud.set_level_title_card(self.get_name(), self.get_subtitle())
@@ -237,7 +246,7 @@ class _VoidLevel(Level):
 
 
 def load_from_level_file(world, filename):
-    if filename == "void":
+    if filename == LEVEL_VOID:
         print("WARN\ttried to load void level...?")
         return
 
@@ -262,28 +271,6 @@ def load_from_level_file(world, filename):
                     refs[items[0]] = xy
                     world.add_entity(entities.ReferenceEntity(xy[0], xy[1], ref_id=items[0]))
 
-                elif last_header == WALLS_HEADER:
-                    anim_id = items[0]
-                    x, y, w, h = int(items[1]), int(items[2]), int(items[3]), int(items[4])
-                    if anim_id == images.WHITE_WALL.get_id():
-                        res = entity_factory.build("white_wall")
-                    elif anim_id == images.CHAIN_SMOL.get_id():
-                        res = entity_factory.build("chain_wall_small")
-                    elif anim_id == images.WHITE_WALL_SMOL:
-                        res = entity_factory.build("white_wall_small")
-                    res.set_xy(x, y)
-                    world.add_entity(res)
-
-                elif last_header == DECOR_HEADER or last_header == GROUND_HEADER:
-                    # TODO - this is only here for backwards compat, should remove
-                    dec_id = items[0]
-                    x = int(items[1])
-                    y = int(items[2])
-
-                    dec = entity_factory.build(dec_id)  # decorations.get_decoration(dec_id)
-                    dec.set_xy(x, y)
-                    world.add_entity(dec)
-
                 elif last_header == FACTORY_HEADER:
                     fac_id = items[0]
                     x = int(items[1])
@@ -306,7 +293,6 @@ def save_to_level_file(world, filename):
         print("WARN\ttried to save void level...?")
         return
 
-    walls = []
     factory_created = []
     references = []
 
@@ -319,8 +305,6 @@ def save_to_level_file(world, filename):
                 pass
         elif e.get_factory_id() is not None:
             factory_created.append(e)
-        elif e.is_("wall"):
-            walls.append(e)
         else:
             print("WARN\tdiscarding entity: ", e)
 
@@ -333,13 +317,6 @@ def save_to_level_file(world, filename):
     lines.append(FACTORY_HEADER)
     for fac in sorted(factory_created, key=str):
         lines.append("{}, {}, {}".format(fac.get_factory_id(), fac.get_x(), fac.get_y()))
-    lines.append("")
-
-    lines.append(WALLS_HEADER)
-    for wall in sorted(walls, key=str):
-        anim_id = wall.sprite().get_id()
-        r = wall.get_rect()
-        lines.append("{}, {}, {}, {}, {}".format(anim_id, r[0], r[1], r[2], r[3]))
     lines.append("")
 
     levels_dir = settings.CONFIGS["level_dir"]

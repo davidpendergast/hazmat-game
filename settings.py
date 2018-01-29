@@ -7,7 +7,7 @@ CONFIGS = {
 }
 
 
-STARTING_LEVEL_OVERRIDE = "platformer_test"
+STARTING_LEVEL_OVERRIDE = None  # "level_02"
 
 
 def is_debug():
