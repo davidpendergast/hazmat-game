@@ -21,22 +21,6 @@ class Decoration(entities.Entity):
         return (0, 0)
 
 
-class LightEmittingDecoration(Decoration):
-    """A decoration that emits light. Should never move."""
-
-    def __init__(self, x, y, dec_id, animation, light_radius):
-        Decoration.__init__(self, x, y, dec_id, animation)
-        self.radius = light_radius      # radius in pixels
-        self.categories.update(["light_source"])
-
-    def light_profile(self):
-        """returns: integers (x, y, luminosity, radius), or None if luminosity
-            or radius is zero
-        """
-        pos = self.center()
-        return (pos[0], pos[1], 255, self.radius)
-
-
 class Ground(Decoration):
 
     def __init__(self, x, y, dec_id, animation):

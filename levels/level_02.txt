@@ -64,7 +64,7 @@ ground_stone, 1024, 64
 ground_stone, 1024, 96
 ground_stone, 1056, 128
 ground_stone, 1056, 160
-ground_wall, 1056, 192
+ground_dark, 1056, 192
 ground_wall, 1056, 224
 ground_wall, 1056, 256
 ground_wall, 1056, 288
@@ -78,7 +78,7 @@ ground_stone, 1056, 64
 ground_stone, 1056, 96
 ground_stone, 1088, 128
 ground_stone, 1088, 160
-ground_wall, 1088, 192
+ground_dark, 1088, 192
 ground_wall, 1088, 224
 ground_wall, 1088, 256
 ground_wall, 1088, 288
@@ -1012,6 +1012,9 @@ ground_purple, 992, 448
 ground_purple, 992, 480
 ground_stone, 992, 64
 ground_stone, 992, 96
+acid_top, 2464, -64
+acid_top, 2496, -64
+acid_top, 2528, -64
 lightbulb, 1024, 96
 lightbulb, 1040, 416
 lightbulb, 1168, 256
@@ -1459,15 +1462,12 @@ white_wall_small, 2448, 176
 white_wall_small, 2448, 192
 white_wall, 2464, -32
 white_wall, 2464, -416
-white_wall_small, 2464, -48
 white_wall, 2464, 192
 white_wall, 2464, 224
 white_wall, 2464, 256
 white_wall, 2464, 288
-white_wall_small, 2480, -48
 white_wall, 2496, -32
 white_wall, 2496, -416
-white_wall_small, 2512, -48
 white_wall, 2528, -32
 white_wall, 2528, -416
 white_wall_small, 2544, -128

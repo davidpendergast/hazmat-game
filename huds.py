@@ -10,7 +10,6 @@ import cool_math
 import images
 import settings
 import text_stuff
-import decorations
 import puzzles
 import menus
 import entity_factory
@@ -224,7 +223,7 @@ class HUD:
             self.active_puzzle = puzzle
             self.puzzle_state_callback = [puzzles.IN_PROGRESS]
             if self.puzzle_surface is None or self.puzzle_surface.get_size() != puzzle.size():
-                print("regenning puzzle surface to size=", puzzle.size())
+                print("INFO\tregenning puzzle surface to size=", puzzle.size())
                 self.puzzle_surface = pygame.Surface(puzzle.size())
             return self.puzzle_state_callback
 

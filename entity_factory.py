@@ -23,8 +23,8 @@ def build(factory_id):
 def init_entities():
     print("INFO\tinitializing entity factory")
 
-    _put("acid_top", lambda: entities.KillBlock(0, 0, images.ACID_TOP_HALF, hitbox=[0, 16, 32, 16]))
-    _put("acid_full", lambda: entities.KillBlock(0, 0, images.ACID_FULL))
+    _put("acid_top", lambda: entities.KillBlock(0, 0, images.ACID_TOP_HALF, hitbox=[0, 16, 32, 16]).with_light_level(128))
+    _put("acid_full", lambda: entities.KillBlock(0, 0, images.ACID_FULL).with_light_level(128))
 
     _put("white_wall", lambda: entities.Wall(0, 0, 32, 32, sprite=images.WHITE_WALL))
     _put("chain_wall_small", lambda: entities.Wall(0, 0, 16, 16, images.CHAIN_SMOL))
@@ -34,7 +34,7 @@ def init_entities():
     entities.Wall(0, 0, 16, 16, images.CHAIN_SMOL),
     entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL),
 
-    _put("lightbulb", lambda: decorations.LightEmittingDecoration(0, 0, "lightbulb", images.LIGHT_BULB, light_radius=160))
+    _put("lightbulb", lambda: decorations.Decoration(0, 0, "lightbulb", images.LIGHT_BULB).with_light_level(160))
     _put("wire_vert", lambda: decorations.Decoration(0, 0, "wire_vert", images.WIRE_VERTICAL))
     _put("chalkboard", lambda: decorations.Decoration(0, 0, "chalkboard", images.CHALKBOARD))
     _put("ground_stone", lambda: decorations.Ground(0, 0, "ground_stone", images.STONE_GROUND))

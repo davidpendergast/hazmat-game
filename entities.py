@@ -15,6 +15,7 @@ class Entity:
         self.vel = [0, 0]
         self.rect = pygame.Rect(x, y, w, h)
         self.categories = set()
+        self.light_radius = None
         self.ref_id = None      # used by the level loader to mark entity as 'special'
         self.factory_id = None  # used by the level loaded to mark entity as factory created
 
@@ -158,6 +159,30 @@ class Entity:
 
     def is_light_source(self):
         return self.is_("light_source")
+
+    def with_light_level(self, radius):
+        """
+        Should only be called when building entity. Also, giving light to an entity
+        that moves a lot will likely cause performance issues
+        """
+        self.light_radius = radius
+        if radius is not None:
+            self.categories.add("light_source")
+        elif "light_source" in self.categories:
+            self.categories.remove("light_source")
+
+        return self
+
+    def light_profile(self):
+        """
+        returns: integers (x, y, luminosity, radius), or None if luminosity
+        or radius is zero
+        """
+        if self.light_radius is None or self.light_radius <= 0:
+            return None
+        else:
+            pos = self.center()
+            return (pos[0], pos[1], 255, self.light_radius)
 
     def __repr__(self):
         pos = "(%s, %s)" % (self.rect.x, self.rect.y)
