@@ -76,9 +76,10 @@ class Enemy(actors.Actor):
     def deal_damage(self, damage, source=None, direction=None):
         actors.Actor.deal_damage(self, damage, source=source, direction=direction)
 
-        x_dir = 1 if direction[0] > 0 else -1
-        y_dir = -0.75
-        self.knock_back(3, (x_dir, y_dir))
+        if direction is not None:
+            x_dir = 1 if direction[0] > 0 else -1
+            y_dir = -0.75
+            self.knock_back(3, (x_dir, y_dir))
 
 
 class DumbEnemy(Enemy):

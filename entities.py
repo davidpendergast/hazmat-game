@@ -15,7 +15,8 @@ class Entity:
         self.vel = [0, 0]
         self.rect = pygame.Rect(x, y, w, h)
         self.categories = set()
-        self.ref_id = None  # used by the level loader to mark entity as 'special'
+        self.ref_id = None      # used by the level loader to mark entity as 'special'
+        self.factory_id = None  # used by the level loaded to mark entity as factory created
 
     def draw(self, screen, offset=(0, 0), modifier=None):
         modifier = self.sprite_modifier() if modifier is None else modifier
@@ -26,6 +27,17 @@ class Entity:
             images.draw_animated_sprite(screen, dest_rect, sprite, modifier)
         else:
             pygame.draw.rect(screen, images.RAINBOW, dest_rect, 0)
+
+    def with_category(self, category):
+        validate_category(category)
+        self.categories.add(category)
+        return self
+
+    def set_factory_id(self, factory_id):
+        self.factory_id = factory_id
+
+    def get_factory_id(self):
+        return self.factory_id
 
     def sprite_offset(self):
         return (0, 0)
@@ -540,15 +552,27 @@ class Overlay(Entity):
             self.set_center(pos[0], pos[1])
 
 
-class Ladder(Entity):
-    def __init__(self, x, y):
-        Entity.__init__(self, x, y, 24, 32)
-
-    def sprite_offset(self):
-        return (-4, 0)
+class KillBlock(Entity):
+    def __init__(self, x, y, sprite, hitbox=None):
+        Entity.__init__(self, x, y, sprite.width(), sprite.height())
+        self._sprite = sprite
+        self._hitbox = hitbox
+        self.categories.update(["instakill"])
 
     def sprite(self):
-        return images.LADDER
+        return self._sprite
+
+    def update(self, input_state, world):
+        actors_touching = world.get_entities_in_rect(self.hitbox(), category="actor")
+        for actor in actors_touching:
+            actor.deal_damage(9999, source=self)  # TODO - 9999 is probably ok?
+
+    def hitbox(self):
+        if self._hitbox is None:
+            return self.get_rect()
+        else:
+            hb = self._hitbox
+            return [self.get_x() + hb[0], self.get_y() + hb[1], hb[2], hb[3]]
 
 
 class ReferenceEntity(Entity):
@@ -747,7 +771,7 @@ class EntityCollection:
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
                      "health_machine", "wall", "overlay", "player", "interactable", "light_source",
-                     "level_door", "door", "zone"}
+                     "level_door", "door", "zone", "instakill"}
 
 
 def validate_category(category):

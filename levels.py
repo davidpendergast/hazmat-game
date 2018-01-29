@@ -6,6 +6,7 @@ import file_stuff
 import settings
 import puzzles
 import global_state
+import entity_factory
 
 import traceback
 
@@ -17,7 +18,8 @@ WALLS_HEADER = "##  WALLS  ##"
 DECOR_HEADER = "##  DECORATIONS  ##"
 GROUND_HEADER = "##  GROUND  ##"
 REF_HEADER = "##  REFERENCES  ##"
-ALL_HEADERS = [WALLS_HEADER, DECOR_HEADER, GROUND_HEADER, REF_HEADER]
+FACTORY_HEADER = "## FACTORY ##"
+ALL_HEADERS = [WALLS_HEADER, DECOR_HEADER, GROUND_HEADER, FACTORY_HEADER, REF_HEADER]
 
 
 def get_level(level_id):
@@ -32,7 +34,7 @@ def get_first_level_id():
     if settings.is_debug() and settings.STARTING_LEVEL_OVERRIDE is not None:
         return settings.STARTING_LEVEL_OVERRIDE
     else:
-        return "level_1"
+        return "level_01"
 
 
 class Level:
@@ -94,7 +96,7 @@ class Level:
 
         for ref_id in refs:
             if ref_id not in self._used_refs:
-                print("warning - did not build reference id: ", ref_id)
+                print("WARN\tdid not build reference id: ", ref_id)
                 ref_entity = self.fetch_ref(ref_id, entities.ReferenceEntity(0, 0, ref_id=ref_id), refs)
                 world.add_entity(ref_entity)
 
@@ -253,11 +255,11 @@ def load_from_level_file(world, filename):
         try:
             if line in ALL_HEADERS:
                 last_header = line
-                print("Loading from section: ", last_header)
+                print("INFO\tloading from section: ", last_header)
             elif line == "":
                 pass
             elif last_header is None or line.startswith("#"):
-                print("skipping line: ", line)
+                print("INFO\tskipping line: ", line)
             else:
                 items = line.split(", ")
                 if last_header == REF_HEADER:
@@ -280,8 +282,18 @@ def load_from_level_file(world, filename):
                     dec.set_xy(x, y)
                     world.add_entity(dec)
 
+                elif last_header == FACTORY_HEADER:
+                    fac_id = items[0]
+                    x = int(items[1])
+                    y = int(items[2])
+
+                    fac = entity_factory.build(fac_id)
+                    fac.set_xy(x, y)
+                    world.add_entity(fac)
+
         except ValueError:
-            print("Error on line ", cnt, ":\t", line)
+            print("ERROR\t error parsing entitiy in ", (filename + LEVEL_EXT), " on line ", cnt, ":\t", line)
+            traceback.print_exc()
 
         cnt += 1
     return refs
@@ -294,6 +306,7 @@ def save_to_level_file(world, filename):
 
     walls = []
     decorations = []
+    factory_created = []
     ground = []
     references = []
 
@@ -304,6 +317,8 @@ def save_to_level_file(world, filename):
             else:
                 # do nothing, this entity gets spawned by a reference entity
                 pass
+        elif e.get_factory_id() is not None:
+            factory_created.append(e)
         elif e.is_("wall"):
             walls.append(e)
         elif e.is_("ground"):
@@ -311,7 +326,7 @@ def save_to_level_file(world, filename):
         elif e.is_("decoration"):
             decorations.append(e)
         else:
-            print("discarding entity: ", e)
+            print("WARN\tdiscarding entity: ", e)
 
     lines = list()
     lines.append(REF_HEADER)
@@ -322,6 +337,11 @@ def save_to_level_file(world, filename):
     lines.append(DECOR_HEADER)
     for dec in sorted(decorations, key=str):
         lines.append("{}, {}, {}".format(dec.get_dec_id(), dec.get_x(), dec.get_y()))
+    lines.append("")
+
+    lines.append(FACTORY_HEADER)
+    for fac in sorted(factory_created, key=str):
+        lines.append("{}, {}, {}".format(fac.get_factory_id(), fac.get_x(), fac.get_y()))
     lines.append("")
 
     lines.append(WALLS_HEADER)
@@ -340,11 +360,11 @@ def save_to_level_file(world, filename):
     file_stuff.write_lines_to_file(lines, levels_dir + filename + LEVEL_EXT)
 
 
-print("INFO\tBuilding levels...")
+print("\nINFO\tbuilding levels...")
 g = globals().copy()
 for level in Level.__subclasses__():
     lvl = level()
-    print("INFO\tBuilt: ", lvl.get_id())
+    print("INFO\tbuilt level: ", lvl.get_id())
 
 
 

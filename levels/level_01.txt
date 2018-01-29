@@ -3,7 +3,6 @@ finish_door, 4128, -1536
 breakable_walls, 4352, -896
 breakable_2, 4480, -992
 terminal_2, 4704, -896
-lava_zone_1, 576, 32
 terminal_1, 960, 64
 terminal_1, 960, 64
 
@@ -105,15 +104,7 @@ lightbulb, 1184, -208
 lightbulb, 1392, -208
 lightbulb, 1568, -304
 lightbulb, 1568, -512
-acid_full, 1728, -64
-acid_top, 1728, -96
-acid_full, 1760, -64
-acid_top, 1760, -96
 lightbulb, 1792, -544
-acid_full, 1792, -64
-acid_top, 1792, -96
-acid_full, 1824, -64
-acid_top, 1824, -96
 lightbulb, 2000, -544
 lightbulb, 2176, -544
 lightbulb, 2368, -544
@@ -146,15 +137,21 @@ lightbulb, 4672, -928
 lightbulb, 4752, -928
 lightbulb, 4896, -1072
 lightbulb, 512, -16
+lightbulb, 688, -64
+lightbulb, 864, -64
+lightbulb, 96, 32
+
+## FACTORY ##
 acid_top, 576, 64
 acid_full, 576, 96
 acid_top, 608, 64
 acid_full, 608, 96
-lightbulb, 688, -64
-acid_top, 736, 96
-acid_top, 768, 96
-lightbulb, 864, -64
-lightbulb, 96, 32
+acid_top, 736, 32
+acid_full, 736, 64
+acid_full, 736, 96
+acid_top, 768, 32
+acid_full, 768, 64
+acid_full, 768, 96
 
 ##  WALLS  ##
 chain_small, -16, -112, 16, 16

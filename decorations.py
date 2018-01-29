@@ -5,7 +5,7 @@ ALL_DECORATIONS = {}  # dec_id -> lambda(() -> Decoration)
 
 
 def init_decorations():
-    print("initializing decorations...")
+    print("\nINFO\tinitializing decorations...")
     ALL_DECORATIONS["lightbulb"] = lambda: LightEmittingDecoration(0, 0, "lightbulb", images.LIGHT_BULB, light_radius=160)
     ALL_DECORATIONS["wire_vert"] = lambda: Decoration(0, 0, "wire_vert", images.WIRE_VERTICAL)
     ALL_DECORATIONS["chalkboard"] = lambda: Decoration(0, 0, "chalkboard", images.CHALKBOARD)
@@ -15,8 +15,7 @@ def init_decorations():
     ALL_DECORATIONS["ground_purple"] = lambda: Ground(0, 0, "ground_purple", images.PURPLE_GROUND)
     ALL_DECORATIONS["ground_wall"] = lambda: Ground(0, 0, "ground_wall", images.WALL_GROUND)
     ALL_DECORATIONS["ground_dark"] = lambda: Ground(0, 0, "ground_dark", images.DARK_GROUND)
-    ALL_DECORATIONS["acid_full"] = lambda: LightEmittingDecoration(0, 0, "acid_full", images.ACID_FULL, light_radius=64)
-    ALL_DECORATIONS["acid_top"] = lambda: LightEmittingDecoration(0, 0, "acid_top", images.ACID_TOP_HALF, light_radius=64)
+    print("INFO\tfinished creating ", len(ALL_DECORATIONS), " decorations")
 
 
 def get_decoration(dec_id):

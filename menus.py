@@ -150,7 +150,7 @@ class DeathMenu(OptionSelectMenu):
         pass
 
 
-print("INFO\tBuilding menus...")
+print("\nINFO\tbuilding menus...")
 g = globals().copy()
 menu_stack = [Menu]
 while len(menu_stack) > 0:

@@ -13,6 +13,7 @@ import text_stuff
 import decorations
 import puzzles
 import menus
+import entity_factory
 
 
 LEVEL_TITLE_SIZE = 128
@@ -44,9 +45,8 @@ class HUD:
             decorations.get_decoration("ground_dark"),
             entities.LevelEndDoor(0, 0, "level_2"),
             entities.BreakableWall(0, 0),
-            decorations.get_decoration("acid_full"),
-            decorations.get_decoration("acid_top")
-
+            entity_factory.build("acid_full"),
+            entity_factory.build("acid_top")
         ]
 
         self.text_queue = collections.deque()

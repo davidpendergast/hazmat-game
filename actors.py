@@ -249,12 +249,13 @@ class Player(Actor):
             Actor.deal_damage(self, damage, source=source, direction=direction)
             self.post_dmg_invincibility_cooldown = self.post_dmg_invincibility_max_cooldown
 
-            x_dir = 1 if direction[0] > 0 else -1
-            y_dir = -0.75
-            self.knock_back(7, (x_dir, y_dir))
+            if direction is not None:
+                x_dir = 1 if direction[0] > 0 else -1
+                y_dir = -0.75
+                self.knock_back(7, (x_dir, y_dir))
 
-            self.flying_uncontrollably = True
-            self.flying_uncontrollably_time = 0
+                self.flying_uncontrollably = True
+                self.flying_uncontrollably_time = 0
 
             sounds.play(sounds.PLAYER_DAMAGE)
 
