@@ -66,21 +66,32 @@ class OptionSelectMenu(Menu, ABC):
         return self.options[index]
 
     def update(self, input_state):
-        if input_state.was_pressed(pygame.K_s) or input_state.was_pressed(pygame.K_DOWN):
+        pushed_down = input_state.was_pressed(pygame.K_s) or input_state.was_pressed(pygame.K_DOWN)
+        pushed_up = input_state.was_pressed(pygame.K_w) or input_state.was_pressed(pygame.K_UP)
+        allow_wrapping = len(self.options) > 2
+
+        if pushed_down and (self.selected_idx < len(self.options) - 1 or allow_wrapping):
             self.selected_idx = (self.selected_idx + 1) % len(self.options)
 
-        if input_state.was_pressed(pygame.K_w) or input_state.was_pressed(pygame.K_UP):
+        if pushed_up and (self.selected_idx > 0 or allow_wrapping):
             self.selected_idx = (self.selected_idx - 1) % len(self.options)
 
         if input_state.was_pressed(pygame.K_k) or input_state.was_pressed(pygame.K_RETURN):
             self.activate_option(self.selected_idx)
 
-    def draw_options(self, screen, rect_to_fill):
+    def draw_options(self, screen, rect_to_fill, max_height=999):
         r_x = rect_to_fill[0]
         r_y = rect_to_fill[1]
         r_w = rect_to_fill[2]
         r_h = rect_to_fill[3]
         opt_h = int(r_h / len(self.options))
+
+        if opt_h > max_height:
+            opt_h = max_height
+            shrinkage = r_h - opt_h * len(self.options)
+            r_y += int(shrinkage/2)
+            r_h -= shrinkage
+
         for i in range(0, len(self.options)):
             opt_color = WHITE if self.selected_idx != i else BLUE
             opt_text = self.options[i]
@@ -110,7 +121,7 @@ class MainMenu(OptionSelectMenu):
         y_space_remaining = global_state.HEIGHT - y - _BORDER_THICKNESS
         option_rect = [0, y, global_state.WIDTH, y_space_remaining]
 
-        self.draw_options(screen, option_rect)
+        self.draw_options(screen, option_rect, max_height=64)
 
     def activate_option(self, option_idx):
         option_name = self.get_option(option_idx)
@@ -134,7 +145,7 @@ class MainMenu(OptionSelectMenu):
 
 class DeathMenu(OptionSelectMenu):
     def __init__(self):
-        self.opt_retry = "continue"
+        self.opt_retry = "retry"
         self.opt_exit = "exit"
         options = [self.opt_retry, self.opt_exit]
         OptionSelectMenu.__init__(self, DEATH_MENU, options)
@@ -142,12 +153,20 @@ class DeathMenu(OptionSelectMenu):
     def activate_option(self, option_idx):
         option_name = self.get_option(option_idx)
         if option_name == self.opt_retry:
-            print("INFO\tretrying level")
+            global_state.queued_next_level_name = global_state.level_save_dest  # TODO - kinda hacky need LevelManager
+            global_state.hud.set_active_menu(None)
         elif option_name == self.opt_exit:
             global_state.hud.set_active_menu(MAIN_MENU)
 
+    def update(self, input_state):
+        OptionSelectMenu.update(self, input_state)
+
     def draw(self, screen):
-        pass
+        w = global_state.WIDTH / 2
+        h = global_state.HEIGHT / 2
+        option_rect = [int(global_state.WIDTH/2 - w/2), int(global_state.HEIGHT/2 - h/2), int(w), int(h)]
+        text_stuff.draw_pretty_bordered_rect(screen, option_rect)
+        self.draw_options(screen, option_rect, max_height=64)
 
 
 print("\nINFO\tbuilding menus...")

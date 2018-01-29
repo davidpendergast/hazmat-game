@@ -25,8 +25,9 @@ queued_next_level_name = None
 
 show_enemy_health = False
 
-exit_requested = False
+allow_player_deaths = True
 
+exit_requested = False
 
 
 def update(input_state):

@@ -136,6 +136,9 @@ class World:
         self._player = None
         self.chunks = {}
 
+        # counts up as player is missing (used to pause a bit before restarting level after deaths)
+        self._missing_player_counter = 0
+
     def get_chunk_key_for_point(self, x, y):
         return (x - (x % CHUNK_SIZE), y - (y % CHUNK_SIZE))
 
@@ -230,6 +233,11 @@ class World:
 
             self.recenter_camera(p.center())
 
+        if p is None:
+            self._missing_player_counter += 1
+        else:
+            self._missing_player_counter = 0
+
     def recenter_camera(self, pos):
         x = round(pos[0] - global_state.WIDTH / 2)
         y = round(pos[1] - global_state.HEIGHT / 2)
@@ -237,6 +245,9 @@ class World:
 
     def get_camera(self):
         return self.camera
+
+    def time_since_player_death(self):
+        return self._missing_player_counter
 
     def _prepare_to_remove(self, entity):
         entity.is_alive = False

@@ -61,6 +61,7 @@ class HUD:
         self.active_menu = None
 
     def set_active_menu(self, menu_id):
+        print("INFO\tswitching to menu: ", menu_id)
         if menu_id is None:
             self.active_menu = None
         else:
@@ -312,6 +313,7 @@ class HUD:
         absorbing = absorbing or self.is_showing_text()
         absorbing = absorbing or self.active_puzzle is not None
         absorbing = absorbing or self.is_showing_title_card()
+        absorbing = absorbing or self.active_menu is not None
 
         return absorbing
 

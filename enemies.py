@@ -41,18 +41,7 @@ class Enemy(actors.Actor):
             pygame.draw.rect(screen, (50, 255, 50), health_rect, 0)
 
     def update(self, input_state, world):
-        self._update_status_tags(world, input_state)
-
-        if self.health <= 0:
-            self.is_alive = False
-            death_spr = self.death_sprite()
-            if death_spr is not None:
-                death_overlay = entities.Overlay(death_spr, 0, 0)
-                death_overlay.set_center_x(self.center()[0])
-                death_overlay.set_y(self.get_y() + self.height() - death_spr.height())
-                death_overlay.with_lifespan(cycles=1)
-                world.add_entity(death_overlay)
-            return
+        actors.Actor.update(self, input_state, world)
 
         self.do_ai_behavior(input_state, world)
 
@@ -61,9 +50,6 @@ class Enemy(actors.Actor):
 
     def do_ai_behavior(self, input_state, world):
         pass
-
-    def death_sprite(self, cause=None):
-        return None
 
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())

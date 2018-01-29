@@ -1,5 +1,4 @@
 import math
-import random
 
 import pygame
 
@@ -32,9 +31,26 @@ class Actor(Entity):
     def sprite_modifier(self):
         return "normal" if self.facing_right else "flipped"
 
+    def death_sprite(self, cause=None):
+        return None
+
     def get_jump_speed(self):
         a = Actor.gravity
         return -math.sqrt(2 * a * self.jump_height)
+
+    def update(self, input_state, world):
+        self._update_status_tags(world, input_state)
+
+        if self.health <= 0:
+            self.is_alive = False
+            death_spr = self.death_sprite()
+            if death_spr is not None:
+                death_overlay = Overlay(death_spr, 0, 0)
+                death_overlay.set_center_x(self.center()[0])
+                death_overlay.set_y(self.get_y() + self.height() - death_spr.height())
+                death_overlay.with_lifespan(cycles=1)
+                world.add_entity(death_overlay)
+            return
 
     def apply_physics(self):
         self.set_x(self.x + self.vel[0])
@@ -124,6 +140,9 @@ class Player(Actor):
         else:
             return images.PLAYER_AIR
 
+    def death_sprite(self, cause=None):
+        return images.PLAYER_DYING
+
     def sprite_modifier(self):
         return Actor.sprite_modifier(self)
 
@@ -146,7 +165,7 @@ class Player(Actor):
         Actor.draw(self, screen, offset, modifier)
 
     def update(self, input_state, world):
-        self._update_status_tags(world, input_state)
+        Actor.update(self, input_state, world)
 
         if self.post_dmg_invincibility_cooldown > 0:
             self.post_dmg_invincibility_cooldown -= 1
@@ -258,6 +277,9 @@ class Player(Actor):
                 self.flying_uncontrollably_time = 0
 
             sounds.play(sounds.PLAYER_DAMAGE)
+
+        if self.health <= 0 and not global_state.allow_player_deaths:
+            self.health = 1
 
     def _has_control_of_character(self):
         return not self.flying_uncontrollably and not self._is_shooting()

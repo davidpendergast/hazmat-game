@@ -10,6 +10,7 @@ import levels
 import sounds
 import actors
 import menus
+import settings
 
 pygame.mixer.pre_init(22050, 16, 1, 4096)
 pygame.init()
@@ -61,8 +62,7 @@ def update():
         pygame.display.set_caption("HATE (editing " + gs.queued_next_level_name + ".txt)")
         gs.queued_next_level_name = None
 
-        player = active_world.player()
-        player.health = player.max_health  # heal to full after level completion
+        player = actors.Player(0, 0)
         pos = level.get_player_start_pos()
         player.set_xy(pos[0], pos[1])
 
@@ -71,6 +71,10 @@ def update():
         active_world.add_entity(player)
 
         images.wipe_caches()
+
+    player_dead = active_world.time_since_player_death() > settings.WAIT_TICKS_AFTER_DEATH
+    if player_dead and not gs.hud.is_absorbing_inputs():
+        gs.hud.set_active_menu(menus.DEATH_MENU)
 
     images.update()
 
