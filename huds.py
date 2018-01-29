@@ -24,26 +24,23 @@ class HUD:
         self.selected_item_to_place = None
         self.selected_item_placeable = False
         self.items = [
-            entities.Wall(0, 0),
-            entities.Wall(0, 0, 16, 16, images.CHAIN_SMOL),
-            entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL),
+            entity_factory.build("white_wall"),
+            entity_factory.build("chain_wall_small"),
+            entity_factory.build("white_wall_small"),
             entities.Terminal(0, 0),
             entities.ReferenceEntity(0, 0, ref_id=None),
             enemies.DumbEnemy(0, 0),
-            decorations.get_decoration("lightbulb"),
-            decorations.get_decoration("wire_vert"),
-            entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle()),
-            entities.HealthMachine(0, 0, 4)
+            entity_factory.build("lightbulb"),
+            entity_factory.build("wire_vert"),
         ]
 
         self.alt_items = [  # accessed by hitting shift + numkuy
-            decorations.get_decoration("ground_stone"),
-            decorations.get_decoration("ground_sand"),
-            decorations.get_decoration("ground_purple"),
-            decorations.get_decoration("ground_grass"),
-            decorations.get_decoration("ground_wall"),
-            decorations.get_decoration("ground_dark"),
-            entities.LevelEndDoor(0, 0, "level_2"),
+            entity_factory.build("ground_stone"),
+            entity_factory.build("ground_sand"),
+            entity_factory.build("ground_purple"),
+            entity_factory.build("ground_grass"),
+            entity_factory.build("ground_wall"),
+            entity_factory.build("ground_dark"),
             entities.BreakableWall(0, 0),
             entity_factory.build("acid_full"),
             entity_factory.build("acid_top")

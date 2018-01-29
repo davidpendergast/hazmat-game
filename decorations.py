@@ -1,29 +1,6 @@
 import entities
 import images
 
-ALL_DECORATIONS = {}  # dec_id -> lambda(() -> Decoration)
-
-
-def init_decorations():
-    print("\nINFO\tinitializing decorations...")
-    ALL_DECORATIONS["lightbulb"] = lambda: LightEmittingDecoration(0, 0, "lightbulb", images.LIGHT_BULB, light_radius=160)
-    ALL_DECORATIONS["wire_vert"] = lambda: Decoration(0, 0, "wire_vert", images.WIRE_VERTICAL)
-    ALL_DECORATIONS["chalkboard"] = lambda: Decoration(0, 0, "chalkboard", images.CHALKBOARD)
-    ALL_DECORATIONS["ground_stone"] = lambda: Ground(0, 0, "ground_stone", images.STONE_GROUND)
-    ALL_DECORATIONS["ground_sand"] = lambda: Ground(0, 0, "ground_sand", images.SAND_GROUND)
-    ALL_DECORATIONS["ground_grass"] = lambda: Ground(0, 0, "ground_grass", images.GRASS_GROUND)
-    ALL_DECORATIONS["ground_purple"] = lambda: Ground(0, 0, "ground_purple", images.PURPLE_GROUND)
-    ALL_DECORATIONS["ground_wall"] = lambda: Ground(0, 0, "ground_wall", images.WALL_GROUND)
-    ALL_DECORATIONS["ground_dark"] = lambda: Ground(0, 0, "ground_dark", images.DARK_GROUND)
-    print("INFO\tfinished creating ", len(ALL_DECORATIONS), " decorations")
-
-
-def get_decoration(dec_id):
-    if dec_id not in ALL_DECORATIONS:
-        raise ValueError("Unknown decoration id: " + str(dec_id))
-    else:
-        return ALL_DECORATIONS[dec_id]()
-
 
 class Decoration(entities.Entity):
     """Just a noninteractive piece of art basically."""
@@ -66,5 +43,3 @@ class Ground(Decoration):
         Decoration.__init__(self, x, y, dec_id, animation)
         self.categories.update(["ground"])
 
-
-init_decorations()

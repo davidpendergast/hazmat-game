@@ -150,7 +150,7 @@ class SmartEnemy(Enemy):
         self.is_chasing = True
 
     def deal_damage(self, damage, source=None, direction=None):
-        actors.Actor.deal_damage(self, damage, source=source, direction=direction)
+        Enemy.deal_damage(self, damage, source=source, direction=direction)
         self.start_chasing()
 
 

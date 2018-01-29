@@ -1,7 +1,6 @@
 import enemies
 import images
 import entities
-import decorations
 import file_stuff
 import settings
 import puzzles
@@ -197,10 +196,6 @@ class Level11(Level):
     def build_refs(self, refs, world):
         ref_items = list()
 
-        lava = self.fetch_ref("lava_zone_1", entities.Zone(0, 0, 64, 48), refs)
-        lava.set_y(lava.get_y() + 48)
-        ref_items.append(lava)
-
         txt = "you shouldn't be here"
         ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, txt), refs))
 
@@ -269,16 +264,23 @@ def load_from_level_file(world, filename):
 
                 elif last_header == WALLS_HEADER:
                     anim_id = items[0]
-                    animation = images.get_animation(anim_id)
                     x, y, w, h = int(items[1]), int(items[2]), int(items[3]), int(items[4])
-                    world.add_entity(entities.Wall(x, y, w=w, h=h, sprite=animation))
+                    if anim_id == images.WHITE_WALL.get_id():
+                        res = entity_factory.build("white_wall")
+                    elif anim_id == images.CHAIN_SMOL.get_id():
+                        res = entity_factory.build("chain_wall_small")
+                    elif anim_id == images.WHITE_WALL_SMOL:
+                        res = entity_factory.build("white_wall_small")
+                    res.set_xy(x, y)
+                    world.add_entity(res)
 
                 elif last_header == DECOR_HEADER or last_header == GROUND_HEADER:
+                    # TODO - this is only here for backwards compat, should remove
                     dec_id = items[0]
                     x = int(items[1])
                     y = int(items[2])
 
-                    dec = decorations.get_decoration(dec_id)
+                    dec = entity_factory.build(dec_id)  # decorations.get_decoration(dec_id)
                     dec.set_xy(x, y)
                     world.add_entity(dec)
 
@@ -305,9 +307,7 @@ def save_to_level_file(world, filename):
         return
 
     walls = []
-    decorations = []
     factory_created = []
-    ground = []
     references = []
 
     for e in world.get_entities_with(not_category="actor"):
@@ -321,10 +321,6 @@ def save_to_level_file(world, filename):
             factory_created.append(e)
         elif e.is_("wall"):
             walls.append(e)
-        elif e.is_("ground"):
-            ground.append(e)
-        elif e.is_("decoration"):
-            decorations.append(e)
         else:
             print("WARN\tdiscarding entity: ", e)
 
@@ -332,11 +328,6 @@ def save_to_level_file(world, filename):
     lines.append(REF_HEADER)
     for ref in sorted(references, key=str):
         lines.append("{}, {}, {}".format(ref.get_ref_id(), ref.get_x(), ref.get_y()))
-    lines.append("")
-
-    lines.append(DECOR_HEADER)
-    for dec in sorted(decorations, key=str):
-        lines.append("{}, {}, {}".format(dec.get_dec_id(), dec.get_x(), dec.get_y()))
     lines.append("")
 
     lines.append(FACTORY_HEADER)
@@ -349,11 +340,6 @@ def save_to_level_file(world, filename):
         anim_id = wall.sprite().get_id()
         r = wall.get_rect()
         lines.append("{}, {}, {}, {}, {}".format(anim_id, r[0], r[1], r[2], r[3]))
-    lines.append("")
-
-    lines.append(GROUND_HEADER)
-    for gr in sorted(ground, key=str):
-        lines.append("{}, {}, {}".format(gr.get_dec_id(), gr.get_x(), gr.get_y()))
     lines.append("")
 
     levels_dir = settings.CONFIGS["level_dir"]
