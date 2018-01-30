@@ -20,7 +20,7 @@ pygame.display.set_icon(images.get_window_icon())
 screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.DOUBLEBUF)
 
 sounds.init_sounds()
-# sounds.play_song(sounds.SONG_CREEPY, loops=-1)
+sounds.play_song(sounds.SONG_CREEPY, loops=-1)
 
 still_running = True
 clock = pygame.time.Clock()
@@ -44,6 +44,7 @@ def draw(screen):
     pygame.draw.rect(screen, (120, 120, 120), screen_rect, 0)
     active_world.draw_all(screen)
     gs.hud.draw(screen, offset=cool_math.neg(active_world.get_camera()))
+    gs.draw_counter += 1
 
 
 def update():
@@ -97,7 +98,6 @@ def set_fullscreen(val):
         size = (gs.WIDTH, gs.HEIGHT)
         new_screen = pygame.display.set_mode(size, pygame.DOUBLEBUF)
 
-
     global screen
     screen = new_screen
 
@@ -140,9 +140,11 @@ while still_running:
         input_state.set_mouse_pos(None)
 
     update()
-    draw(screen)
 
-    pygame.display.flip()
+    if gs.tick_counter % settings.FPS_THROTTLE == 0:
+        draw(screen)
+        pygame.display.flip()
+
     clock.tick(FPS)
 
 print("INFO\texit imminent")

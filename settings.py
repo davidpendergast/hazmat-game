@@ -6,10 +6,14 @@ CONFIGS = {
     "debug_mode": True
 }
 
-WAIT_TICKS_AFTER_DEATH = 75
-
 
 STARTING_LEVEL_OVERRIDE = None  # "level_02"
+
+
+FPS_THROTTLE = 1  # frames will only be drawn every X updates
+
+
+WAIT_TICKS_AFTER_DEATH = 75
 
 
 def is_debug():

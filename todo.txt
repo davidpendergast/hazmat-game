@@ -8,14 +8,13 @@ Player Mechanics
     + walking up/down stairs
     + stick to walls a bit when sliding
     + delay before sliding animation to prevent janky one framers on corner clips
-    + health system
     ? actionstates instead of booleans
     + walking off edge while crouching snaps player into wallslide
 
 
 Start Menu
-    + new game
     + settings
+    + continue
     ? m-m-m-m-microtransactions lol
         let's make the game first kiddo
 
@@ -23,17 +22,8 @@ Start Menu
 End Game
     + roll credit
 
-
-Death Screen
-    + options
-        + continue
-        + exit to MM
-
     
 Game Mechanics
-    damage
-        + death animation
-            generated crumple effect? I ain't drawing all that
 
 Enemies
     + wall crawler
@@ -45,10 +35,19 @@ Enemies
 Entities
     + compulsory terminal
         or TextOverlay?
+        how do you tell the player what the controls are in first level?
+    + MessageZone
+        displays text (without freezing game) while player is in zone
+        "WASD to move"
+        "K to interact"
+        "J to shot"
     
 Level System
     level editting
         + ability to change items in keyboard slots
+            now that all saveable items are in entity_factory,
+            this will be pretty easy. Just add keys to cycle through
+            all entities
         + drag add and drag removal
         
     + save data

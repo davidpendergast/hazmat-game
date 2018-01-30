@@ -379,14 +379,15 @@ class PuzzleTerminal(Terminal):
 
     def update(self, input_state, world):
         if self.active_callback is not None:
-            print("recieved puzzle callback: ", self.active_callback)
-
             if self.active_callback[0] == puzzles.SUCCESS:
                 self.has_been_completed = True
                 if self.on_success is not None:
                     self.on_success()
-
+            self._handle_result(self.active_callback[0], world)
             self.active_callback = None
+
+    def _handle_result(self, puzzle_result, world):
+        pass
 
     def set_on_success(self, on_success):
         self.on_success = on_success
@@ -409,6 +410,23 @@ class PuzzleTerminal(Terminal):
 
     def interact_action_text(self, world):
         return "attempt puzzle"
+
+
+class DeathPuzzleTerminal(PuzzleTerminal):
+    def __init__(self, x, y, puzzle_giver):
+        PuzzleTerminal.__init__(self, x, y, puzzle_giver)
+
+    def sprite(self):
+        return images.DEATH_PUZZLE
+
+    def screen_sprite(self):
+        return images.DEATH_PUZZLE_SCREEN
+
+    def _handle_result(self, puzzle_result, world):
+        if puzzle_result == puzzles.FAILURE:
+            player = world.player()
+            if player is not None:
+                player.deal_damage(1, source=self)
 
 
 class HealthMachine(Entity):

@@ -145,7 +145,7 @@ class _SampleLevel(Level):
 
         rm_wall_1 = self.fetch_ref("rm_wall_1", entities.Wall(0, 0), refs)
         rm_wall_2 = self.fetch_ref("rm_wall_2", entities.Wall(0, 0), refs)
-        puzzle2 = entities.PuzzleTerminal(0, 0, lambda: puzzles.SnakePuzzle(3))
+        puzzle2 = entities.DeathPuzzleTerminal(0, 0, lambda: puzzles.SnakePuzzle(3))
         puzzle2 = self.fetch_ref("puzzle_2", puzzle2, refs)
 
         def rm_walls():

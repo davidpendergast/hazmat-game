@@ -16,7 +16,8 @@ show_items_to_place = False
 
 current_fps = 0
 last_timing = 0
-last_tick_count = 0
+draw_counter = 0
+last_draw_count = 0
 
 is_fullscreen = False
 
@@ -48,12 +49,12 @@ def _handle_debug_toggles(input_state):
         show_fps = not show_fps
 
     if show_fps:
-        global last_timing, last_tick_count, current_fps
+        global last_timing, last_draw_count, current_fps
         cur_time = time.time()
         if cur_time - last_timing >= 1:
-            current_fps = round((tick_counter - last_tick_count) / (cur_time - last_timing))
+            current_fps = round((draw_counter - last_draw_count) / (cur_time - last_timing))
             last_timing = cur_time
-            last_tick_count = tick_counter
+            last_draw_count = draw_counter
 
     if input_state.was_pressed(pygame.K_g):
         global show_no_darkness

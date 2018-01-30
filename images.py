@@ -180,6 +180,8 @@ TERMINAL_SCREEN     = create("terminal_screen", [R(112, 64 + i*5, 10, 5) for i i
 CHALKBOARD          = create("chalkboard", [R(96, 96, 32, 16)])
 PUZZLE_TERMINAL     = create("puzzle_terminal", [R(128, 96, 16, 32)])
 PUZZ_TERM_SCREEN    = create("puzzle_terminal_screen", [R(144, 96 + 9*i, 10, 9) for i in range(0, 3)])
+DEATH_PUZZLE        = create("death_puzzle", [R(192, 128, 16, 32)])
+DEATH_PUZZLE_SCREEN = create("death_puzzle_screen", [R(208, 128 + 9*i, 10, 9) for i in range(0, 3)])
 BULLET_SPLASH       = create("bullet_splash", [R(160 + 8*i, 96, 8, 16) for i in range(0, 4)], tpf=3)
 HEALTH_MACHINE      = create("health_machine", [R(208, 96, 16, 32)])
 HEALTH_MACHINE_BAR  = create("health_machine_bar", [R(224, 112 + i*2, 4, 2) for i in range(0, 6)])

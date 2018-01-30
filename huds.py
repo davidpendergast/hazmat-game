@@ -55,7 +55,7 @@ class HUD:
 
         self.level_title_card = None  # (title, subtitle)
         self.level_title_card_countdown = -1
-        self.level_title_card_max_countdown = 80
+        self.level_title_card_max_countdown = 50
 
         self.active_menu = None
 
@@ -328,6 +328,3 @@ class HUD:
             puzzle_rect = [0, 0, puzzle_size[0], puzzle_size[1]]
 
             return cool_math.recenter_rect_in(puzzle_rect, screen_rect)
-
-
-
