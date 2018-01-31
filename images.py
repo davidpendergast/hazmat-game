@@ -158,6 +158,7 @@ RED_GUY             = create("red_guy", [r(0, 0, 1, 2), r(1, 0, 1, 2)])
 PURPLE_GUY          = create("purple_guy", [r(2, 0, 1, 2), r(3, 0, 1, 2)])
 BLUE_GUY_UP         = create("blue_guy", [R(48 + i*16, 128, 16, 32) for i in range(0, 2)])
 BLUE_GUY_DOWN       = create("blue_guy_down", [R(80 + i*16, 128, 16, 32) for i in range(0, 2)])
+BLUE_GUY_MIDDLE     = create("blue_guy_middle", [R(112, 128, 16, 32)])
 BROWN_GUY           = create("brown_guy", [r(10, 0, 1, 2), r(11, 0, 1, 2)])
 WHITE_WALL          = create("white_wall", [r(7, 1, 1, 1)])
 WHITE_WALL_SMOL     = create("white_wall_small", [R(88, 16, 8, 8)])
@@ -192,6 +193,16 @@ BREAKABLE_WALL      = create("breakable_wall", [R(128, 0, 16, 16)])
 BREAKABLE_WALL_ANIM = create("breakable_wall_animation", [R(48 + i*20, 160, 20, 20) for i in range(0, 4)], tpf=4)
 ACID_FULL           = create("acid_full", [R(128 + i*16, 144, 16, 16) for i in range(0, 4)])
 ACID_TOP_HALF       = create("acid_top_half", [R(128 + i*16, 128, 16, 16) for i in range(0, 4)])
+
+ACID_SLUG_U_L       = create("acid_slug_u_l", [R(224, 128 + i*8, 16, 8) for i in range(0, 2)])
+ACID_SLUG_D_L       = create("acid_slug_d_l", [R(256, 128 + i*8, 16, 8) for i in range(0, 2)])
+ACID_SLUG_L_L       = create("acid_slug_l_l", [R(240 + i*8, 128, 8, 16) for i in range(0, 2)])
+ACID_SLUG_R_L       = create("acid_slug_r_l", [R(272 + i*8, 128, 8, 16) for i in range(0, 2)])
+ACID_SLUG_U_R       = create("acid_slug_u_r", [R(224, 144 + i*8, 16, 8) for i in range(0, 2)])
+ACID_SLUG_D_R       = create("acid_slug_d_r", [R(256, 144 + i*8, 16, 8) for i in range(0, 2)])
+ACID_SLUG_L_R       = create("acid_slug_l_r", [R(240 + i*8, 144, 8, 16) for i in range(0, 2)])
+ACID_SLUG_R_R       = create("acid_slug_r_r", [R(272 + i*8, 144, 8, 16) for i in range(0, 2)])
+
 
 PLAYER_IDLE         = create("player_idle", [R(176, 32, 16, 32), R(192, 32, 16, 32)])
 PLAYER_GUN          = create("player_gun", [R(208 + 32*i, 32, 24, 32) for i in range(0, 3)], tpf=10)
@@ -257,6 +268,7 @@ def draw_animated_sprite(screen, dest, animation, modifier="normal", src_subset=
 def draw_sprite(screen, dest, source_rect, modifier="normal"):
     if modifier == "flipped":
         source_rect = _flip_rect(source_rect)
+
     screen.blit(get_sheet(modifier), dest, source_rect)
 
 
@@ -296,19 +308,9 @@ def reload_sheet():
     SHEETS["white_ghosts"] = image_util.dye_sheet(sprite_sheet, (255, 255, 255), alpha=100)
     SHEETS["flipped"] = pygame.transform.flip(sprite_sheet, True, False)
 
-    raw_lightmap = pygame.image.load("res/lightmap.jpg")
-    w, h = raw_lightmap.get_size()
-    LIGHTMAP = pygame.Surface((w, h), flags=pygame.SRCALPHA)
+    # raw_lightmap = pygame.image.load("res/lightmap.jpg")
 
-    # going pixel by pixel is very slow, but only done once at launch
-    # TODO - just get a png that already has proper alpha
-    LIGHTMAP.lock()  # helps performance supposedly
-    for x in range(0, w):
-        for y in range(0, h):
-            color = raw_lightmap.get_at((x, y))
-            with_alpha = (255, 255, 255, color[0])
-            LIGHTMAP.set_at((x, y), with_alpha)
-    LIGHTMAP.unlock()
+    LIGHTMAP = image_util.create_lightmap(100)  # raw_lightmap)
 
     wipe_caches()
 
@@ -335,4 +337,8 @@ PLAYER_DYING        = image_util.create_death_animation(PLAYER_IDLE, "player_dyi
 RED_GUY_DYING       = image_util.create_death_animation(RED_GUY, "red_guy_dying", 4, 6)
 BLUE_GUY_DYING      = image_util.create_death_animation(BLUE_GUY_UP, "blue_guy_dying", 4, 6)
 BROWN_GUY_DYING     = image_util.create_death_animation(BROWN_GUY, "brown_guy_dying", 4, 6)
+SLUG_DYING_U        = image_util.create_death_animation(ACID_SLUG_U_L, "acid_slug_dying_u", 4, 6)
+SLUG_DYING_R        = image_util.create_death_animation(ACID_SLUG_R_L, "acid_slug_dying_r", 4, 6)
+SLUG_DYING_D        = image_util.create_death_animation(ACID_SLUG_D_L, "acid_slug_dying_d", 4, 6)
+SLUG_DYING_L        = image_util.create_death_animation(ACID_SLUG_L_L, "acid_slug_dying_l", 4, 6)
 print("INFO\tdone creating death animations")

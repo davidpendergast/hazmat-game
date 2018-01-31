@@ -14,7 +14,7 @@ class Enemy(actors.Actor):
         actors.Actor.__init__(self, x, y, w, h)
         self.categories.update(["enemy"])
         self.speed = 0.75 + random.random()/2
-        self.current_dir = (0, 0)
+        self.current_dir = [0, 0]
         self.max_health = 4  # four hearts
         self.health = 4
 
@@ -27,10 +27,15 @@ class Enemy(actors.Actor):
         h = self.get_rect().height
         return [(w - spr.width()) / 2, (h - spr.height()) / 2 - (64 - h) / 2]
 
+    def _update_status_tags(self, world, input_state):
+        actors.Actor._update_status_tags(self, world, input_state)
+        if self.vel[0] < 0:
+            self.facing_right = False
+        if self.vel[1] > 0:
+            self.facing_right = True
+
     def draw(self, screen, offset=(0, 0), modifier=None):
-        if modifier is None:
-            modifier = "flipped" if not self.facing_right else None
-        entities.Entity.draw(self, screen, offset, modifier)
+        entities.Entity.draw(self, screen, offset=offset, modifier=modifier)
         if self.health < self.max_health and global_state.show_enemy_health:
             health_x = self.get_rect().x + offset[0]
             health_y = self.get_rect().y + self.sprite_offset()[1] - 6 + offset[1]
@@ -49,7 +54,8 @@ class Enemy(actors.Actor):
         self.apply_physics()
 
     def do_ai_behavior(self, input_state, world):
-        pass
+        self.vel[0] = self.current_dir[0] * self.speed
+        self.vel[1] = self.current_dir[1] * self.speed
 
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
@@ -67,6 +73,10 @@ class Enemy(actors.Actor):
             y_dir = -0.75
             self.knock_back(3, (x_dir, y_dir))
 
+    def set_direction(self, x, y):
+        self.current_dir[0] = x
+        self.current_dir[1] = y
+
 
 class DumbEnemy(Enemy):
     def __init__(self, x, y):
@@ -82,9 +92,10 @@ class DumbEnemy(Enemy):
         # change directions approx every second
         if random.random() < 1 / 60:
             if random.random() < 0.25:
-                self.current_dir = (0, 0)
+                self.set_direction(0, 0)
             else:
-                self.current_dir = cool_math.rand_direction()
+                rand_direct = cool_math.rand_direction()
+                self.set_direction(rand_direct[0], rand_direct[1])
         new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
         self.set_vel_x(new_vel)
 
@@ -120,14 +131,15 @@ class SmartEnemy(Enemy):
         if self.is_chasing and p is not None:
             direction = cool_math.sub(p.center(), self.center())
             direction = cool_math.normalize(direction)
-            self.current_dir = direction
+            self.set_direction(direction[0], direction[1])
         else:
             # change directions approx every 30 ticks
             if random.random() < 1 / 60:
                 if random.random() < 0.25:
-                    self.current_dir = (0, 0)
+                    self.set_direction(0, 0)
                 else:
-                    self.current_dir = cool_math.rand_direction()
+                    rand_direct = cool_math.rand_direction()
+                    self.set_direction(rand_direct[0], rand_direct[1])
         new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
         self.set_vel_x(new_vel)
 
@@ -171,3 +183,91 @@ class DodgeEnemy(SmartEnemy):
             return [r[0], r[1], r[2], int(r[3]/2)]
         else:
             return [r[0], r[1]+int(r[3]/2), r[2], int(r[3]/2)]
+
+
+class StickyEnemy(Enemy):
+    def __init__(self, x, y, clockwise=True):
+        Enemy.__init__(self, x, y, 24, 24)
+        self.orientation = [0, 1]  # points "up" with respect to enemy
+        self.clockwise = clockwise
+
+    def sprite_offset(self):
+        spr = self.sprite()
+        sign = 1 if self.clockwise else 1
+        x_offs = -self.orientation[0] * 4 * sign
+        y_offs = -self.orientation[1] * 4 * sign
+        return (int(self.width()/2 - spr.width()/2) + x_offs, int(self.height()/2 - spr.height()/2) + y_offs)
+
+    _slug_sprites = (images.ACID_SLUG_U_L, images.ACID_SLUG_D_L, images.ACID_SLUG_L_L, images.ACID_SLUG_R_L,
+                     images.ACID_SLUG_U_R, images.ACID_SLUG_D_R, images.ACID_SLUG_L_R, images.ACID_SLUG_R_R)
+
+    def sprite(self):
+        num = 4 if self.clockwise else 0
+        if self.orientation[0] != 0:
+            num += 2
+            num += 1 if self.orientation[0] > 0 else 0
+        else:
+            num += 1 if self.orientation[1] > 0 else 0
+        return StickyEnemy._slug_sprites[num]
+
+    def sprite_modifier(self):
+        return "normal"  # never flipped because of all the special case stuff
+
+    def death_sprite(self, cause=None):
+        if self.orientation[0] != 0:
+            return images.SLUG_DYING_L if self.orientation[0] < 0 else images.SLUG_DYING_R
+        else:
+            return images.SLUG_DYING_U if self.orientation[1] < 0 else images.SLUG_DYING_D
+
+    def update(self, input_state, world):
+        Enemy.update(self, input_state, world)
+
+        if self.is_grounded:
+            self.orientation[0] = 0
+            self.orientation[1] = -1
+        if self.is_left_walled:
+            self.orientation[0] = 1
+            self.orientation[1] = 0
+        if self.is_right_walled:
+            self.orientation[0] = -1
+            self.orientation[1] = 0
+
+        up_sliver = cool_math.sliver_adjacent(self.get_rect(), (0, -1), 1)
+        up = len(world.get_entities_in_rect(up_sliver, category="wall")) > 0
+        left = self.is_left_walled
+        right = self.is_right_walled
+        down = self.is_grounded
+
+        if not (up or left or right or down):
+            self.set_orientation(0, -1)
+            self.has_gravity = True
+            return
+        else:
+            pass
+
+        if self.vel[0] < -0.05:
+            self.clockwise = False
+        if self.vel[0] > 0.05:
+            self.clockwise = True
+
+    def set_orientation(self, x, y):
+        self.orientation[0] = x
+        self.orientation[1] = y
+
+    def deal_damage(self, damage, source=None, direction=None):
+        if source is not None:
+            if source.is_player():
+                self.clockwise = not self.clockwise
+            elif isinstance(source, entities.KillBlock):
+                return  # unaffected by kill blocks
+        Enemy.deal_damage(self, damage, source=source, direction=direction)
+
+    def do_ai_behavior(self, input_state, world):
+        # change directions approx every second
+        if random.random() < 1 / 60:
+            if random.random() < 0.25:
+                self.current_dir = (0, 0)
+            else:
+                self.current_dir = cool_math.rand_direction()
+        new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
+        self.set_vel_x(new_vel)

@@ -28,7 +28,7 @@ class HUD:
             entity_factory.build("white_wall_small"),
             entities.Terminal(0, 0),
             entities.ReferenceEntity(0, 0, ref_id=None),
-            enemies.DumbEnemy(0, 0),
+            enemies.StickyEnemy(0, 0),
             entity_factory.build("lightbulb"),
             entity_factory.build("wire_vert"),
         ]

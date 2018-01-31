@@ -2,7 +2,9 @@ import pygame
 import random
 import math
 
+import cool_math
 import images
+import settings
 
 
 def reversify(animation):
@@ -93,4 +95,36 @@ def create_death_animation(base_animation, anim_id, num_frames, tpf):
     res.set_custom_sheet(sheet_id)
     images.add_sheet(sheet_id, new_surface)
     return res
+
+
+def create_lightmap(r, exp=0):
+    lightmap = pygame.Surface((r*2, r*2), flags=pygame.SRCALPHA)
+
+    throttle = settings.get_light_blend_throttle_level()
+    num_rings = None if throttle == 0 else int(9 * (1-throttle)) + 1
+    ring_alphas = [int(255*(1 - (i+0.5)/num_rings)) for i in range(0, num_rings)] if num_rings is not None else None
+
+    ctr = (r, r)
+    # going pixel by pixel is very slow, but only done once at launch
+    lightmap.lock()  # helps performance supposedly
+    for x in range(0, r*2):
+        for y in range(0, r*2):
+            pt = (x, y)
+            rel_dist = cool_math.dist(ctr, pt) / r
+            if rel_dist <= 1:
+
+                for _ in range(0, exp):
+                    rel_dist = math.sqrt(rel_dist)
+
+                if num_rings is None:
+                    alpha = int(255*(1 - rel_dist))
+                else:
+                    my_ring = min(num_rings-1, int(num_rings * rel_dist))
+                    alpha = ring_alphas[my_ring]
+
+                color = (255, 255, 255, alpha)
+                lightmap.set_at(pt, color)
+    lightmap.unlock()
+
+    return lightmap
 

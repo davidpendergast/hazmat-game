@@ -1,4 +1,7 @@
 
++ record screen
+    until then... byzanz-record --duration=15 --x=375 --y=208 --width=853 --height=512 screenshots/out.gif
+
 General
     + key commands in their own file
         + later, make configurable
