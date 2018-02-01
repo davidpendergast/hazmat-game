@@ -6,6 +6,7 @@ import inspect
 import text_stuff
 import global_state
 import levels
+import inputs
 
 from settings import WHITE, BLACK, GREEN, RED, BLUE
 
@@ -66,8 +67,8 @@ class OptionSelectMenu(Menu, ABC):
         return self.options[index]
 
     def update(self, input_state):
-        pushed_down = input_state.was_pressed(pygame.K_s) or input_state.was_pressed(pygame.K_DOWN)
-        pushed_up = input_state.was_pressed(pygame.K_w) or input_state.was_pressed(pygame.K_UP)
+        pushed_down = input_state.was_pressed(inputs.DOWN)
+        pushed_up = input_state.was_pressed(inputs.UP)
         allow_wrapping = len(self.options) > 2
 
         if pushed_down and (self.selected_idx < len(self.options) - 1 or allow_wrapping):
@@ -76,7 +77,7 @@ class OptionSelectMenu(Menu, ABC):
         if pushed_up and (self.selected_idx > 0 or allow_wrapping):
             self.selected_idx = (self.selected_idx - 1) % len(self.options)
 
-        if input_state.was_pressed(pygame.K_k) or input_state.was_pressed(pygame.K_RETURN):
+        if input_state.was_pressed(inputs.INTERACT):
             self.activate_option(self.selected_idx)
 
     def draw_options(self, screen, rect_to_fill, max_height=999):

@@ -1,9 +1,20 @@
 import global_state
+import pygame
+
+UP = [pygame.K_w, pygame.K_UP]
+JUMP = UP + [pygame.K_SPACE]
+LEFT = [pygame.K_a, pygame.K_LEFT]
+RIGHT = [pygame.K_d, pygame.K_RIGHT]
+DOWN = [pygame.K_s, pygame.K_DOWN]
+CROUCH = DOWN + [pygame.K_LSHIFT, pygame.K_RSHIFT]
+SHOOT = [pygame.K_j, pygame.K_x]
+INTERACT = [pygame.K_k, pygame.K_z, pygame.K_RETURN]
+EXIT = [pygame.K_ESCAPE]
 
 
 class InputState:
     def __init__(self):
-        self._held_keys = {} # keycode -> time pressed
+        self._held_keys = {}  # keycode -> time pressed
         self._mouse_pos = (0, 0)
         self._mouse_down_time = None
         self._current_time = 0
@@ -21,13 +32,21 @@ class InputState:
         self._mouse_pos = pos
     
     def is_held(self, key):
-        return key in self._held_keys
+        """:param key - single key or list of keys"""
+        if isinstance(key, list):
+            return any(map(lambda k: self.is_held(k), key))
+        else:
+            return key in self._held_keys
     
     def time_held(self, key):
-        if not key in self._held_keys:
-            return -1
+        """:param key - single key or list of keys"""
+        if isinstance(key, list):
+            return max(map(lambda k: self.time_held(k), key))
         else:
-            return self._current_time - self._held_keys[key]
+            if key not in self._held_keys:
+                return -1
+            else:
+                return self._current_time - self._held_keys[key]
     
     def mouse_is_held(self):
         return self._mouse_down_time is not None
@@ -48,6 +67,7 @@ class InputState:
         return self._mouse_pos is not None    
             
     def was_pressed(self, key):
+        """:param key - single key or list of keys"""
         return self.time_held(key) == 1
     
     def all_held_keys(self):

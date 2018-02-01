@@ -29,11 +29,11 @@ End Game
 Game Mechanics
 
 Enemies
-    + wall crawler
-        walks in one direction, sticks to surfaces
     + jumper
         jumps randomly, and when player gets near
-    + intermediate crouch frames for dodger enemy
+    + flying
+        not sure how it would pathfind, or how player could really kill it
+        ghost-like enemy?
 
 Entities
     + compulsory terminal
@@ -62,7 +62,6 @@ Level System
 
 Puzzles
     + indication that puzzle has already been completed
-    + damage for failing puzzle
     + difficulty settings
     + seeds for randomness
 
@@ -86,7 +85,6 @@ Art
     + more wall sprites
     + bullet splash in center of enemy
     + better looking health bar UI
-    + open door sprite
 
         
 Sound

@@ -2,148 +2,27 @@ import pygame
 import random
 
 import global_state
+import image_cache
 import image_util
+from image_util import Animation
 
 mult = 32
 
-SHEETS = {
-    "normal": None,
-    "flipped": None,
-    "green_ghosts": None,
-    "red_ghosts": None,
-    "white_ghosts": None,
-}
-
-
-def add_sheet(name, surface):
-    print("INFO\tadding new sheet: ", name)
-    SHEETS[name] = surface
-
-
-LIGHTMAP = None
-
 RAINBOW = [0, 0, 0]
 
-TICKS_PER_FRAME = 20    # default animation speed
 
-ALL_ANIMATIONS = {}     # anim_id -> Animation
-
-BIG_OL_IMG_CACHE = {}   # string -> [Surface, cache_time, last_accessed_time]
-
-
-def wipe_caches():
-    BIG_OL_IMG_CACHE.clear()
+def reversify(animation):
+    anim_id = animation.get_id() + "_reversed"
+    anim = create(anim_id, list(reversed(animation.rects)), tpf=animation.TPF)
+    anim.set_custom_sheet(animation.custom_sheet())
+    return anim
 
 
-def refresh_caches(too_old_thresh_secs=10):
-    thresh_ticks = too_old_thresh_secs * 60
-    cur_time = global_state.tick_counter
-    to_remove = list()
-    for x in BIG_OL_IMG_CACHE:
-        if cur_time - BIG_OL_IMG_CACHE[x][2] >= thresh_ticks:
-            to_remove.append(x)
-    if len(to_remove) > 0:
-        remaining = len(BIG_OL_IMG_CACHE)-len(to_remove)
-        print("INFO:\tremoving ", len(to_remove), " image(s) from cache... ", remaining, " remain.")
-    for x in to_remove:
-        del BIG_OL_IMG_CACHE[x]
-
-
-def get_cached_image(key):
-    if key in BIG_OL_IMG_CACHE:
-        datablob = BIG_OL_IMG_CACHE[key]
-        datablob[2] = global_state.tick_counter
-        return datablob[0]
-    else:
-        return None
-
-
-def remove_cached_image(key):
-    if key in BIG_OL_IMG_CACHE:
-        del BIG_OL_IMG_CACHE[key]
-
-
-def put_cached_image(key, image):
-    data_blob = [image, global_state.tick_counter, global_state.tick_counter]
-    BIG_OL_IMG_CACHE[key] = data_blob
-
-
-def time_since_last_access(key):
-    if key not in BIG_OL_IMG_CACHE:
-        return None
-    else:
-        data_blob = BIG_OL_IMG_CACHE[key]
-        return global_state.tick_counter - data_blob[2]
-
-
-def time_since_cached(key):
-    if key not in BIG_OL_IMG_CACHE:
-        return None
-    else:
-        data_blob = BIG_OL_IMG_CACHE[key]
-        return global_state.tick_counter - data_blob[1]
-
-
-class Animation:
-    def __init__(self, rects, anim_id="no_id", tpf=TICKS_PER_FRAME):
-        self.rects = rects
-        self.TPF = tpf
-        self.anim_id = anim_id
-        self._subanimations = [None] * len(rects)
-        self._custom_sheet = None
-
-    def num_frames(self):
-        return len(self.rects)
-
-    def single_frame(self, idx):
-        """
-        :returns a single-frame animation from a given index of this one.
-        """
-        idx = idx % self.num_frames()
-        if self._subanimations[idx] is None:
-            # id just for debugging, no global lookup
-            anim_id = self.get_id() + "[" + str(idx) + "]"
-            animation = Animation([self.rects[idx]], anim_id=anim_id, tpf=self.TPF)
-            animation.set_custom_sheet(self.custom_sheet())
-            self._subanimations[idx] = animation
-
-        return self._subanimations[idx]
-
-    def set_custom_sheet(self, sheet_name):
-        self._custom_sheet = sheet_name
-
-    def custom_sheet(self):
-        return self._custom_sheet
-
-    def width(self):
-        return self.rects[0].width
-
-    def height(self):
-        return self.rects[0].height
-
-    def size(self):
-        return (self.width(), self.height())
-
-    def get_id(self):
-        return self.anim_id
-
-    def ticks_per_frame(self):
-        return self.TPF
-
-
-def get_animation(anim_id):
-    if anim_id not in ALL_ANIMATIONS:
-        raise ValueError("No animation exists for id: " + str(anim_id))
-    else:
-        return ALL_ANIMATIONS[anim_id]
-
-
-def create(anim_id, rects, tpf=TICKS_PER_FRAME):
+def create(anim_id, rects, tpf=20):
     """
     Creates an animation and registers its id into ALL_ANIMATIONS
     """
-    ALL_ANIMATIONS[anim_id] = Animation(rects, anim_id=anim_id, tpf=tpf)
-    return ALL_ANIMATIONS[anim_id]
+    return image_util.Animation(rects, anim_id=anim_id, tpf=tpf)
 
 
 def r(x, y, w, h):
@@ -172,7 +51,7 @@ ROCK                = create("rock", [r(6, 2, 1, 2)])
 DOOR_LOCKED         = create("door_locked", [R(0, 96, 16, 32)])
 DOOR_UNLOCKED       = create("door_unlocked", [R(16, 96, 16, 32)])
 DOOR_OPENING        = create("door_opening", [R(16 + 16*i, 96, 16, 32) for i in range(0, 5)], tpf=10)
-DOOR_CLOSING        = image_util.reversify(DOOR_OPENING)
+DOOR_CLOSING        = reversify(DOOR_OPENING)
 LADDER              = create("ladder", [R(64, 80, 16, 16)])
 LIGHT_BULB          = create("light_bulb", [R(80, 88, 8, 8), R(88, 88, 8, 8)])
 WIRE_VERTICAL       = create("wire_vertical", [R(80, 80, 8, 8)])
@@ -237,7 +116,7 @@ HEART_EMPTY         = create("heart_empty", [R(192, 112, 13, 13)])
 
 
 def _flip_rect(rect):
-    sheet_w = get_sheet(modifier="flipped").get_width()
+    sheet_w = image_cache.get_sheet("flipped").get_width()
     x = sheet_w - rect[0] - rect[2]
     return [x, rect[1], rect[2], rect[3]]
 
@@ -273,10 +152,10 @@ def draw_sprite(screen, dest, source_rect, modifier="normal"):
 
 
 def get_sheet(modifier="normal"):
-    if modifier not in SHEETS:
+    if modifier not in image_cache.SHEETS:
         raise ValueError("Unrecognized sprite modifier: " + str(modifier))
     else:
-        return SHEETS[modifier]
+        return image_cache.SHEETS[modifier]
 
 
 def get_window_icon():
@@ -285,34 +164,19 @@ def get_window_icon():
     return res_surface
 
 
-def get_lightmap(radius):
-    cache_key = "lightmap_" + str(radius)
-    cached_img = get_cached_image(cache_key)
-
-    if cached_img is None:
-        size = (radius * 2 + 1, radius * 2 + 1)
-        cached_img = pygame.transform.scale(LIGHTMAP, size)
-        put_cached_image(cache_key, cached_img)
-
-    return cached_img
-
-
 def reload_sheet():
     print("INFO\tloading sprite sheets...")
-    global SHEETS, LIGHTMAP
     actual_size = pygame.image.load("res/art_n_stuff.png")
     sprite_sheet = pygame.transform.scale2x(actual_size)
-    SHEETS["normal"] = sprite_sheet
-    SHEETS["green_ghosts"] = image_util.dye_sheet(sprite_sheet, (0, 255, 0), alpha=100)
-    SHEETS["red_ghosts"] = image_util.dye_sheet(sprite_sheet, (255, 0, 0), alpha=100)
-    SHEETS["white_ghosts"] = image_util.dye_sheet(sprite_sheet, (255, 255, 255), alpha=100)
-    SHEETS["flipped"] = pygame.transform.flip(sprite_sheet, True, False)
+    image_cache.SHEETS["normal"] = sprite_sheet
+    image_cache.SHEETS["green_ghosts"] = image_util.dye_sheet(sprite_sheet, (0, 255, 0), alpha=100)
+    image_cache.SHEETS["red_ghosts"] = image_util.dye_sheet(sprite_sheet, (255, 0, 0), alpha=100)
+    image_cache.SHEETS["white_ghosts"] = image_util.dye_sheet(sprite_sheet, (255, 255, 255), alpha=100)
+    image_cache.SHEETS["flipped"] = pygame.transform.flip(sprite_sheet, True, False)
 
-    # raw_lightmap = pygame.image.load("res/lightmap.jpg")
+    image_cache.LIGHTMAP = image_util.create_lightmap(100, exp=0)
 
-    LIGHTMAP = image_util.create_lightmap(100)  # raw_lightmap)
-
-    wipe_caches()
+    image_cache.wipe_caches()
 
     print("INFO\tfinished loading sheets")
 
@@ -324,7 +188,7 @@ def update():
 
     refresh_secs = 10
     if global_state.tick_counter % (60 * refresh_secs) == 0:
-        refresh_caches(too_old_thresh_secs=refresh_secs)
+        image_cache.refresh_caches(too_old_thresh_secs=refresh_secs)
 
 
 reload_sheet()
@@ -332,13 +196,14 @@ reload_sheet()
 # death animations can't be made until sheets are loaded
 # also, these guys don't get reloaded when sheets are reloaded, probably ok though
 print("INFO\tcreating death animations...")
-PURPLE_GUY_DYING    = image_util.create_death_animation(PURPLE_GUY, "purple_guy_dying", 4, 6)
-PLAYER_DYING        = image_util.create_death_animation(PLAYER_IDLE, "player_dying", 4, 6)
-RED_GUY_DYING       = image_util.create_death_animation(RED_GUY, "red_guy_dying", 4, 6)
-BLUE_GUY_DYING      = image_util.create_death_animation(BLUE_GUY_UP, "blue_guy_dying", 4, 6)
-BROWN_GUY_DYING     = image_util.create_death_animation(BROWN_GUY, "brown_guy_dying", 4, 6)
-SLUG_DYING_U        = image_util.create_death_animation(ACID_SLUG_U_L, "acid_slug_dying_u", 4, 6)
-SLUG_DYING_R        = image_util.create_death_animation(ACID_SLUG_R_L, "acid_slug_dying_r", 4, 6)
-SLUG_DYING_D        = image_util.create_death_animation(ACID_SLUG_D_L, "acid_slug_dying_d", 4, 6)
-SLUG_DYING_L        = image_util.create_death_animation(ACID_SLUG_L_L, "acid_slug_dying_l", 4, 6)
+sheet = image_cache.SHEETS["normal"]
+PURPLE_GUY_DYING    = image_util.create_death_animation(PURPLE_GUY,     sheet, "purple_guy_dying", 4, 6)
+PLAYER_DYING        = image_util.create_death_animation(PLAYER_IDLE,    sheet, "player_dying", 4, 6)
+RED_GUY_DYING       = image_util.create_death_animation(RED_GUY,        sheet, "red_guy_dying", 4, 6)
+BLUE_GUY_DYING      = image_util.create_death_animation(BLUE_GUY_UP,    sheet, "blue_guy_dying", 4, 6)
+BROWN_GUY_DYING     = image_util.create_death_animation(BROWN_GUY,      sheet, "brown_guy_dying", 4, 6)
+SLUG_DYING_U        = image_util.create_death_animation(ACID_SLUG_U_L,  sheet, "acid_slug_dying_u", 4, 6)
+SLUG_DYING_R        = image_util.create_death_animation(ACID_SLUG_R_L,  sheet, "acid_slug_dying_r", 4, 6)
+SLUG_DYING_D        = image_util.create_death_animation(ACID_SLUG_D_L,  sheet, "acid_slug_dying_d", 4, 6)
+SLUG_DYING_L        = image_util.create_death_animation(ACID_SLUG_L_L,  sheet, "acid_slug_dying_l", 4, 6)
 print("INFO\tdone creating death animations")

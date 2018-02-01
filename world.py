@@ -1,15 +1,12 @@
 import pygame
 import random
 
-import actors
+import image_cache
 import image_util
 import images
 import entities
 import global_state
 import cool_math
-import levels
-import decorations
-import settings
 
 CHUNK_SIZE = 256
 AMBIENT_DARKNESS = 200
@@ -57,12 +54,12 @@ class Chunk:
 
     def mark_dirty(self):
         """Must be called whenever something ~static~ changes"""
-        images.remove_cached_image(self._cache_key())
+        image_cache.remove_cached_image(self._cache_key())
 
     def draw_nonactors(self, screen, offset):
         if len(self.entities.get_all(category=["ground", "wall"])) > 0:
             key = self._cache_key()
-            cache_img = images.get_cached_image(key)
+            cache_img = image_cache.get_cached_image(key)
             if cache_img is None:
                 cache_img = pygame.Surface(self.size(), flags=pygame.SRCALPHA)
                 new_offset = cool_math.neg(self.xy())
@@ -70,7 +67,7 @@ class Chunk:
                     g.draw(cache_img, new_offset)
                 for e in self.entities.get_all(category="wall"):
                     e.draw(cache_img, new_offset)
-                images.put_cached_image(key, cache_img)
+                image_cache.put_cached_image(key, cache_img)
 
             screen_pos = cool_math.add(self.xy(), offset)
             screen.blit(cache_img, screen_pos)
@@ -111,7 +108,7 @@ class Chunk:
     def draw_debug_stuff(self, screen, offset):
         if global_state.show_chunk_redraws:
             key = self._cache_key()
-            if images.get_cached_image(key) is not None and images.time_since_cached(key) < 15:
+            if image_cache.get_cached_image(key) is not None and image_cache.time_since_cached(key) < 15:
                 screen_pos = cool_math.add(offset, self.xy())
                 rect = [screen_pos[0], screen_pos[1], self.size()[0], self.size()[1]]
                 pygame.draw.rect(screen, (255, 90, 90), rect, 10)

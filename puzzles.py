@@ -3,6 +3,7 @@ import pygame
 import text_stuff
 import cool_math
 import settings
+import inputs
 
 import traceback
 import random
@@ -36,17 +37,17 @@ class Puzzle:
                 self.close_delay -= 1
 
         elif self.status == TITLE_START:
-            if input_state.was_pressed(pygame.K_k):
+            if input_state.was_pressed(inputs.INTERACT):
                 self.set_status(IN_PROGRESS)
-            elif input_state.was_pressed(pygame.K_d):
+            elif input_state.was_pressed(inputs.RIGHT):
                 self.set_status(TITLE_EXIT)
-            elif input_state.was_pressed(pygame.K_ESCAPE):
+            elif input_state.was_pressed(inputs.EXIT):
                 self.set_status(QUIT, close_delay=10)
 
         elif self.status == TITLE_EXIT:
-            if input_state.was_pressed(pygame.K_k) or input_state.was_pressed(pygame.K_ESCAPE):
+            if input_state.was_pressed(inputs.INTERACT) or input_state.was_pressed(inputs.EXIT):
                 self.set_status(QUIT, close_delay=10)
-            elif input_state.was_pressed(pygame.K_a):
+            elif input_state.was_pressed(inputs.LEFT):
                 self.set_status(TITLE_START)
 
         elif self.status == IN_PROGRESS:
@@ -212,14 +213,14 @@ class SnakePuzzle(Puzzle):
             self.set_status(SUCCESS)
 
         input_x = 0
-        if input_state.was_pressed(pygame.K_a):
+        if input_state.was_pressed(inputs.LEFT):
             input_x -= 1
-        if input_state.was_pressed(pygame.K_d):
+        if input_state.was_pressed(inputs.RIGHT):
             input_x += 1
         input_y = 0
-        if input_x == 0 and input_state.was_pressed(pygame.K_w):
+        if input_x == 0 and input_state.was_pressed(inputs.JUMP):
             input_y -= 1
-        if input_x == 0 and input_state.was_pressed(pygame.K_s):
+        if input_x == 0 and input_state.was_pressed(inputs.DOWN):
             input_y += 1
 
         if (input_x, input_y) != (0, 0):

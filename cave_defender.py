@@ -1,5 +1,6 @@
 import pygame
 
+import image_cache
 import world
 import images
 import global_state as gs
@@ -71,7 +72,7 @@ def update():
         level.build(active_world)
         active_world.add_entity(player)
 
-        images.wipe_caches()
+        image_cache.wipe_caches()
 
     player_dead = active_world.time_since_player_death() > settings.WAIT_TICKS_AFTER_DEATH
     if player_dead and not gs.hud.is_absorbing_inputs():

@@ -13,6 +13,7 @@ import text_stuff
 import puzzles
 import menus
 import entity_factory
+import inputs
 
 
 LEVEL_TITLE_SIZE = 128
@@ -105,7 +106,7 @@ class HUD:
 
         elif self.is_showing_text():
             # if text is showing, block everything else
-            if input_state.was_pressed(pygame.K_k) and len(self.text_queue) > 0:
+            if input_state.was_pressed(inputs.INTERACT) and len(self.text_queue) > 0:
                 # wait a little bit before nuking the text box
                 if global_state.tick_counter - self.show_text_time > 15:
                     self.text_queue.popleft()

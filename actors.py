@@ -7,6 +7,7 @@ import global_state
 import images
 import sounds
 from entities import Entity, Overlay
+import inputs
 
 
 class Actor(Entity):
@@ -195,14 +196,14 @@ class Player(Actor):
         keyboard_interact = False
 
         if self._has_control_of_character():
-            if input_state.is_held(pygame.K_a):
+            if input_state.is_held(inputs.LEFT):
                 keyboard_x -= 1
-            if input_state.is_held(pygame.K_d):
+            if input_state.is_held(inputs.RIGHT):
                 keyboard_x += 1
 
-            keyboard_jump = input_state.was_pressed(pygame.K_w) and not self._is_shooting()
-            keyboard_shoot = input_state.was_pressed(pygame.K_j) and not self._is_shooting()
-            keyboard_interact = input_state.was_pressed(pygame.K_k)
+            keyboard_jump = input_state.was_pressed(inputs.JUMP) and not self._is_shooting()
+            keyboard_shoot = input_state.was_pressed(inputs.SHOOT) and not self._is_shooting()
+            keyboard_interact = input_state.was_pressed(inputs.INTERACT)
 
         if keyboard_x == 0:
             fric = 1
@@ -255,7 +256,7 @@ class Player(Actor):
 
         # if finishing shooting animation, maintain crouchedness
         if self._has_control_of_character() or self.shoot_cooldown > self.shoot_on_frame:
-            will_be_crouching = self.is_grounded and input_state.is_held(pygame.K_s)
+            will_be_crouching = self.is_grounded and input_state.is_held(inputs.CROUCH)
             if self.is_crouching and self.is_grounded and not will_be_crouching:
                 crouch_height_diff = self.full_height - self.crouch_height
                 blocked_above = world.is_touching_wall(self, (0, -1), dist=crouch_height_diff)

@@ -2,6 +2,7 @@ import pygame
 import random
 
 import cool_math
+import image_cache
 import images
 import global_state
 import puzzles
@@ -646,12 +647,12 @@ class Zone(Entity):
 
     def draw(self, screen, offset=(0, 0), modifier=None):
         key = "zone_debug_overlay:" + str(self.size()) + "_" + str(self.debug_color)
-        cached_img = images.get_cached_image(key)
+        cached_img = image_cache.get_cached_image(key)
         if cached_img is None:
             cached_img = pygame.Surface(self.size(), pygame.SRCALPHA)
             cached_img.set_alpha(128)
             cached_img.fill(self.debug_color)
-            images.put_cached_image(key, cached_img)
+            image_cache.put_cached_image(key, cached_img)
         dest = (self.get_x() + offset[0], self.get_y() + offset[1])
         screen.blit(cached_img, dest)
 
