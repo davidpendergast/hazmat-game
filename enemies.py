@@ -188,14 +188,18 @@ class DodgeEnemy(SmartEnemy):
 class StickyEnemy(Enemy):
     def __init__(self, x, y, clockwise=True):
         Enemy.__init__(self, x, y, 24, 24)
-        self.orientation = [0, 1]  # points "up" with respect to enemy
         self.clockwise = clockwise
+        self.speed = 0.75
+        self.set_direction(1, 0)
+        self.is_top_walled = False
+        self.just_snapped = False
 
     def sprite_offset(self):
         spr = self.sprite()
         sign = 1 if self.clockwise else 1
-        x_offs = -self.orientation[0] * 4 * sign
-        y_offs = -self.orientation[1] * 4 * sign
+        orientation = self.get_orientation()
+        x_offs = -orientation[0] * 4 * sign
+        y_offs = -orientation[1] * 4 * sign
         return (int(self.width()/2 - spr.width()/2) + x_offs, int(self.height()/2 - spr.height()/2) + y_offs)
 
     _slug_sprites = (images.ACID_SLUG_U_L, images.ACID_SLUG_D_L, images.ACID_SLUG_L_L, images.ACID_SLUG_R_L,
@@ -203,71 +207,134 @@ class StickyEnemy(Enemy):
 
     def sprite(self):
         num = 4 if self.clockwise else 0
-        if self.orientation[0] != 0:
+        orientation = self.get_orientation()
+        if orientation[0] != 0:
             num += 2
-            num += 1 if self.orientation[0] > 0 else 0
+            num += 1 if orientation[0] > 0 else 0
         else:
-            num += 1 if self.orientation[1] > 0 else 0
+            num += 1 if orientation[1] > 0 else 0
         return StickyEnemy._slug_sprites[num]
 
     def sprite_modifier(self):
         return "normal"  # never flipped because of all the special case stuff
 
     def death_sprite(self, cause=None):
-        if self.orientation[0] != 0:
-            return images.SLUG_DYING_L if self.orientation[0] < 0 else images.SLUG_DYING_R
+        orientation = self.get_orientation()
+        if orientation[0] != 0:
+            return images.SLUG_DYING_L if orientation[0] < 0 else images.SLUG_DYING_R
         else:
-            return images.SLUG_DYING_U if self.orientation[1] < 0 else images.SLUG_DYING_D
-
-    def update(self, input_state, world):
-        Enemy.update(self, input_state, world)
-
-        if self.is_grounded:
-            self.orientation[0] = 0
-            self.orientation[1] = -1
-        if self.is_left_walled:
-            self.orientation[0] = 1
-            self.orientation[1] = 0
-        if self.is_right_walled:
-            self.orientation[0] = -1
-            self.orientation[1] = 0
-
-        up_sliver = cool_math.sliver_adjacent(self.get_rect(), (0, -1), 1)
-        up = len(world.get_entities_in_rect(up_sliver, category="wall")) > 0
-        left = self.is_left_walled
-        right = self.is_right_walled
-        down = self.is_grounded
-
-        if not (up or left or right or down):
-            self.set_orientation(0, -1)
-            self.has_gravity = True
-            return
-        else:
-            pass
-
-        if self.vel[0] < -0.05:
-            self.clockwise = False
-        if self.vel[0] > 0.05:
-            self.clockwise = True
-
-    def set_orientation(self, x, y):
-        self.orientation[0] = x
-        self.orientation[1] = y
+            return images.SLUG_DYING_U if orientation[1] < 0 else images.SLUG_DYING_D
 
     def deal_damage(self, damage, source=None, direction=None):
         if source is not None:
             if source.is_player():
                 self.clockwise = not self.clockwise
+                self.set_direction(0, 0)
             elif isinstance(source, entities.KillBlock):
                 return  # unaffected by kill blocks
         Enemy.deal_damage(self, damage, source=source, direction=direction)
 
-    def do_ai_behavior(self, input_state, world):
-        # change directions approx every second
-        if random.random() < 1 / 60:
-            if random.random() < 0.25:
-                self.current_dir = (0, 0)
+    def set_direction(self, x, y):
+        if (x == 0 and (y == 1 or y == -1)) or (y == 0 and (x == 1 or x == -1)):
+            self.current_dir[0] = x
+            self.current_dir[1] = y
+        else:
+            self.current_dir[0] = 0
+            self.current_dir[1] = 0
+
+    def get_orientation(self):
+        cd = self.current_dir
+        if cd[0] == 0 and cd[1] == 0:
+            return (0, 1)  # falls upside down, for cuteness
+        else:
+            if self.clockwise:
+                return (cd[1], -cd[0])  # 90 degree rotation matrices
             else:
-                self.current_dir = cool_math.rand_direction()
-        new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
-        self.set_vel_x(new_vel)
+                return (-cd[1], cd[0])
+
+    def _update_status_tags(self, world, input_state):
+        Enemy._update_status_tags(self, world, input_state)
+        up_sliver = cool_math.sliver_adjacent(self.get_rect(), (0, -1), 2)
+        self.is_top_walled = len(world.get_entities_in_rect(up_sliver, category="wall")) > 0
+
+    def update(self, input_state, world):
+        actors.Actor.update(self, input_state, world)
+
+        self.do_ai_behavior(input_state, world)
+
+        if self.has_gravity:
+            self.apply_gravity()
+            self.apply_physics()
+        else:
+            self.apply_physics()
+
+            self._update_status_tags(world, input_state)
+            post_left = self.is_left_walled
+            post_right = self.is_right_walled
+            post_up = self.is_top_walled
+            post_down = self.is_grounded
+
+            if not (post_left or post_right or post_down or post_up):
+                # gotta wrap now
+                rect = self.get_rect()
+                search_rect = rect.inflate(self.speed + 4, self.speed + 4)
+                walls_nearby = world.get_entities_in_rect(search_rect, category="wall")
+                if len(walls_nearby) > 0:
+                    rects_nearby = list(map(lambda x: x.get_rect(), walls_nearby))
+                    snaps = map(lambda x: cool_math.corner_snap_rects(rect, x, outside=True), rects_nearby)
+                    my_center = self.center()
+                    best_snap = cool_math.closest_rect_by_center(my_center, snaps)
+
+                    # snap onto surface, and update direction
+                    self.set_xy(best_snap[0], best_snap[1])
+                    cd = self.current_dir
+                    if cd[0] == -1:
+                        self.set_direction(0, -1 if self.clockwise else 1)
+                    elif cd[0] == 1:
+                        self.set_direction(0, 1 if self.clockwise else -1)
+                    elif cd[1] == -1:
+                        self.set_direction(1 if self.clockwise else -1, 0)
+                    elif cd[1] == 1:
+                        self.set_direction(-1 if self.clockwise else 1, 0)
+
+                    self.set_x(self.get_x() + self.current_dir[0] * 4)  # move a bit onto the next edge
+                    self.set_y(self.get_y() + self.current_dir[1] * 4)
+
+    def do_ai_behavior(self, input_state, world):
+        up = self.is_top_walled
+        left = self.is_left_walled
+        right = self.is_right_walled
+        down = self.is_grounded
+
+        if not (up or left or right or down):
+            self.set_direction(0, 0)
+            self.has_gravity = True
+            return
+
+        cd = self.current_dir
+
+        if cd[0] == 0 and cd[1] == 0:
+            self.has_gravity = True  # just in case, we don't want to float
+            if down:
+                self.set_direction(1 if self.clockwise else -1, 0)
+                self.has_gravity = False
+            return
+
+        self.has_gravity = False
+
+        if cd[0] == -1:
+            if left:
+                self.set_direction(0, 1 if self.clockwise else -1)
+        elif cd[0] == 1:
+            if right:
+                self.set_direction(0, -1 if self.clockwise else 1)
+        elif cd[1] == -1:
+            if up:
+                self.set_direction(-1 if self.clockwise else 1, 0)
+        elif cd[1] == 1:
+            if down:
+                self.set_direction(1 if self.clockwise else -1, 0)
+
+        if not self.has_gravity:
+            self.vel[0] = self.current_dir[0] * self.speed
+            self.vel[1] = self.current_dir[1] * self.speed

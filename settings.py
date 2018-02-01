@@ -8,7 +8,7 @@ CONFIGS = {
 }
 
 
-STARTING_LEVEL_OVERRIDE = None  # "level_02"
+STARTING_LEVEL_OVERRIDE = "platformer_test"  # "level_02"
 
 
 FPS_THROTTLE = 1  # frames will only be drawn every X updates

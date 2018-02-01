@@ -122,7 +122,11 @@ class PlatformerTest(Level):
         Level.__init__(self, PLATFORMER_TEST, "Platforming Testing", "?-?")
 
     def build_refs(self, refs, world):
-        return []
+        ref_items = list()
+        ref_items.append(self.fetch_ref("slime_1", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_2", enemies.StickyEnemy(0, 0), refs))
+
+        return ref_items
 
 
 class _SampleLevel(Level):

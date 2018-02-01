@@ -133,3 +133,52 @@ def recenter_rect_in(rect1, rect2):
             int(rect1[1] + diff[1]),
             rect1[2],
             rect1[3]]
+
+
+def corner_snap_rects(to_move, target, outside=True):
+    """
+    Moves to_move such that one of its corners is snapped to target's corner. If outside=False, there will be at least
+    two edges that become overlapped. If false, no edges will overlap. The distance moved will be the minimum possible.
+    """
+    X = to_move
+    x1 = (X[0], X[1])
+    x2 = (X[0] + X[2], X[1])
+    x3 = (X[0] + X[2], X[1] + X[3])
+    x4 = (X[0], X[1] + X[3])
+
+    Y = target
+    y1 = (Y[0], Y[1])
+    y2 = (Y[0] + Y[2], Y[1])
+    y3 = (Y[0] + Y[2], Y[1] + Y[3])
+    y4 = (Y[0], Y[1] + Y[3])
+
+    if outside:
+        pairings = [(x1, y3), (x2, y4), (x3, y1), (x4, y2)]
+    else:
+        pairings = [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
+
+    i_min = 0
+    for i in range(1, 4):
+        p = pairings[i]
+        if dist(p[0], p[1]) < dist(pairings[i_min][0], pairings[i_min][1]):
+            i_min = i
+
+    dxy = sub(pairings[i_min][1], pairings[i_min][0])
+
+    return [X[0] + dxy[0], X[1] + dxy[1], X[2], X[3]]
+
+
+def closest_rect_by_center(pt, rects):
+    rects = list(rects)
+    best_dist = None
+    best_r = None
+    for r in rects:
+        if best_r is None:
+            best_r = r
+            best_dist = dist(pt, (r[0] + r[2]/2, r[1] + r[3]/2))
+        else:
+            cur_dist = dist(pt, (r[0] + r[2]/2, r[1] + r[3]/2))
+            if cur_dist < best_dist:
+                best_r = r
+    return best_r
+
