@@ -8,7 +8,7 @@ CONFIGS = {
 }
 
 
-STARTING_LEVEL_OVERRIDE = "level_01"
+STARTING_LEVEL_OVERRIDE = "level_02alt"
 
 
 FPS_THROTTLE = 1  # frames will only be drawn every X updates

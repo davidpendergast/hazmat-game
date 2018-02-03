@@ -16,9 +16,10 @@ PLATFORMER_TEST = "platformer_test"
 LEVEL_VOID = "void"
 LEVEL_01 = "level_01"
 LEVEL_02 = "level_02"
+LEVEL_02a = "level_02alt"
 LEVEL_03 = "level_03"
 
-LEVEL_SEQ = [LEVEL_01, LEVEL_02, LEVEL_03]
+LEVEL_SEQ = [LEVEL_01, LEVEL_02a, LEVEL_03]
 
 LEVELS_DIR = "levels/"
 LEVEL_EXT = ".txt"
@@ -72,6 +73,11 @@ class Level:
 
     def next_levels(self):
         """All the ids of levels that can be reached from this one."""
+        # return []
+        if self.get_id() in LEVEL_SEQ:
+            idx = LEVEL_SEQ.index(self.get_id())
+            if idx < len(LEVEL_SEQ) - 1:
+                return list(LEVEL_SEQ[idx + 1])
         return []
 
     def fetch_ref(self, ref_id, entity, refs):
@@ -136,9 +142,6 @@ class _SampleLevel(Level):
     def get_player_start_pos(self):
         return (50, 50)
 
-    def next_levels(self):
-        return [LEVEL_03]
-
     def build_refs(self, refs, world):
         ref_items = list()
         ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, "you don't belong here."), refs))
@@ -174,10 +177,22 @@ class _SampleLevel(Level):
         return ref_items
 
 
+class IntroToEnemies(Level):
+
+    def __init__(self):
+        Level.__init__(self, LEVEL_02a, "Danger", "1-2")
+
+    def build_refs(self, refs, world):
+        pass
+
+    def get_player_start_pos(self):
+        return (0, 0)
+
+
 class Level12(Level):
 
     def __init__(self):
-        Level.__init__(self, LEVEL_03, "Decay", "1-2")
+        Level.__init__(self, LEVEL_03, "Decay", "1-3")
 
     def build_refs(self, refs, world):
         ref_items = list()
@@ -198,18 +213,15 @@ class Level12(Level):
 class Level11(Level):
 
     def __init__(self):
-        Level.__init__(self, LEVEL_01, "The Beginning", "1-1")
+        Level.__init__(self, LEVEL_01, "Descent", "1-1")
 
     def get_player_start_pos(self):
         return (10, -128)
 
-    def next_levels(self):
-        return [LEVEL_02]
-
     def build_refs(self, refs, world):
         ref_items = list()
 
-        txt = "you shouldn't be here"
+        txt = "you can move with [WASD] or [ARROW KEYS]"
         ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, txt), refs))
 
         wall = self.fetch_ref("breakable_walls", entities.BreakableWall(0, 0), refs)
@@ -222,6 +234,9 @@ class Level11(Level):
 
         txt = "you'll die in this place, like the others"
         ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(0, 0, txt), refs))
+
+        txt = "press [J] or [X] to shoot"  # TODO - sync with actual settings
+        ref_items.append(self.fetch_ref("how_to_shoot", entities.Terminal(0, 0, txt), refs))
 
         wall_2 = self.fetch_ref("breakable_2", entities.BreakableWall(0, 0), refs)
         wall_3 = entities.BreakableWall(wall_2.get_x(), wall_2.get_y() + wall_2.height())
