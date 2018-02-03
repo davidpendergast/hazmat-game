@@ -51,7 +51,7 @@ def _handle_debug_toggles(input_state):
     if show_fps:
         global last_timing, last_draw_count, current_fps
         cur_time = time.time()
-        if cur_time - last_timing >= 1:
+        if cur_time - last_timing >= 0.1:
             current_fps = round((draw_counter - last_draw_count) / (cur_time - last_timing))
             last_timing = cur_time
             last_draw_count = draw_counter

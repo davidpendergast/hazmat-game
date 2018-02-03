@@ -190,6 +190,7 @@ class StickyEnemy(Enemy):
         Enemy.__init__(self, x, y, 24, 24)
         self.clockwise = clockwise
         self.speed = 0.75
+        self.health = 2
         self.set_direction(1, 0)
         self.is_top_walled = False
         self.just_snapped = False

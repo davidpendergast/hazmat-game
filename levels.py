@@ -183,7 +183,31 @@ class IntroToEnemies(Level):
         Level.__init__(self, LEVEL_02a, "Danger", "1-2")
 
     def build_refs(self, refs, world):
-        pass
+        ref_items = list()
+
+        ref_items.append(self.fetch_ref("slime_1", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_2", enemies.StickyEnemy(0, 0, clockwise=False), refs))
+        ref_items.append(self.fetch_ref("slime_3", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_4", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_5", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_6", enemies.StickyEnemy(0, 0, clockwise=False), refs))
+
+        ref_items.append(self.fetch_ref("slime_7", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_8", enemies.StickyEnemy(0, 0, clockwise=False), refs))
+        ref_items.append(self.fetch_ref("slime_9", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_10", enemies.StickyEnemy(0, 0, clockwise=False), refs))
+        ref_items.append(self.fetch_ref("slime_11", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_12", enemies.StickyEnemy(0, 0, clockwise=False), refs))
+
+        #ref_items.append(self.fetch_ref("breakable_1", entities.BreakableWall(0, 0), refs))
+        #ref_items.append(self.fetch_ref("breakable_2", entities.BreakableWall(0, 0), refs))
+        #ref_items.append(self.fetch_ref("breakable_3", entities.BreakableWall(0, 0), refs))
+        #ref_items.append(self.fetch_ref("breakable_4", entities.BreakableWall(0, 0), refs))
+
+        txt = ""
+        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, message=txt), refs))
+
+        return ref_items
 
     def get_player_start_pos(self):
         return (0, 0)

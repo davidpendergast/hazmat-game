@@ -72,7 +72,8 @@ class Chunk:
             screen_pos = cool_math.add(self.xy(), offset)
             screen.blit(cache_img, screen_pos)
 
-        for e in self.entities.get_all(not_category=["ground", "wall", "actor", "overlay", "zone"]):
+        special_stuff = ["ground", "wall", "actor", "overlay", "zone", "reference", "spawner"]
+        for e in self.entities.get_all(not_category=special_stuff):
             e.draw(screen, offset)
 
     def draw_actors(self, screen, offset):
@@ -122,6 +123,10 @@ class Chunk:
 
             for zone in self.entities.get_all(category="zone"):
                 zone.draw(screen, offset)
+
+        if global_state.show_items_to_place:
+            for thing in self.entities.get_all(category=["spawner", "reference"]):
+                thing.draw(screen, offset)
 
     def __contains__(self, entity):
         return entity in self.entities

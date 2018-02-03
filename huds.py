@@ -41,7 +41,7 @@ class HUD:
             entity_factory.build("ground_grass"),
             entity_factory.build("ground_wall"),
             entity_factory.build("ground_dark"),
-            entities.BreakableWall(0, 0),
+            entity_factory.build("breakable_block_spawner"),
             entity_factory.build("acid_full"),
             entity_factory.build("acid_top")
         ]

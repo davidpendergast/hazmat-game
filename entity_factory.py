@@ -30,9 +30,7 @@ def init_entities():
     _put("chain_wall_small", lambda: entities.Wall(0, 0, 16, 16, images.CHAIN_SMOL))
     _put("white_wall_small", lambda: entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL))
 
-    entities.Wall(0, 0),
-    entities.Wall(0, 0, 16, 16, images.CHAIN_SMOL),
-    entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL),
+    _put("breakable_block_spawner", lambda: entities.SpawnerEntity(0, 0, lambda: entities.BreakableWall(0, 0)))
 
     _put("lightbulb", lambda: decorations.Decoration(0, 0, "lightbulb", images.LIGHT_BULB).with_light_level(160))
     _put("wire_vert", lambda: decorations.Decoration(0, 0, "wire_vert", images.WIRE_VERTICAL))

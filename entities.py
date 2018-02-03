@@ -622,6 +622,7 @@ class KillBlock(Entity):
 class ReferenceEntity(Entity):
     def __init__(self, x, y, ref_id=None):
         Entity.__init__(self, x, y, 32, 32)
+        self.categories.update(["reference"])
         self.set_ref_id(ref_id)
 
     def get_ref_id(self):
@@ -630,8 +631,36 @@ class ReferenceEntity(Entity):
         return Entity.get_ref_id(self)
 
     def draw(self, screen, offset=(0, 0), modifier=None):
-        if global_state.show_items_to_place:
-            pygame.draw.rect(screen, (100, 100, 255), self.get_rect().move(*offset), 2)
+        pygame.draw.rect(screen, (100, 100, 255), self.get_rect().move(*offset), 2)
+
+
+class SpawnerEntity(Entity):
+    """
+    Creates a single entity and adds it to world at the first opportunity. Used for saving/loading
+    entities that are destroyable (enemies, breakable blocks, etc.)
+    """
+    def __init__(self, x, y, create_entity):
+        Entity.__init__(self, x, y, 32, 32)
+        self.categories.update(["spawner"])
+        self.create_entity = create_entity
+        self.did_spawn = False
+
+    def update(self, input_state, world):
+        if not self.did_spawn:
+            self.did_spawn = True
+            my_entity = self.create_entity()
+
+            if my_entity.is_("spawner"):
+                raise ValueError("spawners can't spawn other spawners")
+
+            my_entity.set_xy(self.get_x(), self.get_y())
+            my_entity.set_ref_id("spawned_no_save_pls")
+            world.add_entity(my_entity)
+
+    def draw(self, screen, offset=(0, 0), modifier=None):
+        rect = self.get_rect()
+        rect.move_ip(offset[0], offset[1])
+        pygame.draw.rect(screen, (100, 255, 100), rect, 2)
 
 
 class Zone(Entity):
@@ -815,7 +844,7 @@ class EntityCollection:
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
                      "health_machine", "wall", "overlay", "player", "interactable", "light_source",
-                     "level_door", "door", "zone", "instakill"}
+                     "level_door", "door", "zone", "instakill", "spawner"}
 
 
 def validate_category(category):
