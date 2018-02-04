@@ -520,7 +520,7 @@ class LevelEndDoor(Entity):
         elif self.is_locked:
             all_puzzles = world.get_entities_with(category="puzzle_terminal")
             incomplete = len([x for x in all_puzzles if not x.is_complete()])
-            if incomplete > 0 and False:
+            if incomplete > 0:
                 if incomplete == 1:
                     msg = "There is one puzzle remaining. Finish it to unlock the door."
                 else:
@@ -844,7 +844,7 @@ class EntityCollection:
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
                      "health_machine", "wall", "overlay", "player", "interactable", "light_source",
-                     "level_door", "door", "zone", "instakill", "spawner"}
+                     "level_door", "door", "zone", "instakill", "spawner", "reference"}
 
 
 def validate_category(category):

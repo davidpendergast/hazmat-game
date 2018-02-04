@@ -16,10 +16,9 @@ PLATFORMER_TEST = "platformer_test"
 LEVEL_VOID = "void"
 LEVEL_01 = "level_01"
 LEVEL_02 = "level_02"
-LEVEL_02a = "level_02alt"
 LEVEL_03 = "level_03"
 
-LEVEL_SEQ = [LEVEL_01, LEVEL_02a, LEVEL_03]
+LEVEL_SEQ = [LEVEL_01, LEVEL_02, LEVEL_03]
 
 LEVELS_DIR = "levels/"
 LEVEL_EXT = ".txt"
@@ -55,8 +54,6 @@ class Level:
         self.name = name
         self.subtitle = subtitle
 
-        ALL_LEVELS[level_id] = self
-
         self._used_refs = set()
 
     def get_id(self):
@@ -73,11 +70,10 @@ class Level:
 
     def next_levels(self):
         """All the ids of levels that can be reached from this one."""
-        # return []
         if self.get_id() in LEVEL_SEQ:
             idx = LEVEL_SEQ.index(self.get_id())
             if idx < len(LEVEL_SEQ) - 1:
-                return list(LEVEL_SEQ[idx + 1])
+                return [LEVEL_SEQ[idx + 1]]
         return []
 
     def fetch_ref(self, ref_id, entity, refs):
@@ -135,52 +131,10 @@ class PlatformerTest(Level):
         return ref_items
 
 
-class _SampleLevel(Level):
-    def __init__(self):
-        Level.__init__(self, LEVEL_02, "Entry", "1-2")
-
-    def get_player_start_pos(self):
-        return (50, 50)
-
-    def build_refs(self, refs, world):
-        ref_items = list()
-        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, "you don't belong here."), refs))
-        puzzle_terminal_1 = entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle())
-        ref_items.append(self.fetch_ref("puzzle_terminal_1", puzzle_terminal_1, refs))
-        msg = ["you'll die in this place.", "is that what you want?"]
-        ref_items.append(self.fetch_ref("jump_tip_terminal", entities.Terminal(0, 0, msg), refs))
-
-        rm_wall_1 = self.fetch_ref("rm_wall_1", entities.Wall(0, 0), refs)
-        rm_wall_2 = self.fetch_ref("rm_wall_2", entities.Wall(0, 0), refs)
-        puzzle2 = entities.DeathPuzzleTerminal(0, 0, lambda: puzzles.SnakePuzzle(3))
-        puzzle2 = self.fetch_ref("puzzle_2", puzzle2, refs)
-
-        def rm_walls():
-            rm_wall_1.is_alive = False
-            rm_wall_2.is_alive = False
-
-        puzzle2.set_on_success(rm_walls)
-        ref_items.extend([rm_wall_1, rm_wall_2, puzzle2])
-
-        ref_items.append(self.fetch_ref("enemy_1", enemies.DodgeEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("enemy_2", enemies.DumbEnemy(0, 0), refs))
-
-        ref_items.append(self.fetch_ref("terminal_3", entities.Terminal(0, 0, "this is only the beginning."), refs))
-        ref_items.append(self.fetch_ref("health_machine", entities.HealthMachine(0, 0, 3), refs))
-
-        ref_items.append(self.fetch_ref("finish_door_1", entities.LevelEndDoor(0, 0, self.next_levels()[0]), refs))
-
-        ref_items.append(self.fetch_ref("door_a", entities.Door(0, 0, "door_a", "door_b"), refs))
-        ref_items.append(self.fetch_ref("door_b", entities.Door(0, 0, "door_b", "door_a"), refs))
-        ref_items.append(self.fetch_ref("hidden_terminal", entities.Terminal(0, 0, "this room isn't very useful, is it?"), refs))
-
-        return ref_items
-
-
 class IntroToEnemies(Level):
 
     def __init__(self):
-        Level.__init__(self, LEVEL_02a, "Danger", "1-2")
+        Level.__init__(self, LEVEL_02, "Danger", "1-2")
 
     def build_refs(self, refs, world):
         ref_items = list()
@@ -199,13 +153,10 @@ class IntroToEnemies(Level):
         ref_items.append(self.fetch_ref("slime_11", enemies.StickyEnemy(0, 0), refs))
         ref_items.append(self.fetch_ref("slime_12", enemies.StickyEnemy(0, 0, clockwise=False), refs))
 
-        #ref_items.append(self.fetch_ref("breakable_1", entities.BreakableWall(0, 0), refs))
-        #ref_items.append(self.fetch_ref("breakable_2", entities.BreakableWall(0, 0), refs))
-        #ref_items.append(self.fetch_ref("breakable_3", entities.BreakableWall(0, 0), refs))
-        #ref_items.append(self.fetch_ref("breakable_4", entities.BreakableWall(0, 0), refs))
-
         txt = ""
         ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, message=txt), refs))
+
+        ref_items.append(self.fetch_ref("exit_door", entities.LevelEndDoor(0, 0, self.next_levels()[0]), refs))
 
         return ref_items
 
@@ -220,13 +171,13 @@ class Level12(Level):
 
     def build_refs(self, refs, world):
         ref_items = list()
-        puzzle1 = entities.PuzzleTerminal(0, 0, lambda: puzzles.DummyPuzzle())
+        puzzle1 = entities.PuzzleTerminal(0, 0, lambda: puzzles.SnakePuzzle(difficulty=1))
         ref_items.append(self.fetch_ref("puzzle_1", puzzle1, refs))
-        terminal_1 = entities.Terminal(0, 0, ["this level is pretty boring, isn't it?",
-                                              "maybe some pointless exposition would help.",
-                                              "...",
-                                              "i can't think of any right now..."])
-        ref_items.append(self.fetch_ref("terminal_1", terminal_1, refs))
+        txt = "Some levels have puzzles that must be solved before it can be completed."
+        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, message=txt), refs))
+        txt = "Some levels have puzzles that must be solved before it can be completed."
+        ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(0, 0, message=txt), refs))
+        ref_items.append(self.fetch_ref("level_exit", entities.LevelEndDoor(0, 0, "void"), refs))  # TODO - not void
 
         return ref_items
 
@@ -370,6 +321,7 @@ print("\nINFO\tbuilding levels...")
 g = globals().copy()
 for level in Level.__subclasses__():
     lvl = level()
+    ALL_LEVELS[lvl.get_id()] = lvl
     print("INFO\tbuilt level: ", lvl.get_id())
 
 
