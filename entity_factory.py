@@ -20,17 +20,23 @@ def build(factory_id):
         raise ValueError("unknown factory id: ", factory_id)
 
 
+def _spawner(obj_builder):
+    return lambda: entities.SpawnerEntity(0, 0, obj_builder)
+
+
 def init_entities():
     print("INFO\tinitializing entity factory")
+
+    _put("white_wall", lambda: entities.Wall(0, 0, 32, 32, sprite=images.WHITE_WALL))
+    _put("chain_wall_small", lambda: entities.Wall(0, 0, 16, 16, images.CHAIN_SMOL))
+    _put("white_wall_fancy", lambda: entities.Wall(0, 0, 32, 32, images.WHITE_WALL_FANCY))
+    _put("white_wall_small", lambda: entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL))
 
     _put("acid_top", lambda: entities.KillBlock(0, 0, images.ACID_TOP_HALF, hitbox=[0, 16, 32, 16]).with_light_level(128))
     _put("acid_full", lambda: entities.KillBlock(0, 0, images.ACID_FULL).with_light_level(128))
 
-    _put("white_wall", lambda: entities.Wall(0, 0, 32, 32, sprite=images.WHITE_WALL))
-    _put("chain_wall_small", lambda: entities.Wall(0, 0, 16, 16, images.CHAIN_SMOL))
-    _put("white_wall_small", lambda: entities.Wall(0, 0, 16, 16, images.WHITE_WALL_SMOL))
-
-    _put("breakable_block_spawner", lambda: entities.SpawnerEntity(0, 0, lambda: entities.BreakableWall(0, 0)))
+    _put("breakable_white_wall_spawner", _spawner(lambda: entities.BreakableWall(0, 0, images.WHITE_WALL_CRACKED, images.WHITE_WALL_BREAKING)))
+    _put("breakable_block_spawner", _spawner(lambda: entities.BreakableWall(0, 0, images.BREAKABLE_WALL, images.BREAKABLE_WALL_ANIM)))
 
     _put("lightbulb", lambda: decorations.Decoration(0, 0, "lightbulb", images.LIGHT_BULB).with_light_level(160))
     _put("wire_vert", lambda: decorations.Decoration(0, 0, "wire_vert", images.WIRE_VERTICAL))

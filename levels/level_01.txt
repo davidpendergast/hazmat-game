@@ -1,8 +1,6 @@
 ##  REFERENCES  ##
 finish_door, 4128, -1536
 how_to_shoot, 4128, -896
-breakable_walls, 4352, -896
-breakable_2, 4480, -992
 terminal_2, 4704, -896
 terminal_1, 960, -96
 
@@ -1331,6 +1329,16 @@ acid_top, 3680, -864
 acid_top, 3712, -864
 acid_top, 3744, -864
 acid_top, 3776, -864
+breakable_block_spawner, 4352, -864
+breakable_block_spawner, 4352, -896
+breakable_block_spawner, 4384, -864
+breakable_block_spawner, 4384, -896
+breakable_block_spawner, 4416, -864
+breakable_block_spawner, 4416, -896
+breakable_block_spawner, 4448, -864
+breakable_block_spawner, 4448, -896
+breakable_block_spawner, 4480, -960
+breakable_block_spawner, 4480, -992
 chain_wall_small, -16, -112
 chain_wall_small, -16, -128
 chain_wall_small, -16, -144

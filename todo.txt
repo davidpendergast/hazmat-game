@@ -137,4 +137,22 @@ Bugs
     + crouch walking into a wall causes all kinds of sprite jitteriness
 
 
+Level 1-1
+    pure tutorial, every game mechanic
+    move, crouch, walljump, shoot, interacting, enemies. Passive textzones give instructions
+    secret areas
+
+Level 1-2
+    entering the facility, no real enemies
+    just platforming, some danger (poison gas)
+    scenery (offices, hallways) to reveal some story
+        "You find a handwritten note. It says, 'blah'"
+
+
+Level 1-3
+    slime enemies, crawling on the walls
+    notable elements:
+
+
+
 

@@ -199,24 +199,11 @@ class Level11(Level):
         txt = "you can move with [WASD] or [ARROW KEYS]"
         ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, txt), refs))
 
-        wall = self.fetch_ref("breakable_walls", entities.BreakableWall(0, 0), refs)
-        break_walls = [wall]
-        break_walls.extend([entities.BreakableWall(wall.get_x() + i*wall.width(), wall.get_y()) for i in range(1, 4)])
-        break_walls.extend([entities.BreakableWall(wall.get_x() + i*wall.width(), wall.get_y() + wall.height()) for i in range(0, 4)])
-        for w in break_walls:
-            w.set_ref_id("breakable_walls")
-            ref_items.append(w)
-
         txt = "you'll die in this place, like the others"
         ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(0, 0, txt), refs))
 
         txt = "press [J] or [X] to shoot"  # TODO - sync with actual settings
         ref_items.append(self.fetch_ref("how_to_shoot", entities.Terminal(0, 0, txt), refs))
-
-        wall_2 = self.fetch_ref("breakable_2", entities.BreakableWall(0, 0), refs)
-        wall_3 = entities.BreakableWall(wall_2.get_x(), wall_2.get_y() + wall_2.height())
-        wall_3.set_ref_id("breakable_2")
-        ref_items.extend([wall_2, wall_3])
 
         ref_items.append(self.fetch_ref("finish_door", entities.LevelEndDoor(0, 0, self.next_levels()[0]), refs))
 

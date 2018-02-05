@@ -251,8 +251,9 @@ class Wall(Entity):
 
 
 class BreakableWall(Wall):
-    def __init__(self, x, y):
-        Wall.__init__(self, x, y, sprite=images.BREAKABLE_WALL)
+    def __init__(self, x, y, sprite, break_animation=None):
+        Wall.__init__(self, x, y, sprite=sprite)
+        self.break_animation = break_animation
         self._was_hit = False
 
     def bullet_hit(self):
@@ -262,10 +263,11 @@ class BreakableWall(Wall):
         Wall.update(self, input_state, world)
         if self._was_hit:
             self.is_alive = False
-            explosion = Overlay(images.BREAKABLE_WALL_ANIM, 0, 0).with_lifespan(cycles=1)
-            ctr = self.center()
-            explosion.set_center(ctr[0], ctr[1])
-            world.add_entity(explosion)
+            if self.break_animation is not None:
+                explosion = Overlay(self.break_animation, 0, 0).with_lifespan(cycles=1)
+                ctr = self.center()
+                explosion.set_center(ctr[0], ctr[1])
+                world.add_entity(explosion)
             # TODO - sound
 
 
