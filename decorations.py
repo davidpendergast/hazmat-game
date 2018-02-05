@@ -5,8 +5,8 @@ import images
 class Decoration(entities.Entity):
     """Just a noninteractive piece of art basically."""
 
-    def __init__(self, x, y, dec_id, animation):
-        entities.Entity.__init__(self, x, y, animation.width(), animation.height())
+    def __init__(self, dec_id, animation):
+        entities.Entity.__init__(self, animation.width(), animation.height())
         self.animation = animation
         self.dec_id = dec_id
         self.categories.update(["decoration"])
@@ -23,7 +23,7 @@ class Decoration(entities.Entity):
 
 class Ground(Decoration):
 
-    def __init__(self, x, y, dec_id, animation):
-        Decoration.__init__(self, x, y, dec_id, animation)
+    def __init__(self, dec_id, animation):
+        Decoration.__init__(self, dec_id, animation)
         self.categories.update(["ground"])
 

@@ -107,7 +107,7 @@ class Level:
         for ref_id in refs:
             if ref_id not in self._used_refs:
                 print("WARN\tdid not build reference id: ", ref_id)
-                ref_entity = self.fetch_ref(ref_id, entities.ReferenceEntity(0, 0, ref_id=ref_id), refs)
+                ref_entity = self.fetch_ref(ref_id, entities.ReferenceEntity(ref_id=ref_id), refs)
                 world.add_entity(ref_entity)
 
         self._used_refs = set()
@@ -125,8 +125,8 @@ class PlatformerTest(Level):
 
     def build_refs(self, refs, world):
         ref_items = list()
-        ref_items.append(self.fetch_ref("slime_1", enemies.StickyEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("slime_2", enemies.StickyEnemy(0, 0), refs))
+        ref_items.append(self.fetch_ref("slime_1", enemies.StickyEnemy(), refs))
+        ref_items.append(self.fetch_ref("slime_2", enemies.StickyEnemy(), refs))
 
         return ref_items
 
@@ -139,24 +139,24 @@ class IntroToEnemies(Level):
     def build_refs(self, refs, world):
         ref_items = list()
 
-        ref_items.append(self.fetch_ref("slime_1", enemies.StickyEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("slime_2", enemies.StickyEnemy(0, 0, clockwise=False), refs))
-        ref_items.append(self.fetch_ref("slime_3", enemies.StickyEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("slime_4", enemies.StickyEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("slime_5", enemies.StickyEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("slime_6", enemies.StickyEnemy(0, 0, clockwise=False), refs))
+        ref_items.append(self.fetch_ref("slime_1", enemies.StickyEnemy(), refs))
+        ref_items.append(self.fetch_ref("slime_2", enemies.StickyEnemy(clockwise=False), refs))
+        ref_items.append(self.fetch_ref("slime_3", enemies.StickyEnemy(), refs))
+        ref_items.append(self.fetch_ref("slime_4", enemies.StickyEnemy(), refs))
+        ref_items.append(self.fetch_ref("slime_5", enemies.StickyEnemy(), refs))
+        ref_items.append(self.fetch_ref("slime_6", enemies.StickyEnemy(clockwise=False), refs))
 
-        ref_items.append(self.fetch_ref("slime_7", enemies.StickyEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("slime_8", enemies.StickyEnemy(0, 0, clockwise=False), refs))
-        ref_items.append(self.fetch_ref("slime_9", enemies.StickyEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("slime_10", enemies.StickyEnemy(0, 0, clockwise=False), refs))
-        ref_items.append(self.fetch_ref("slime_11", enemies.StickyEnemy(0, 0), refs))
-        ref_items.append(self.fetch_ref("slime_12", enemies.StickyEnemy(0, 0, clockwise=False), refs))
+        ref_items.append(self.fetch_ref("slime_7", enemies.StickyEnemy(), refs))
+        ref_items.append(self.fetch_ref("slime_8", enemies.StickyEnemy(clockwise=False), refs))
+        ref_items.append(self.fetch_ref("slime_9", enemies.StickyEnemy(), refs))
+        ref_items.append(self.fetch_ref("slime_10", enemies.StickyEnemy(clockwise=False), refs))
+        ref_items.append(self.fetch_ref("slime_11", enemies.StickyEnemy(), refs))
+        ref_items.append(self.fetch_ref("slime_12", enemies.StickyEnemy(clockwise=False), refs))
 
         txt = ""
-        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, message=txt), refs))
+        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(message=txt), refs))
 
-        ref_items.append(self.fetch_ref("exit_door", entities.LevelEndDoor(0, 0, self.next_levels()[0]), refs))
+        ref_items.append(self.fetch_ref("exit_door", entities.LevelEndDoor(self.next_levels()[0]), refs))
 
         return ref_items
 
@@ -171,13 +171,13 @@ class Level12(Level):
 
     def build_refs(self, refs, world):
         ref_items = list()
-        puzzle1 = entities.PuzzleTerminal(0, 0, lambda: puzzles.SnakePuzzle(difficulty=1))
+        puzzle1 = entities.PuzzleTerminal(lambda: puzzles.SnakePuzzle(difficulty=1))
         ref_items.append(self.fetch_ref("puzzle_1", puzzle1, refs))
         txt = "Some levels have puzzles that must be solved before it can be completed."
-        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, message=txt), refs))
+        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(message=txt), refs))
         txt = "Some levels have puzzles that must be solved before it can be completed."
-        ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(0, 0, message=txt), refs))
-        ref_items.append(self.fetch_ref("level_exit", entities.LevelEndDoor(0, 0, "void"), refs))  # TODO - not void
+        ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(message=txt), refs))
+        ref_items.append(self.fetch_ref("level_exit", entities.LevelEndDoor("void"), refs))  # TODO - not void
 
         return ref_items
 
@@ -197,15 +197,15 @@ class Level11(Level):
         ref_items = list()
 
         txt = "you can move with [WASD] or [ARROW KEYS]"
-        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(0, 0, txt), refs))
+        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(txt), refs))
 
         txt = "you'll die in this place, like the others"
-        ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(0, 0, txt), refs))
+        ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(txt), refs))
 
         txt = "press [J] or [X] to shoot"  # TODO - sync with actual settings
-        ref_items.append(self.fetch_ref("how_to_shoot", entities.Terminal(0, 0, txt), refs))
+        ref_items.append(self.fetch_ref("how_to_shoot", entities.Terminal(txt), refs))
 
-        ref_items.append(self.fetch_ref("finish_door", entities.LevelEndDoor(0, 0, self.next_levels()[0]), refs))
+        ref_items.append(self.fetch_ref("finish_door", entities.LevelEndDoor(self.next_levels()[0]), refs))
 
         return ref_items
 
@@ -223,7 +223,7 @@ class _VoidLevel(Level):
         return (0, 0)
 
     def build_refs(self, refs, world):
-        pass
+        passj
 
 
 def load_from_level_file(world, filename):
@@ -250,7 +250,9 @@ def load_from_level_file(world, filename):
                 if last_header == REF_HEADER:
                     xy = (int(items[1]), int(items[2]))
                     refs[items[0]] = xy
-                    world.add_entity(entities.ReferenceEntity(xy[0], xy[1], ref_id=items[0]))
+                    ref_entity = entities.ReferenceEntity(ref_id=items[0])
+                    ref_entity.set_xy(xy[0], xy[1])
+                    world.add_entity(ref_entity)
 
                 elif last_header == FACTORY_HEADER:
                     fac_id = items[0]

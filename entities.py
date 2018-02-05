@@ -9,12 +9,12 @@ import puzzles
 
 
 class Entity:
-    def __init__(self, x, y, w, h):
+    def __init__(self, w, h):
         self.is_alive = True
-        self.x = x  # floating point
-        self.y = y  # floating point
+        self._x = 0.0  # floating point, 'true' x position of entity
+        self._y = 0.0  # floating point, 'true' y position of entity
+        self.rect = pygame.Rect(0, 0, w, h)
         self.vel = [0, 0]
-        self.rect = pygame.Rect(x, y, w, h)
         self.categories = set()
         self.light_radius = None
         self.ref_id = None      # used by the level loader to mark entity as 'special'
@@ -62,11 +62,11 @@ class Entity:
         return self.rect.copy()
 
     def set_x(self, x):
-        self.x = x
+        self._x = x
         self.rect.x = round(x)
 
     def set_y(self, y):
-        self.y = y
+        self._y = y
         self.rect.y = round(y)
 
     def set_w(self, w):
@@ -191,8 +191,8 @@ class Entity:
 
 
 class Wall(Entity):
-    def __init__(self, x, y, w=32, h=32, sprite=images.WHITE_WALL):
-        Entity.__init__(self, x, y, w, h)
+    def __init__(self, w=32, h=32, sprite=images.WHITE_WALL):
+        Entity.__init__(self, w, h)
         self._sprite = sprite
         self._cached_outline = None  # surface
         self._outline_dirty = True
@@ -251,8 +251,8 @@ class Wall(Entity):
 
 
 class BreakableWall(Wall):
-    def __init__(self, x, y, sprite, break_animation=None):
-        Wall.__init__(self, x, y, sprite=sprite)
+    def __init__(self, sprite, break_animation=None):
+        Wall.__init__(self, sprite=sprite)
         self.break_animation = break_animation
         self._was_hit = False
 
@@ -264,7 +264,7 @@ class BreakableWall(Wall):
         if self._was_hit:
             self.is_alive = False
             if self.break_animation is not None:
-                explosion = Overlay(self.break_animation, 0, 0).with_lifespan(cycles=1)
+                explosion = Overlay(self.break_animation).with_lifespan(cycles=1)
                 ctr = self.center()
                 explosion.set_center(ctr[0], ctr[1])
                 world.add_entity(explosion)
@@ -272,8 +272,8 @@ class BreakableWall(Wall):
 
 
 class Door(Entity):
-    def __init__(self, x, y, door_id, dest_id, locked=False):
-        Entity.__init__(self, x, y, 32, 64)
+    def __init__(self, door_id, dest_id, locked=False):
+        Entity.__init__(self, 32, 64)
         self.door_id = door_id
         self.dest_id = dest_id
         self.locked = locked
@@ -328,8 +328,8 @@ class Door(Entity):
 
 
 class Terminal(Entity):
-    def __init__(self, x, y, message="It's a computer terminal"):
-        Entity.__init__(self, x, y, 32, 64)
+    def __init__(self, message="It's a computer terminal"):
+        Entity.__init__(self, 32, 64)
         self.categories.update(["terminal", "interactable"])
         self.message = message
 
@@ -372,8 +372,8 @@ class Terminal(Entity):
 
 
 class PuzzleTerminal(Terminal):
-    def __init__(self, x, y, puzzle_giver):
-        Terminal.__init__(self, x, y)
+    def __init__(self, puzzle_giver):
+        Terminal.__init__(self)
         self.categories.update(["puzzle_terminal"])
         self.active_callback = None
         self.on_success = None  # no-arg lambda
@@ -416,8 +416,8 @@ class PuzzleTerminal(Terminal):
 
 
 class DeathPuzzleTerminal(PuzzleTerminal):
-    def __init__(self, x, y, puzzle_giver):
-        PuzzleTerminal.__init__(self, x, y, puzzle_giver)
+    def __init__(self, puzzle_giver):
+        PuzzleTerminal.__init__(self, puzzle_giver)
 
     def sprite(self):
         return images.DEATH_PUZZLE
@@ -433,8 +433,8 @@ class DeathPuzzleTerminal(PuzzleTerminal):
 
 
 class HealthMachine(Entity):
-    def __init__(self, x, y, num_hearts=3):
-        Entity.__init__(self, x, y, 32, 64)
+    def __init__(self, num_hearts=3):
+        Entity.__init__(self, 32, 64)
         self.categories.update(["interactable", "health_machine"])
         self.hearts_left = max(0, min(4, num_hearts))  # gotta be between zero and four hearts
 
@@ -471,8 +471,8 @@ class HealthMachine(Entity):
 
 
 class LevelEndDoor(Entity):
-    def __init__(self, x, y, dest_level_id):
-        Entity.__init__(self, x, y, 64, 96)
+    def __init__(self, dest_level_id):
+        Entity.__init__(self, 64, 96)
         self.categories.update(["interactable", "level_door"])
         self.dest_level_id = dest_level_id
         self.is_locked = True
@@ -544,8 +544,8 @@ class LevelEndDoor(Entity):
 
 
 class Overlay(Entity):
-    def __init__(self, animation, x, y, modifier="normal"):
-        Entity.__init__(self, x, y, animation.width(), animation.height())
+    def __init__(self, animation, modifier="normal"):
+        Entity.__init__(self, animation.width(), animation.height())
         self._modifier = modifier
         self.categories.update(["overlay"])
         self.animation = animation
@@ -599,8 +599,8 @@ class Overlay(Entity):
 
 
 class KillBlock(Entity):
-    def __init__(self, x, y, sprite, hitbox=None):
-        Entity.__init__(self, x, y, sprite.width(), sprite.height())
+    def __init__(self, sprite, hitbox=None):
+        Entity.__init__(self, sprite.width(), sprite.height())
         self._sprite = sprite
         self._hitbox = hitbox
         self.categories.update(["instakill"])
@@ -622,8 +622,8 @@ class KillBlock(Entity):
 
 
 class ReferenceEntity(Entity):
-    def __init__(self, x, y, ref_id=None):
-        Entity.__init__(self, x, y, 32, 32)
+    def __init__(self, ref_id=None):
+        Entity.__init__(self, 32, 32)
         self.categories.update(["reference"])
         self.set_ref_id(ref_id)
 
@@ -641,8 +641,8 @@ class SpawnerEntity(Entity):
     Creates a single entity and adds it to world at the first opportunity. Used for saving/loading
     entities that are destroyable (enemies, breakable blocks, etc.)
     """
-    def __init__(self, x, y, create_entity):
-        Entity.__init__(self, x, y, 32, 32)
+    def __init__(self, create_entity):
+        Entity.__init__(self, 32, 32)
         self.categories.update(["spawner"])
         self.create_entity = create_entity
         self.did_spawn = False
@@ -667,8 +667,8 @@ class SpawnerEntity(Entity):
 
 class Zone(Entity):
     """Invisible area that performs some effect when actors enter"""
-    def __init__(self, x, y, w, h):
-        Entity.__init__(self, x, y, w, h)
+    def __init__(self, w, h):
+        Entity.__init__(self, w, h)
         self.categories.update(["zone"])
         self.debug_color = (125, 255, 125)
         self.actors_inside = {}

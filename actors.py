@@ -13,8 +13,8 @@ import inputs
 class Actor(Entity):
     gravity = 0.65
 
-    def __init__(self, x, y, w, h):
-        Entity.__init__(self, x, y, w, h)
+    def __init__(self, w, h):
+        Entity.__init__(self, w, h)
         self.categories.update(["actor"])
         self.has_gravity = True
         self.is_grounded = False
@@ -46,7 +46,7 @@ class Actor(Entity):
             self.is_alive = False
             death_spr = self.death_sprite()
             if death_spr is not None:
-                death_overlay = Overlay(death_spr, 0, 0)
+                death_overlay = Overlay(death_spr)
                 death_overlay.set_center_x(self.center()[0])
                 death_overlay.set_y(self.get_y() + self.height() - death_spr.height())
                 death_overlay.with_lifespan(cycles=1)
@@ -54,8 +54,8 @@ class Actor(Entity):
             return
 
     def apply_physics(self):
-        self.set_x(self.x + self.vel[0])
-        self.set_y(self.y + self.vel[1])
+        self.set_x(self._x + self.vel[0])
+        self.set_y(self._y + self.vel[1])
 
     def apply_gravity(self):
         if self.has_gravity:
@@ -90,10 +90,10 @@ class Actor(Entity):
 
 
 class Player(Actor):
-    def __init__(self, x, y):
+    def __init__(self):
         self.full_height = 48
         self.crouch_height = 32
-        Actor.__init__(self, x, y, 16, self.full_height)
+        Actor.__init__(self, 16, self.full_height)
         self.categories.update(["player"])
         self.speed = 3
         self.crouch_speed = 1.25
@@ -330,14 +330,14 @@ class Player(Actor):
                 colliders.sort(key=lambda x: x.get_x())
                 hit_entity = colliders[0]
                 bullet_w = hit_entity.get_x() - bullet_x
-                splash = Overlay(images.BULLET_SPLASH, 0, 0).with_lifespan(cycles=1)
+                splash = Overlay(images.BULLET_SPLASH).with_lifespan(cycles=1)
                 splash.set_x(bullet_x + bullet_w - splash.width())
             else:
                 colliders.sort(key=lambda x: x.get_x() + x.width())
                 hit_entity = colliders[-1]
                 bullet_w = self.get_x() - (hit_entity.get_x() + hit_entity.width())
                 bullet_x = hit_entity.get_x() + hit_entity.width()
-                splash = Overlay(images.BULLET_SPLASH, 0, 0, modifier="flipped").with_lifespan(cycles=1)
+                splash = Overlay(images.BULLET_SPLASH, modifier="flipped").with_lifespan(cycles=1)
                 splash.set_x(bullet_x)
 
             splash.set_center_y(int(bullet_y + bullet_h / 2))

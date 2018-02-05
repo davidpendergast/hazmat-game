@@ -29,7 +29,7 @@ FPS = 60
 
 input_state = inputs.InputState()
 active_world = world.World()
-active_world.add_entity(actors.Player(0, 0))
+active_world.add_entity(actors.Player())
 
 gs.hud = huds.HUD()
 gs.hud.set_active_menu(menus.MAIN_MENU)
@@ -64,7 +64,7 @@ def update():
         pygame.display.set_caption("HATE (editing " + gs.queued_next_level_name + ".txt)")
         gs.queued_next_level_name = None
 
-        player = actors.Player(0, 0)
+        player = actors.Player()
         pos = level.get_player_start_pos()
         player.set_xy(pos[0], pos[1])
 

@@ -10,8 +10,8 @@ import entities
 
 
 class Enemy(actors.Actor):
-    def __init__(self, x, y, w, h):
-        actors.Actor.__init__(self, x, y, w, h)
+    def __init__(self, w, h):
+        actors.Actor.__init__(self, w, h)
         self.categories.update(["enemy"])
         self.speed = 0.75 + random.random()/2
         self.current_dir = [0, 0]
@@ -79,8 +79,8 @@ class Enemy(actors.Actor):
 
 
 class DumbEnemy(Enemy):
-    def __init__(self, x, y):
-        Enemy.__init__(self, x, y, 16, 48)
+    def __init__(self):
+        Enemy.__init__(self, 16, 48)
 
     def sprite(self):
         return images.PURPLE_GUY
@@ -103,8 +103,8 @@ class DumbEnemy(Enemy):
 class SmartEnemy(Enemy):
     """chases player"""
 
-    def __init__(self, x, y):
-        Enemy.__init__(self, x, y, 16, 48)
+    def __init__(self):
+        Enemy.__init__(self, 16, 48)
         self.radius = 140  # starts chasing player within this distance
         self.forget_radius = 300  # stops chasing at this distance
         self.is_chasing = False
@@ -153,8 +153,8 @@ class SmartEnemy(Enemy):
 
 
 class DodgeEnemy(SmartEnemy):
-    def __init__(self, x, y):
-        SmartEnemy.__init__(self, x, y)
+    def __init__(self):
+        SmartEnemy.__init__(self)
         self.is_up = True
         self.time_since_last_swap = 0
 
@@ -186,8 +186,8 @@ class DodgeEnemy(SmartEnemy):
 
 
 class StickyEnemy(Enemy):
-    def __init__(self, x, y, clockwise=True):
-        Enemy.__init__(self, x, y, 24, 24)
+    def __init__(self, clockwise=True):
+        Enemy.__init__(self, 24, 24)
         self.clockwise = clockwise
         self.speed = 0.75
         self.health = 2
