@@ -139,20 +139,6 @@ class IntroToEnemies(Level):
     def build_refs(self, refs, world):
         ref_items = list()
 
-        ref_items.append(self.fetch_ref("slime_1", enemies.StickyEnemy(), refs))
-        ref_items.append(self.fetch_ref("slime_2", enemies.StickyEnemy(clockwise=False), refs))
-        ref_items.append(self.fetch_ref("slime_3", enemies.StickyEnemy(), refs))
-        ref_items.append(self.fetch_ref("slime_4", enemies.StickyEnemy(), refs))
-        ref_items.append(self.fetch_ref("slime_5", enemies.StickyEnemy(), refs))
-        ref_items.append(self.fetch_ref("slime_6", enemies.StickyEnemy(clockwise=False), refs))
-
-        ref_items.append(self.fetch_ref("slime_7", enemies.StickyEnemy(), refs))
-        ref_items.append(self.fetch_ref("slime_8", enemies.StickyEnemy(clockwise=False), refs))
-        ref_items.append(self.fetch_ref("slime_9", enemies.StickyEnemy(), refs))
-        ref_items.append(self.fetch_ref("slime_10", enemies.StickyEnemy(clockwise=False), refs))
-        ref_items.append(self.fetch_ref("slime_11", enemies.StickyEnemy(), refs))
-        ref_items.append(self.fetch_ref("slime_12", enemies.StickyEnemy(clockwise=False), refs))
-
         txt = ""
         ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(message=txt), refs))
 
@@ -223,7 +209,7 @@ class _VoidLevel(Level):
         return (0, 0)
 
     def build_refs(self, refs, world):
-        passj
+        pass
 
 
 def load_from_level_file(world, filename):

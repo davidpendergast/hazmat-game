@@ -1,9 +1,9 @@
 import pygame
 
+import math
 import copy
 import collections
 
-import enemies
 import entities
 import global_state
 import cool_math
@@ -23,28 +23,12 @@ class HUD:
     def __init__(self):
         self.selected_item_to_place = None
         self.selected_item_placeable = False
-        self.items = [
-            entity_factory.build("white_wall"),
-            entity_factory.build("chain_wall_small"),
-            entity_factory.build("white_wall_small"),
-            entities.Terminal(),
-            entities.ReferenceEntity(ref_id=None),
-            enemies.StickyEnemy(),
-            entity_factory.build("lightbulb"),
-            entity_factory.build("wire_vert"),
-        ]
 
-        self.alt_items = [  # accessed by hitting shift + numkuy
-            entity_factory.build("ground_stone"),
-            entity_factory.build("ground_sand"),
-            entity_factory.build("ground_purple"),
-            entity_factory.build("ground_grass"),
-            entity_factory.build("ground_wall"),
-            entity_factory.build("ground_dark"),
-            entity_factory.build("breakable_block_spawner"),
-            entity_factory.build("acid_full"),
-            entity_factory.build("acid_top")
-        ]
+        self.hotkey_active_idx = None
+        self.hotkey_item_page_idx = 0
+        self.hotkey_items_draw_lookup = {}  # fac_id -> entity
+        self.hotkey_items = [None] * 20
+        self._update_hotkey_items()
 
         self.text_queue = collections.deque()
         self.show_text_time = -500
@@ -92,6 +76,13 @@ class HUD:
 
         self.active_player = world.player()
 
+        if global_state.show_items_to_place:
+            if input_state.was_pressed(pygame.K_TAB):
+                inc = 1 if not input_state.is_held(pygame.K_LSHIFT) else -1
+                self.hotkey_item_page_idx += inc
+                print("tab pushed, updating page_idx to ", self.hotkey_item_page_idx)
+                self._update_hotkey_items()
+
         if self.is_showing_title_card():
             self.level_title_card_countdown -= 1
 
@@ -116,6 +107,26 @@ class HUD:
             placed = self._handle_placing_item(input_state, world)
             if not placed:
                 self._handle_removing_item(input_state, world)
+
+    def _update_hotkey_items(self):
+        all_ids = entity_factory.ALL_IDS_SORTED
+        num_slots = len(self.hotkey_items)
+        num_pages = max(1, math.ceil(len(all_ids) / num_slots))
+        self.hotkey_item_page_idx = self.hotkey_item_page_idx % num_pages
+        start_idx = self.hotkey_item_page_idx * num_slots
+
+        for i in range(0, num_slots):
+            item_idx = start_idx + i
+            if item_idx < len(all_ids):
+                item_id = all_ids[item_idx]
+                self.hotkey_items[i] = item_id
+                if item_id not in self.hotkey_items_draw_lookup:
+                    item_instance = entity_factory.build(item_id)
+                    if item_instance.is_("spawner"):
+                        item_instance = item_instance.create_entity()
+                    self.hotkey_items_draw_lookup[item_id] = item_instance
+            else:
+                self.hotkey_items[i] = None
 
     def draw(self, screen, offset=(0, 0)):
         if self.active_menu is not None:
@@ -144,6 +155,14 @@ class HUD:
             placeable = self.selected_item_placeable
             if to_place is not None and placeable is not None:
                 mod = "green_ghosts" if placeable else "red_ghosts"
+
+                # wanna draw the thing the spawner creates
+                to_draw = self.hotkey_items_draw_lookup[self.hotkey_items[self.hotkey_active_idx]]
+                if to_place.is_("spawner"):
+                    offs = cool_math.sub(to_place.xy(), to_draw.xy())
+                    offs = cool_math.add(offs, offset)
+                    to_draw.draw(screen, offs, modifier=mod)
+
                 to_place.draw(screen, offset, modifier=mod)
 
             if global_state.show_items_to_place:
@@ -203,12 +222,13 @@ class HUD:
         for i in range(0, columns):
             x = int((i+0.5) * w / columns)
             pygame.draw.line(screen, (0, 0, 0), (int(i*w/columns), y1), (int(i*w/columns), y1+h), 2)
-            if i < len(self.items) and self.items[i] is not None:
-                item = self.items[i]
+            if i < len(self.hotkey_items) and self.hotkey_items[i] is not None:
+                item = self.hotkey_items_draw_lookup[self.hotkey_items[i]]
                 pos = item.center()
                 item.draw(screen, cool_math.sub((x, int(y1 + h/4)), pos))
-            if i < len(self.alt_items) and self.alt_items[i] is not None:
-                item = self.alt_items[i]
+            i2 = i + columns
+            if i2 < len(self.hotkey_items) and self.hotkey_items[i2] is not None:
+                item = self.hotkey_items_draw_lookup[self.hotkey_items[i2]]
                 pos = item.center()
                 item.draw(screen, cool_math.sub((x, int(y2 + h/4)), pos))
 
@@ -229,11 +249,13 @@ class HUD:
             return self.puzzle_state_callback
 
     def _get_item_to_place(self, index, alt):
-        items = self.items if not alt else self.alt_items
-        if index >= len(items):
-            return None
+        if alt:
+            index += int(len(self.hotkey_items) / 2)
+        factory_id = self.hotkey_items[index]
+        if factory_id is not None:
+            return entity_factory.build(factory_id)
         else:
-            return items[index]
+            return None
 
     KEYS = [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
             pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0]
@@ -249,13 +271,14 @@ class HUD:
         if idx is not None:
             alt = input_state.is_held(pygame.K_LSHIFT) or input_state.is_held(pygame.K_RSHIFT)
             item = self._get_item_to_place(idx, alt)
-            if self.selected_item_to_place == item:
-                self._set_item_to_place(None)
+            if item is None or self.hotkey_active_idx == idx:
+                self._set_item_to_place(None, None)
             else:
-                self._set_item_to_place(item)
+                self._set_item_to_place(item, idx)
 
-    def _set_item_to_place(self, item):
+    def _set_item_to_place(self, item, index):
         self.selected_item_to_place = item
+        self.hotkey_active_idx = index
 
     def _handle_placing_item(self, input_state, world):
         to_place = self.selected_item_to_place
@@ -309,7 +332,7 @@ class HUD:
         return False
 
     def is_absorbing_inputs(self):
-        absorbing =  global_state.tick_counter - self.show_text_time < 2
+        absorbing = global_state.tick_counter - self.show_text_time < 2
         absorbing = absorbing or self.is_showing_text()
         absorbing = absorbing or self.active_puzzle is not None
         absorbing = absorbing or self.is_showing_title_card()
