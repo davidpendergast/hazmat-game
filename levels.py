@@ -1,5 +1,4 @@
 import enemies
-import images
 import entities
 import file_stuff
 import settings
