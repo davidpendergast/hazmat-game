@@ -75,6 +75,8 @@ BREAKABLE_WALL      = create("breakable_wall", [R(128, 0, 16, 16)])
 BREAKABLE_WALL_ANIM = create("breakable_wall_animation", [R(48 + i*20, 160, 20, 20) for i in range(0, 4)], tpf=4)
 ACID_FULL           = create("acid_full", [R(128 + i*16, 144, 16, 16) for i in range(0, 4)])
 ACID_TOP_HALF       = create("acid_top_half", [R(128 + i*16, 128, 16, 16) for i in range(0, 4)])
+ACID_CUBE           = create("acid_cube", [R(160 + i*16, 160, 16, 16) for i in range(0, 2)])
+ACID_CUBE_SMALL     = create("acid_cube_small", [R(192, 160 + i*8, 8, 8) for i in range(0, 2)])
 
 ACID_SLUG_U_L       = create("acid_slug_u_l", [R(224, 128 + i*8, 16, 8) for i in range(0, 2)])
 ACID_SLUG_D_L       = create("acid_slug_d_l", [R(256, 128 + i*8, 16, 8) for i in range(0, 2)])

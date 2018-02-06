@@ -40,8 +40,10 @@ def init_entities():
 
     _put("reference_entity", lambda: entities.ReferenceEntity(ref_id=None))
 
-    _put("acid_top", lambda: entities.KillBlock(images.ACID_TOP_HALF, hitbox=[0, 16, 32, 16]).with_light_level(128))
+    _put("acid_top", lambda: entities.KillBlock(images.ACID_TOP_HALF, hitbox=[0, 16, 32, 16]).with_light_level(80))
     _put("acid_full", lambda: entities.KillBlock(images.ACID_FULL).with_light_level(128))
+    # _put("acid_cube", lambda: entities.KillBlock(images.ACID_CUBE).with_light_level(128))
+    # _put("acid_cube_small", lambda: entities.KillBlock(images.ACID_CUBE_SMALL).with_light_level(80))
 
     _put("breakable_white_wall_spawner", _spawner(lambda: entities.BreakableWall(images.WHITE_WALL_CRACKED, images.WHITE_WALL_BREAKING)))
     _put("breakable_block_spawner", _spawner(lambda: entities.BreakableWall(images.BREAKABLE_WALL, images.BREAKABLE_WALL_ANIM)))
