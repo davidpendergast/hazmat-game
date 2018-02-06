@@ -8,7 +8,7 @@ import entities
 import global_state
 import cool_math
 
-CHUNK_SIZE = 256
+CHUNK_SIZE = 128
 AMBIENT_DARKNESS = 200
 
 DUMMY_CHUNK = None
