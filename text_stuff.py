@@ -3,6 +3,7 @@ import pygame
 import global_state
 import image_cache
 import images
+import settings
 
 
 _FONT_NAMES = {
@@ -65,7 +66,7 @@ def get_text_image(text_string, font_name, font_size, color, bg_color=None):
         return cached_img
 
 
-def draw_text(screen, text_string, font_name, font_size, width):
+def draw_text(screen, text_string, font_name, font_size, width, color=(255, 255, 255)):
     font = get_font(font_name, font_size)
     lines = wrap_text(text_string, width, font)
 
@@ -77,7 +78,7 @@ def draw_text(screen, text_string, font_name, font_size, width):
     draw_pretty_bordered_rect(screen, rect, bottom=False)
 
     for i in range(0, len(lines)):
-        line_img = font.render(lines[i], False, (255, 255, 255), (0, 0, 0))
+        line_img = get_text_image(lines[i], "standard", font_size, color, settings.BLACK)
         screen.blit(line_img, (rect[0], rect[1]+32*i))
 
 

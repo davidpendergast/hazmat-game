@@ -20,9 +20,9 @@ class Hate:
         numpass, numfail = pygame.init()
         print("INFO\tpygame initialized: ", numfail, " module(s) failed to init.")
 
-        self.screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.DOUBLEBUF)
         pygame.display.set_caption("HATE")
         pygame.display.set_icon(images.get_window_icon())
+        self.screen = pygame.display.set_mode((gs.WIDTH, gs.HEIGHT), pygame.DOUBLEBUF)
 
         print("display initted = ", pygame.display.get_init())
 

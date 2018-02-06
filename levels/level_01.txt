@@ -1,4 +1,5 @@
 ##  REFERENCES  ##
+message_zone_1, 0, 0
 finish_door, 4128, -1536
 how_to_shoot, 4128, -896
 terminal_2, 4704, -896

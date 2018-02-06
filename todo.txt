@@ -115,10 +115,6 @@ Light
 
     
 Optimizations
-    cache more stuff
-        + rendered text
-    + all cached stuff needs to be in one place
-        + and it needs to be cleared every so often to prevent memory leaks
 
 
 Maintenence
@@ -133,7 +129,6 @@ Bugs
     + light entering nonexistant chunks is not rendered
     + can't turn around if standing in a 0.5 x 0.5 hole
     + knockback shouldn't play walking sprite
-    + pretty sure that the FPS counter is lying
     + crouch walking into a wall causes all kinds of sprite jitteriness
 
 

@@ -31,6 +31,8 @@ class HUD:
         self._update_hotkey_items()
 
         self.text_queue = collections.deque()
+        self.text_queue_color = settings.WHITE
+        self.text_queue_blocking = False
         self.show_text_time = -500
 
         self.active_puzzle = None
@@ -53,13 +55,27 @@ class HUD:
             menu.prepare_to_show(self.active_menu)
             self.active_menu = menu
 
-    def display_text(self, lines):
-        """lines: string or list of strings to display"""
+    def display_text(self, lines, color=settings.WHITE, blocking=True):
+        """
+        lines: string or list of strings to display
+        color: color of text
+        blocking: if true, world will freeze until player has finished reading
+        """
         if isinstance(lines, str):
             lines = [lines]
 
+        if not blocking and len(lines) > 1:
+            raise ValueError("cannot have non-blocking text that's more than one page")
+
+        self.text_queue.clear()
+
         self.text_queue.extend(lines)
+        self.text_queue_blocking = blocking
+        self.text_queue_color = color
         self.show_text_time = global_state.tick_counter
+
+    def stop_displaying_text(self):
+        self.text_queue.clear()
 
     def set_level_title_card(self, level_name, level_subtitle):
         self.level_title_card = (level_name, level_subtitle)
@@ -170,7 +186,7 @@ class HUD:
 
             if self.is_showing_text() and len(self.text_queue) > 0:
                 text_string = self.text_queue[0]
-                text_stuff.draw_text(screen, text_string, "standard", 32, 512)
+                text_stuff.draw_text(screen, text_string, "standard", 32, 512, color=self.text_queue_color)
 
         if global_state.show_fps:
             text = "FPS: " + str(global_state.current_fps)
@@ -333,7 +349,7 @@ class HUD:
 
     def is_absorbing_inputs(self):
         absorbing = global_state.tick_counter - self.show_text_time < 2
-        absorbing = absorbing or self.is_showing_text()
+        absorbing = absorbing or (self.is_showing_text() and self.text_queue_blocking)
         absorbing = absorbing or self.active_puzzle is not None
         absorbing = absorbing or self.is_showing_title_card()
         absorbing = absorbing or self.active_menu is not None

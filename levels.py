@@ -182,7 +182,7 @@ class Level11(Level):
         ref_items = list()
 
         txt = "you can move with [WASD] or [ARROW KEYS]"
-        ref_items.append(self.fetch_ref("terminal_1", entities.Terminal(txt), refs))
+        ref_items.append(self.fetch_ref("message_zone_1", entities.MessageZone(txt, 320, 4*32), refs))
 
         txt = "you'll die in this place, like the others"
         ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(txt), refs))

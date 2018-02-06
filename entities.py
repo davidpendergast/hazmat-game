@@ -6,6 +6,7 @@ import image_cache
 import images
 import global_state
 import puzzles
+import settings
 
 
 class Entity:
@@ -365,7 +366,7 @@ class Terminal(Entity):
         self.message = message
 
     def interact(self, world):
-        global_state.hud.display_text(self.message)
+        global_state.hud.display_text(self.message, color=settings.GREEN)
 
     def interact_action_text(self, world):
         return "read terminal"
@@ -710,6 +711,27 @@ class Zone(Entity):
 
     def actor_remains(self, actor, world):
         pass
+
+
+class MessageZone(Zone):
+    def __init__(self, message, w, h, one_time=True):
+        Zone.__init__(self, w, h)
+        self.message = message
+        self.one_time = one_time
+        self.has_shown = False
+
+    def actor_entered(self, actor, world):
+        if self.one_time and self.has_shown:
+            return
+
+        if actor.is_player():
+            global_state.hud.display_text(self.message, color=settings.WHITE, blocking=False)
+            self.has_shown = True
+
+    def actor_left(self, actor, world):
+        if actor.is_player():
+            if global_state.hud.is_showing_text() and global_state.hud.text_queue[0] == self.message:
+                global_state.hud.stop_displaying_text()
 
 
 def _safe_remove(item, collection, print_err=False):
