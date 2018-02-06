@@ -2,6 +2,10 @@ import math
 import random
 
 
+DIRECTIONS = ((-1, 0), (1, 0), (0, -1), (0, 1))
+DIRECTIONS_WITH_DIAG = ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1))
+
+
 def dist(v1, v2):
     dx = v1[0] - v2[0]
     dy = v1[1] - v2[1]
@@ -181,4 +185,14 @@ def closest_rect_by_center(pt, rects):
             if cur_dist < best_dist:
                 best_r = r
     return best_r
+
+
+def corners(rect):
+    return [(rect[0], rect[1]),
+            (rect[0] + rect[2], rect[1]),
+            (rect[0] + rect[2], rect[1] + rect[3]),
+            (rect[0], rect[1] + rect[3])]
+
+
+
 

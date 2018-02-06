@@ -46,7 +46,7 @@ class Hate:
     def draw(self):
         s = self.screen
         screen_rect = (0, 0, gs.WIDTH, gs.HEIGHT)
-        pygame.draw.rect(s, (120, 120, 120), screen_rect, 0)
+        pygame.draw.rect(s, settings.BLACK, screen_rect, 0)
         self.active_world.draw_all(s)
         gs.hud.draw(s, offset=cool_math.neg(self.active_world.get_camera()))
         gs.draw_counter += 1

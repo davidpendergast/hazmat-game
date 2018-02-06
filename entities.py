@@ -228,27 +228,57 @@ class Wall(Entity):
         if self._cached_outline is None:
             self._cached_outline = pygame.Surface(self.size(), flags=pygame.SRCALPHA)
         else:
-            self._cached_outline.fill((0, 0, 0, 0), None, 0)
+            self._cached_outline.fill((0, 0, 0, 0), None)
         rect = self.get_rect()
-        r = [0, 0, 2, 2]
-        for x in range(0, self.width(), 2):
-            if len(world.get_entities_at_point((rect.x + x, rect.y - 1), category="wall")) == 0:
-                r[0] = x
-                r[1] = 0
-                pygame.draw.rect(self._cached_outline, (0, 0, 0), r, 0)
-            if len(world.get_entities_at_point((rect.x + x, rect.y + rect.height), category="wall")) == 0:
-                r[0] = x
-                r[1] = rect.height - 2
-                pygame.draw.rect(self._cached_outline, (0, 0, 0), r, 0)
-        for y in range(0, self.height(), 2):
-            if len(world.get_entities_at_point((rect.x - 1, rect.y + y), category="wall")) == 0:
-                r[0] = 0
-                r[1] = y
-                pygame.draw.rect(self._cached_outline, (0, 0, 0), r, 0)
-            if len(world.get_entities_at_point((rect.x + rect.width, rect.y + y), category="wall")) == 0:
-                r[0] = rect.width - 2
-                r[1] = y
-                pygame.draw.rect(self._cached_outline, (0, 0, 0), r, 0)
+
+        thickness = 2
+        color = settings.BLACK
+
+        relevent_walls = world.get_entities_in_rect(rect.inflate(2, 2), category="wall")
+        relevent_ground = world.get_entities_in_rect(rect.inflate(2, 2), category="ground")
+
+        def any_in_pt(ents, pt):
+            for e in ents:
+                if e.get_rect().inflate(1, 1).collidepoint(pt):
+                    return True
+            return False
+
+        border_length = int((rect[2] * 2 + (rect[3] - 1)  * 2) / thickness) + 1
+
+        def get_border_pos(r, i):
+            if i <= rect[2] / thickness:
+                r[0] = rect[0] + i*thickness
+                r[1] = rect[1]
+                return
+            i = int(i - rect[2] / thickness)
+            if i <= rect[3] / thickness:
+                r[0] = rect[0] + rect[2] - thickness
+                r[1] = rect[1] + i*thickness
+                return
+            i = int(i - rect[3] / thickness)
+            if i <= rect[2] / thickness:
+                r[0] = rect[0] + i * thickness
+                r[1] = rect[1] + rect[3] - thickness
+                return
+            i = int(i - rect[2] / thickness)
+            if i <= rect[3] / thickness:
+                r[0] = rect[0]
+                r[1] = rect[1] + i * thickness
+
+        def neighbors(r):
+            for d in cool_math.DIRECTIONS_WITH_DIAG:
+                yield (r[0] + int(r[2]/2) + d[0]*r[2], r[1] + int(r[3]/2) + d[1]*r[3])
+
+        border_r = [0, 0, thickness, thickness]
+
+        for j in range(0, border_length):
+            get_border_pos(border_r, j)
+            for n in neighbors(border_r):
+                if any_in_pt(relevent_ground, n) and not any_in_pt(relevent_walls, n):
+                    border_r[0] -= rect.x
+                    border_r[1] -= rect.y
+                    pygame.draw.rect(self._cached_outline, color, border_r, 0)
+                    break
 
 
 class BreakableWall(Wall):

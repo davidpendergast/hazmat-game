@@ -3,7 +3,6 @@ message_zone_1, 0, 0
 finish_door, 4128, -1536
 how_to_shoot, 4128, -896
 terminal_2, 4704, -896
-terminal_1, 960, -96
 
 ## FACTORY ##
 lightbulb, 1008, 32

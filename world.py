@@ -8,7 +8,7 @@ import entities
 import global_state
 import cool_math
 
-CHUNK_SIZE = 128
+CHUNK_SIZE = 160
 AMBIENT_DARKNESS = 200
 
 DUMMY_CHUNK = None
@@ -289,9 +289,9 @@ class World:
             screen_rect,
             and_above_and_left=False)
 
-        global DUMMY_CHUNK
-        if DUMMY_CHUNK is None:
-            DUMMY_CHUNK = Chunk(0, 0)
+        # global DUMMY_CHUNK
+        # if DUMMY_CHUNK is None:
+        #    DUMMY_CHUNK = Chunk(0, 0)
 
         for key in onscreen_keys:
             chunk = self.get_chunk_from_key(key)
@@ -299,11 +299,12 @@ class World:
                 if not global_state.show_no_darkness:
                     chunk.draw_darkness(self, screen, offset)
                 chunk.draw_debug_stuff(screen, offset)
-            else:
-                if not global_state.show_no_darkness:
-                    DUMMY_CHUNK.rect.x = key[0]
-                    DUMMY_CHUNK.rect.y = key[1]
-                    DUMMY_CHUNK.draw_darkness(self, screen, offset)
+            # else:
+            #    pass  # no need for this if background is black
+                # if not global_state.show_no_darkness:
+                #    DUMMY_CHUNK.rect.x = key[0]
+                #    DUMMY_CHUNK.rect.y = key[1]
+                #    DUMMY_CHUNK.draw_darkness(self, screen, offset)
 
     def add_entity(self, entity):
         if entity.is_player():
@@ -314,7 +315,7 @@ class World:
         chunk = self.get_or_create_chunk(*entity.xy())
         chunk.add(entity)
 
-        if entity.is_wall():
+        if entity.is_wall() or entity.is_ground():
             r = entity.get_rect().inflate(2, 2)
             for wall in self.get_entities_in_rect(r, category="wall"):
                 wall.set_outline_dirty(True)
