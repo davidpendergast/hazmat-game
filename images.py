@@ -77,6 +77,9 @@ ACID_FULL           = create("acid_full", [R(128 + i*16, 144, 16, 16) for i in r
 ACID_TOP_HALF       = create("acid_top_half", [R(128 + i*16, 128, 16, 16) for i in range(0, 4)])
 ACID_CUBE           = create("acid_cube", [R(160 + i*16, 160, 16, 16) for i in range(0, 2)])
 ACID_CUBE_SMALL     = create("acid_cube_small", [R(192, 160 + i*8, 8, 8) for i in range(0, 2)])
+MOVING_PLAT_LEFT    = create("moving_plat_left", [R(48, 208, 8, 8)])
+MOVING_PLAT_MID     = create("moving_plat_middle", [R(56, 208, 8, 8)])
+MOVING_PLAT_RIGHT   = create("moving_plat_right", [R(64, 208, 8, 8)])
 
 ACID_SLUG_U_L       = create("acid_slug_u_l", [R(224, 128 + i*8, 16, 8) for i in range(0, 2)])
 ACID_SLUG_D_L       = create("acid_slug_d_l", [R(256, 128 + i*8, 16, 8) for i in range(0, 2)])
@@ -126,7 +129,10 @@ def _flip_rect(rect):
     return [x, rect[1], rect[2], rect[3]]
 
 
-def draw_animated_sprite(screen, dest, animation, modifier="normal", src_subset=None):
+def draw_animated_sprite(screen, dest, animation, modifier=None, src_subset=None):
+    if modifier is None:
+        modifier = "normal"
+
     """animation: either an Animation or a Rect"""
     if type(animation) is Animation:
         frame = (global_state.tick_counter // animation.TPF) % len(animation.rects)

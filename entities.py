@@ -186,6 +186,9 @@ class Entity:
             pos = self.center()
             return (pos[0], pos[1], 255, self.light_radius)
 
+    def blocks_movement(self, other):
+        return self.is_("solid")
+
     def __repr__(self):
         pos = "(%s, %s)" % (self.rect.x, self.rect.y)
         return type(self).__name__ + pos
@@ -197,7 +200,7 @@ class Wall(Entity):
         self._sprite = sprite
         self._cached_outline = None  # surface
         self._outline_dirty = True
-        self.categories.update(["wall"])
+        self.categories.update(["wall", "solid"])
 
     def bullet_hit(self):
         pass
@@ -652,6 +655,43 @@ class KillBlock(Entity):
             return [self.get_x() + hb[0], self.get_y() + hb[1], hb[2], hb[3]]
 
 
+class Platform(Entity):
+    """
+    Has collision with actors only when they're above.
+    """
+    def __init__(self, width):
+        w = int(round(width/16) * 16)
+        Entity.__init__(self, w, 16)
+        self.categories.update(["platform", "solid"])
+
+    def draw(self, screen, offset=(0, 0), modifier=None):
+        key = "platform_" + str(modifier) + str(self.width())
+        my_img = image_cache.get_cached_image(key)
+        if my_img is None:
+            my_img = pygame.Surface((self.width(), self.height()), pygame.SRCALPHA)
+            num_segments = int(self.width() / 16)
+            for i in range(0, num_segments):
+                if i == 0:
+                    seg = images.MOVING_PLAT_LEFT
+                elif i < num_segments-1:
+                    seg = images.MOVING_PLAT_MID
+                else:
+                    seg = images.MOVING_PLAT_RIGHT
+                images.draw_animated_sprite(my_img, (i*16, 0), seg, modifier)
+            image_cache.put_cached_image(key, my_img)
+
+        screen_pos = cool_math.add(self.xy(), offset)
+        screen.blit(my_img, screen_pos)
+
+    def blocks_movement(self, other):
+        if not other.is_("actor"):
+            return False
+        vel_y = other.vel[1]
+        cur_y = other.get_y()
+        prev_y = cur_y - vel_y
+        return prev_y + other.height() <= self.get_y() and vel_y >= 0
+
+
 class ReferenceEntity(Entity):
     def __init__(self, ref_id=None):
         Entity.__init__(self, 32, 32)
@@ -898,7 +938,7 @@ class EntityCollection:
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
                      "health_machine", "wall", "overlay", "player", "interactable", "light_source",
-                     "level_door", "door", "zone", "instakill", "spawner", "reference"}
+                     "level_door", "door", "zone", "instakill", "spawner", "reference", "platform", "solid"}
 
 
 def validate_category(category):

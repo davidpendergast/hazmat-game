@@ -391,7 +391,7 @@ class World:
 
     def uncollide(self, entity):
         initial_rect = entity.get_rect()
-        shifted = self.uncollide_rect(entity.get_rect())
+        shifted = self._uncollide_helper(entity)
         if shifted[1] != initial_rect.y:
             entity.set_vel_y(0)
         if shifted[0] != initial_rect.x:
@@ -400,18 +400,19 @@ class World:
         entity.set_x(shifted[0])
         entity.set_y(shifted[1])
 
-    def uncollide_rect(self, rect):
+    def _uncollide_helper(self, entity):
         """
         returns: (x, y) coordinates that rect can be shifted to so that
         it doesn't collide with wall entities in the world. If no 'good'
         positions can be found, returns the rect's original coordinates.
         """
+        rect = entity.get_rect()
         rect = rect.copy()
         res_y = rect.y
         res_x = rect.x
 
         v_rect = rect.inflate(-10, 0)
-        v_collides = self.get_entities_in_rect(v_rect, category="wall")
+        v_collides = self.get_entities_in_rect(v_rect, category="solid", cond=lambda x: x.blocks_movement(entity))
 
         for w in v_collides:
             w_rect = w.get_rect()
@@ -425,7 +426,7 @@ class World:
 
         rect.y = res_y
         h_rect = rect.inflate(0, -10)
-        h_collides = self.get_entities_in_rect(h_rect, category="wall")
+        h_collides = self.get_entities_in_rect(h_rect, category="solid", cond=lambda x: x.is_("wall"))  # ehh
 
         for w in h_collides:
             w_rect = w.get_rect()
@@ -438,10 +439,10 @@ class World:
                     res_x = right_shift_x
         return (res_x, res_y)
 
-    def is_touching_wall(self, actor, direction, dist=1):
+    def is_touching(self, actor, category, direction, cond=None, dist=1):
         rect = actor.get_rect()
         detector_rect = cool_math.sliver_adjacent(rect, direction, thickness=dist)
-        detected = self.get_entities_in_rect(detector_rect, category="wall")
+        detected = self.get_entities_in_rect(detector_rect, category=category, cond=cond)
         return len(detected) > 0
 
     def to_world_pos(self, screen_x, screen_y):

@@ -37,6 +37,7 @@ def init_entities():
     _put("white_wall_fancy", lambda: entities.Wall(32, 32, images.WHITE_WALL_FANCY))
     _put("white_wall_small", lambda: entities.Wall(16, 16, images.WHITE_WALL_SMOL))
     _put("chain_wall_small", lambda: entities.Wall(16, 16, images.CHAIN_SMOL))
+    _put("platform", lambda: entities.Platform(16*4))
 
     _put("reference_entity", lambda: entities.ReferenceEntity(ref_id=None))
 

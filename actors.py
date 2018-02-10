@@ -70,9 +70,9 @@ class Actor(Entity):
         self.vel[1] = vy
 
     def _update_status_tags(self, world, input_state):
-        self.is_grounded = world.is_touching_wall(self, (0, 1))
-        self.is_left_walled = world.is_touching_wall(self, (-1, 0))
-        self.is_right_walled = world.is_touching_wall(self, (1, 0))
+        self.is_grounded = world.is_touching(self, "solid", (0, 1), cond=lambda x: x.blocks_movement(self))
+        self.is_left_walled = world.is_touching(self, "wall", (-1, 0))
+        self.is_right_walled = world.is_touching(self, "wall", (1, 0))
 
         if self.vel[0] > 0.75 or (not self.is_grounded and self.is_left_walled):
             self.facing_right = True
@@ -259,7 +259,7 @@ class Player(Actor):
             will_be_crouching = self.is_grounded and input_state.is_held(inputs.CROUCH)
             if self.is_crouching and self.is_grounded and not will_be_crouching:
                 crouch_height_diff = self.full_height - self.crouch_height
-                blocked_above = world.is_touching_wall(self, (0, -1), dist=crouch_height_diff)
+                blocked_above = world.is_touching(self, "wall", (0, -1), dist=crouch_height_diff)
                 if blocked_above:
                     will_be_crouching = True
             self.is_crouching = will_be_crouching
