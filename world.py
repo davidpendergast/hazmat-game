@@ -7,8 +7,10 @@ import images
 import entities
 import global_state
 import cool_math
+import settings
 
-CHUNK_SIZE = 160
+CHUNK_SIZE = 96
+
 AMBIENT_DARKNESS = 200
 
 DUMMY_CHUNK = None
@@ -57,7 +59,7 @@ class Chunk:
         image_cache.remove_cached_image(self._cache_key())
 
     def draw_nonactors(self, screen, offset):
-        if len(self.entities.get_all(category=["ground", "wall"])) > 0:
+        if len(self.entities.get_all(category=["ground", "wall"], limit=1)) > 0:
             key = self._cache_key()
             cache_img = image_cache.get_cached_image(key)
             if cache_img is None:
@@ -90,19 +92,19 @@ class Chunk:
 
     def draw_darkness(self, world, screen, offset):
         sources = []
-        for decoration in self.entities.get_all(category="light_source"):
-            lp = decoration.light_profile()
-            if lp is not None:
-                sources.append(lp)
-        for chunk_key in self._neighbors:
-            chunk = world.get_chunk_from_key(chunk_key)
+        max_range = settings.MAX_LIGHT_RADIUS
+
+        rect = self.get_rect()
+        r = [rect.x - max_range, rect.y - max_range,
+             rect.width + max_range*2, rect.height + max_range*2]
+
+        for chunk in world.get_chunks_in_rect(r, and_above_and_left=False):
             if chunk is not None:
                 for decoration in chunk.entities.get_all(category="light_source"):
                     lp = decoration.light_profile()
                     if lp is not None:
                         sources.append(lp)
 
-        rect = self.get_rect()
         img = image_util.get_darkness_overlay(rect, sources, AMBIENT_DARKNESS)
         screen.blit(img, cool_math.add(rect.topleft, offset))
 
@@ -353,41 +355,42 @@ class World:
             not_category=not_category,
             cond=lambda x: in_circle(x) and (cond is None or cond(x)))
 
-    def get_entities_in_rect(self, rect, category=None, not_category=None, cond=None):
+    def get_entities_in_rect(self, rect, category=None, not_category=None, cond=None, limit=None):
         res = []
         for chunk in self.get_chunks_in_rect(rect):
             to_add = chunk.entities.get_all(
                 category=category,
                 not_category=not_category,
                 rect=rect,
-                cond=cond)
+                cond=cond,
+                limit=limit)
             res.extend(to_add)
         return res
 
-    def get_entities_at_point(self, pt, category=None, not_category=None, cond=None):
+    def get_entities_at_point(self, pt, category=None, not_category=None, cond=None, limit=None):
         return self.get_entities_in_rect(
             [pt[0], pt[1], 1, 1],
             category=category,
             not_category=not_category,
-            cond=cond)
+            cond=cond,
+            limit=limit)
 
-    def get_entities_with(self, category=None, not_category=None, cond=None):
+    def get_entities_with(self, category=None, not_category=None, cond=None, limit=None):
         res = []
         for chunk in self.chunks.values():
             res.extend(chunk.entities.get_all(
                 category=category,
                 not_category=not_category,
-                cond=cond))
+                cond=cond,
+                limit=limit))
         return res
 
     def get_door(self, door_id):
-        matches = self.get_entities_with(cond=lambda x: x.is_door() and x.door_id == door_id)
+        matches = self.get_entities_with(cond=lambda x: x.is_door() and x.door_id == door_id, limit=1)
         if len(matches) == 0:
             return None
-        elif len(matches) > 0:
-            print("Multiple doors in world with id=", door_id)
-            random.shuffle(matches)
-        return matches[0]
+        else:
+            return matches[0]
 
     def uncollide(self, entity):
         initial_rect = entity.get_rect()
@@ -442,7 +445,7 @@ class World:
     def is_touching(self, actor, category, direction, cond=None, dist=1):
         rect = actor.get_rect()
         detector_rect = cool_math.sliver_adjacent(rect, direction, thickness=dist)
-        detected = self.get_entities_in_rect(detector_rect, category=category, cond=cond)
+        detected = self.get_entities_in_rect(detector_rect, category=category, cond=cond, limit=1)
         return len(detected) > 0
 
     def to_world_pos(self, screen_x, screen_y):

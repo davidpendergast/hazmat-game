@@ -865,7 +865,7 @@ class EntityCollection:
         if catkey in self.category_tests:
             del self.category_tests[catkey]
 
-    def get_all(self, category=None, not_category=None, rect=None, cond=None):
+    def get_all(self, category=None, not_category=None, rect=None, cond=None, limit=None):
         """
             category: Single category or a list of categories from which the 
                 results must belong to at least one. If None, all categories
@@ -877,6 +877,8 @@ class EntityCollection:
             rect: if given, all returned entities must intersect this rect.
             
             cond: boolean lambda. if given, results must satisfy the condition.
+
+            limit: max number of items to return
                       
         """
         res_set = set()
@@ -911,6 +913,8 @@ class EntityCollection:
             accept = accept and (cond is None or cond(e))
             if accept:
                 res_set.add(e)
+                if limit is not None and len(res_set) >= limit:
+                    break
 
         return list(res_set)
 

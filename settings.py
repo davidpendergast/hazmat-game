@@ -16,6 +16,8 @@ FPS_THROTTLE = 1  # frames will only be drawn every X updates
 
 WAIT_TICKS_AFTER_DEATH = 75
 
+MAX_LIGHT_RADIUS = 128
+
 
 def get_light_blend_throttle_level():
     """

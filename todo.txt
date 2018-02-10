@@ -115,6 +115,7 @@ Light
 
     
 Optimizations
+    + remove copy() from Entity.get_rect()
 
 
 Maintenence

@@ -16,4 +16,4 @@ if __name__ == "__main__":
     ps = pstats.Stats(pr)
     ps.strip_dirs()
     ps.sort_stats(sortby)
-    ps.print_stats(15)
+    ps.print_stats(35)
