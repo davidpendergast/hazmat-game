@@ -57,10 +57,10 @@ class Entity:
 
     def get_rect(self):
         """
-        The space that this entity physically occupies
+        The space that this entity physically occupies. Note that this rect is uncopied.
         returns: pygame.Rect
         """
-        return self.rect.copy()
+        return self.rect
 
     def set_x(self, x):
         self._x = x
@@ -233,12 +233,13 @@ class Wall(Entity):
         else:
             self._cached_outline.fill((0, 0, 0, 0), None)
         rect = self.get_rect()
+        rect_bigger = rect.inflate(2, 2)
 
         thickness = 2
         color = settings.BLACK
 
-        relevent_walls = world.get_entities_in_rect(rect.inflate(2, 2), category="wall")
-        relevent_ground = world.get_entities_in_rect(rect.inflate(2, 2), category="ground")
+        relevent_walls = world.get_entities_in_rect(rect_bigger, category="wall")
+        relevent_ground = world.get_entities_in_rect(rect_bigger, category="ground")
 
         def any_in_pt(ents, pt):
             for e in ents:
@@ -731,7 +732,7 @@ class SpawnerEntity(Entity):
             world.add_entity(my_entity)
 
     def draw(self, screen, offset=(0, 0), modifier=None):
-        rect = self.get_rect()
+        rect = self.get_rect().copy()
         rect.move_ip(offset[0], offset[1])
         pygame.draw.rect(screen, (100, 255, 100), rect, 2)
 

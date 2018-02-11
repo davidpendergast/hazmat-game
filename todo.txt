@@ -47,10 +47,6 @@ Entities
     
 Level System
     level editting
-        + ability to change items in keyboard slots
-            now that all saveable items are in entity_factory,
-            this will be pretty easy. Just add keys to cycle through
-            all entities
         + drag add and drag removal
         
     + save data

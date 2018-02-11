@@ -410,8 +410,7 @@ class World:
         it doesn't collide with wall entities in the world. If no 'good'
         positions can be found, returns the rect's original coordinates.
         """
-        rect = entity.get_rect()
-        rect = rect.copy()
+        rect = entity.get_rect().copy()
         res_y = rect.y
         res_x = rect.x
 

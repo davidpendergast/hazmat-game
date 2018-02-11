@@ -63,7 +63,7 @@ class Enemy(actors.Actor):
         player.deal_damage(1, source=self, direction=v)
 
     def get_hurtbox(self):
-        return self.get_rect()
+        return self.get_rect().copy()
 
     def deal_damage(self, damage, source=None, direction=None):
         actors.Actor.deal_damage(self, damage, source=source, direction=direction)
