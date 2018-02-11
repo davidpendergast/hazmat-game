@@ -21,6 +21,8 @@ last_draw_count = 0
 
 is_fullscreen = False
 
+is_profiling = False
+
 level_save_dest = None          # TODO - move to LevelManager
 queued_next_level_name = None
 

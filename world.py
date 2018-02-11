@@ -115,6 +115,7 @@ class Chunk:
                 screen_pos = cool_math.add(offset, self.xy())
                 rect = [screen_pos[0], screen_pos[1], self.size()[0], self.size()[1]]
                 pygame.draw.rect(screen, (255, 90, 90), rect, 10)
+
         if global_state.show_debug_rects:
             pygame.draw.rect(screen, (0, 0, 0), self.get_rect().move(*offset), 1)
             for thing in self.entities.get_all(not_category="ground"):

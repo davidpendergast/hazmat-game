@@ -147,51 +147,64 @@ class HUD:
     def draw(self, screen, offset=(0, 0)):
         if self.active_menu is not None:
             self.active_menu.draw(screen)
-            return
 
-        if self.is_showing_title_card():
+        elif self.is_showing_title_card():
             self._draw_title_card(screen)
-            return
 
-        if self.active_player is not None:
-            cur_health = max(0, self.active_player.health)
-            max_health = max(0, self.active_player.max_health)
-            self._draw_hearts(screen, (0, 0), cur_health/2, int(max_health/2))
-
-        if self.active_puzzle is not None:
-            puzzle_rect = self._get_puzzle_rect()
-            text_stuff.draw_pretty_bordered_rect(screen, puzzle_rect)
-            self.puzzle_surface.fill(settings.BLACK)
-            draw_w = self.puzzle_surface.get_width()
-            draw_h = self.puzzle_surface.get_height()
-            self.active_puzzle.draw(self.puzzle_surface, draw_w, draw_h)
-            screen.blit(self.puzzle_surface, (puzzle_rect[0], puzzle_rect[1]))
         else:
-            to_place = self.selected_item_to_place
-            placeable = self.selected_item_placeable
-            if to_place is not None and placeable is not None:
-                mod = "green_ghosts" if placeable else "red_ghosts"
+            if self.active_player is not None:
+                cur_health = max(0, self.active_player.health)
+                max_health = max(0, self.active_player.max_health)
+                self._draw_hearts(screen, (0, 0), cur_health/2, int(max_health/2))
 
-                # wanna draw the thing the spawner creates
-                to_draw = self.hotkey_items_draw_lookup[self.hotkey_items[self.hotkey_active_idx]]
-                if to_place.is_("spawner"):
-                    offs = cool_math.sub(to_place.xy(), to_draw.xy())
-                    offs = cool_math.add(offs, offset)
-                    to_draw.draw(screen, offs, modifier=mod)
+            if self.active_puzzle is not None:
+                puzzle_rect = self._get_puzzle_rect()
+                text_stuff.draw_pretty_bordered_rect(screen, puzzle_rect)
+                self.puzzle_surface.fill(settings.BLACK)
+                draw_w = self.puzzle_surface.get_width()
+                draw_h = self.puzzle_surface.get_height()
+                self.active_puzzle.draw(self.puzzle_surface, draw_w, draw_h)
+                screen.blit(self.puzzle_surface, (puzzle_rect[0], puzzle_rect[1]))
+            else:
+                to_place = self.selected_item_to_place
+                placeable = self.selected_item_placeable
+                if to_place is not None and placeable is not None:
+                    mod = "green_ghosts" if placeable else "red_ghosts"
 
-                to_place.draw(screen, offset, modifier=mod)
+                    # wanna draw the thing the spawner creates
+                    to_draw = self.hotkey_items_draw_lookup[self.hotkey_items[self.hotkey_active_idx]]
+                    if to_place.is_("spawner"):
+                        offs = cool_math.sub(to_place.xy(), to_draw.xy())
+                        offs = cool_math.add(offs, offset)
+                        to_draw.draw(screen, offs, modifier=mod)
 
-            if global_state.show_items_to_place:
-                self._draw_placeable_items(screen)
+                    to_place.draw(screen, offset, modifier=mod)
 
-            if self.is_showing_text() and len(self.text_queue) > 0:
-                text_string = self.text_queue[0]
-                text_stuff.draw_text(screen, text_string, "standard", 32, 512, color=self.text_queue_color)
+                if global_state.show_items_to_place:
+                    self._draw_placeable_items(screen)
+
+                if self.is_showing_text() and len(self.text_queue) > 0:
+                    text_string = self.text_queue[0]
+                    text_stuff.draw_text(screen, text_string, "standard", 32, 512, color=self.text_queue_color)
+
+        self.draw_debug_stuff(screen)
+
+    def draw_debug_stuff(self, screen):
+        debug_y = 0
 
         if global_state.show_fps:
             text = "FPS: " + str(global_state.current_fps)
-            fps_text = text_stuff.get_text_image(text, "standard", 32, (255, 0, 0), bg_color=(255, 255, 255))
-            screen.blit(fps_text, (0, 0))
+            fps_text = text_stuff.get_text_image(text, "standard", 32, settings.WHITE, bg_color=None)
+            x = global_state.WIDTH - fps_text.get_width()
+            screen.blit(fps_text, (x, debug_y))
+            debug_y += fps_text.get_height()
+
+        if global_state.is_profiling:
+            text = "profiling..."
+            profiling_text = text_stuff.get_text_image(text, "standard", 32, settings.WHITE, bg_color=None)
+            x = global_state.WIDTH - profiling_text.get_width()
+            screen.blit(profiling_text, (x, debug_y))
+            debug_y =+ profiling_text.get_height()
 
     def _draw_title_card(self, screen):
         white = (255, 255, 255)

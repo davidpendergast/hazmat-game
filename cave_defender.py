@@ -1,5 +1,7 @@
 import pygame
 
+import traceback
+
 import image_cache
 import world
 import images
@@ -39,6 +41,16 @@ class Hate:
 
         gs.hud = huds.HUD()
         gs.hud.set_active_menu(menus.MAIN_MENU)
+
+        self._custom_key_commands = {}
+
+        self.set_custom_command(pygame.K_F1, images.reload_sheet, "reload sprites")
+        self.set_custom_command(pygame.K_F2, lambda: pygame.image.save(self.screen, "screenshots/screenshot.png"), "take screenshot")
+        self.set_custom_command(pygame.K_F4, self.toggle_fullscreen, "toggle fullscreen")
+        self.set_custom_command(pygame.K_F5, self.save_level, "save level")
+
+    def set_custom_command(self, key, command, name):
+        self._custom_key_commands[key] = (name, command)
 
     def stop_running(self):
         self.still_running = False
@@ -84,6 +96,17 @@ class Hate:
         if gs.exit_requested:
             self.stop_running()
 
+    def save_level(self):
+        filename = gs.level_save_dest
+        if filename is not None:
+            print("INFO\tsaving world to: ", filename)
+            levels.save_to_level_file(self.active_world, filename)
+        else:
+            print("ERROR\tgs.level_save_dest is None! Not saving.")
+
+    def toggle_fullscreen(self):
+        self.set_fullscreen(not gs.is_fullscreen),
+
     def set_fullscreen(self, val):
         print("INFO\tsetting fullscreen to: ", val)
         gs.is_fullscreen = val
@@ -113,20 +136,17 @@ class Hate:
                     self.screen = pygame.display.set_mode(new_size, pygame.RESIZABLE)
                 elif event.type == pygame.KEYDOWN:
                     self.input_state.set_key(event.key, True)
-                    if event.key == pygame.K_F1:
-                        images.reload_sheet()
-                    elif event.key == pygame.K_F2:
-                        pygame.image.save(self.screen, "screenshots/screenshot.png")
-                        print("INFO\tsaved screenshot: screenshot.png")
-                    elif event.key == pygame.K_F4:
-                        self.set_fullscreen(not gs.is_fullscreen)
-                    elif event.key == pygame.K_F5:
-                        filename = gs.level_save_dest
-                        if filename is not None:
-                            print("INFO\tsaving world to: ", filename)
-                            levels.save_to_level_file(self.active_world, filename)
-                        else:
-                            print("ERROR\tgs.level_save_dest is None! Not saving.")
+
+                    if event.key in self._custom_key_commands:
+                        name, command = self._custom_key_commands[event.key]
+                        print("INFO\tactivating global key command \"", name, "\" (" + pygame.key.name(event.key) + ")")
+                        try:
+                            command()
+                        except:
+                            print("ERROR\terror while running global command \"", name, "\"")
+                            traceback.print_exc()
+
+
                 elif event.type == pygame.KEYUP:
                     self.input_state.set_key(event.key, False)
                 elif event.type == pygame.MOUSEMOTION:
