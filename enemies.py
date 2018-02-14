@@ -152,6 +152,17 @@ class SmartEnemy(Enemy):
         self.start_chasing()
 
 
+class Skorg(Enemy):
+    def __init__(self):
+        Enemy.__init__(self, 64, 64)
+
+    def sprite(self):
+        return images.SKORG
+
+    def death_sprite(self, cause=None):
+        return images.SKORG_DYING
+
+
 class DodgeEnemy(SmartEnemy):
     def __init__(self):
         SmartEnemy.__init__(self)

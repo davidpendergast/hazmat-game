@@ -363,13 +363,25 @@ class Door(Entity):
 
 
 class Terminal(Entity):
-    def __init__(self, message="It's a computer terminal"):
+    def __init__(self, message=None, text_color=settings.GREEN):
         Entity.__init__(self, 32, 64)
-        self.categories.update(["terminal", "interactable"])
-        self.message = message
+        self.categories.update(["terminal"])
+        self.zone = None
+        self.message = None
+        self.text_color = text_color
+        self.set_message(message)
+
+    def set_x(self, x):
+        Entity.set_x(self, x)
+        self.zone.set_center_x(self.center()[0])
+
+    def set_y(self, y):
+        Entity.set_y(self, y)
+        self.zone.set_center_y(self.center()[1])
 
     def update(self, input_state, world):
-        pass
+        if self.zone is not None:
+            self.zone.update(input_state, world)
 
     def sprite(self):
         return images.TERMINAL
@@ -398,9 +410,15 @@ class Terminal(Entity):
         :param message: string or list of strings
         """
         self.message = message
+        if self.message is not None:
+            if self.zone is None:
+                self.zone = MessageZone(message, self.width() + 64, self.height(), one_time=False, color=self.text_color)
+            self.zone.set_message(message)
+        else:
+            self.zone = None
 
     def interact(self, world):
-        global_state.hud.display_text(self.message, color=settings.GREEN)
+        pass
 
     def interact_action_text(self, world):
         return "read terminal"
@@ -408,14 +426,15 @@ class Terminal(Entity):
 
 class PuzzleTerminal(Terminal):
     def __init__(self, puzzle_giver):
-        Terminal.__init__(self)
-        self.categories.update(["puzzle_terminal"])
+        Terminal.__init__(self, "Press [K] to activate puzzle", text_color=settings.WHITE)
+        self.categories.update(["puzzle_terminal", "interactable"])
         self.active_callback = None
         self.on_success = None  # no-arg lambda
         self.puzzle_creator = puzzle_giver
         self.has_been_completed = False
 
     def update(self, input_state, world):
+        Terminal.update(self, input_state, world)
         if self.active_callback is not None:
             if self.active_callback[0] == puzzles.SUCCESS:
                 self.has_been_completed = True
@@ -785,18 +804,22 @@ class Zone(Entity):
 
 
 class MessageZone(Zone):
-    def __init__(self, message, w, h, one_time=True):
+    def __init__(self, message, w, h, one_time=True, color=settings.WHITE):
         Zone.__init__(self, w, h)
         self.message = message
+        self.color = color
         self.one_time = one_time
         self.has_shown = False
+
+    def set_message(self, message):
+        self.message = message
 
     def actor_entered(self, actor, world):
         if self.one_time and self.has_shown:
             return
 
         if actor.is_player():
-            global_state.hud.display_text(self.message, color=settings.WHITE, blocking=False)
+            global_state.hud.display_text(self.message, color=self.color, blocking=False)
             self.has_shown = True
 
     def actor_left(self, actor, world):

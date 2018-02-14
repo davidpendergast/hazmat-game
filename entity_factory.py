@@ -64,6 +64,7 @@ def init_entities():
     _put("enemy_sticky", _spawner(lambda: enemies.StickyEnemy()))
     _put("enemy_sticky_ccw", _spawner(lambda: enemies.StickyEnemy(clockwise=False)))
     _put("enemy_dodger", _spawner(lambda: enemies.DodgeEnemy()))
+    _put("enemy_skorg", _spawner(lambda: enemies.Skorg()))
 
     print("INFO\tfinished initializing ", len(ALL_ENTITIES), " entities")
 

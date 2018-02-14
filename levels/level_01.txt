@@ -1,6 +1,6 @@
 ##  REFERENCES  ##
-message_zone_1, 0, 0
 finish_door, 3072, -1760
+how_to_walk, 32, 64
 how_to_shoot, 4128, -896
 terminal_2, 4704, -896
 

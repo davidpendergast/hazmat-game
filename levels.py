@@ -181,8 +181,8 @@ class Level11(Level):
     def build_refs(self, refs, world):
         ref_items = list()
 
-        txt = "you can move with [WASD] or [ARROW KEYS]"
-        ref_items.append(self.fetch_ref("message_zone_1", entities.MessageZone(txt, 320, 4*32), refs))
+        txt = "press [WASD] or [ARROW KEYS] to move"
+        ref_items.append(self.fetch_ref("how_to_walk", entities.Terminal(message=txt), refs))
 
         txt = "you'll die in this place, like the others"
         ref_items.append(self.fetch_ref("terminal_2", entities.Terminal(txt), refs))
