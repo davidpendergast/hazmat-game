@@ -193,13 +193,17 @@ class World:
         else:
             return self.chunks[key]
 
+    def get_chunks_to_update(self):
+        return [c for c in self.chunks.values()]
+
     def update_all(self, input_state):
-        for chunk in self.chunks.values():
+        updating_chunks = self.get_chunks_to_update()
+        for chunk in updating_chunks:
             for entity in chunk.entities:
                 entity.update(input_state, self)
 
         new_chunks = {}
-        for chunk in self.chunks.values():
+        for chunk in updating_chunks:
             dead = []
             moved_out = []
             for entity in chunk.entities:
@@ -216,8 +220,7 @@ class World:
                 moving_to = self.get_chunk_from_key(key)
                 if moving_to is None:
                     if key in new_chunks:
-                        # in case two entities move into a new chunk on the
-                        # same frame
+                        # in case two entities move into a new chunk on the same frame
                         moving_to = new_chunks[key]
                     else:
                         moving_to = self.get_or_create_chunk(
@@ -226,8 +229,9 @@ class World:
                         new_chunks[key] = moving_to
                 moving_to.add(entity)
         self.chunks.update(new_chunks)
+        updating_chunks.extend(new_chunks.values())
 
-        for chunk in self.chunks.values():
+        for chunk in updating_chunks:
             for e in chunk.entities.get_all(category="actor"):
                 self.uncollide(e)
 

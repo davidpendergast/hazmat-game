@@ -96,7 +96,6 @@ class HUD:
             if input_state.was_pressed(pygame.K_TAB):
                 inc = 1 if not input_state.is_held(pygame.K_LSHIFT) else -1
                 self.hotkey_item_page_idx += inc
-                print("tab pushed, updating page_idx to ", self.hotkey_item_page_idx)
                 self._update_hotkey_items()
 
         if self.is_showing_title_card():

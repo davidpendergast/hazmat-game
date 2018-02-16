@@ -103,19 +103,13 @@ class DumbEnemy(Enemy):
 class SmartEnemy(Enemy):
     """chases player"""
 
-    def __init__(self):
-        Enemy.__init__(self, 16, 48)
+    def __init__(self, w, h):
+        Enemy.__init__(self, w, h)
         self.radius = 140  # starts chasing player within this distance
         self.forget_radius = 300  # stops chasing at this distance
         self.is_chasing = False
         self.start_chasing_time = 0
         self.forget_time = 240
-
-    def sprite(self):
-        return images.BROWN_GUY
-
-    def death_sprite(self, cause=None):
-        return images.BROWN_GUY_DYING
 
     def do_ai_behavior(self, input_state, world):
         p = world.player()
@@ -129,19 +123,29 @@ class SmartEnemy(Enemy):
                     self.is_chasing = False
 
         if self.is_chasing and p is not None:
-            direction = cool_math.sub(p.center(), self.center())
-            direction = cool_math.normalize(direction)
-            self.set_direction(direction[0], direction[1])
+            self.do_chase_behavior(world)
         else:
-            # change directions approx every 30 ticks
-            if random.random() < 1 / 60:
-                if random.random() < 0.25:
-                    self.set_direction(0, 0)
-                else:
-                    rand_direct = cool_math.rand_direction()
-                    self.set_direction(rand_direct[0], rand_direct[1])
+            self.do_non_chase_behavior(world)
+
         new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
         self.set_vel_x(new_vel)
+
+    def do_chase_behavior(self, world):
+        p = world.player()
+        if p is None:
+            return2
+        direction = cool_math.sub(p.center(), self.center())
+        direction = cool_math.normalize(direction)
+        self.set_direction(direction[0], direction[1])
+
+    def do_non_chase_behavior(self, world):
+        # change directions approx every 30 ticks
+        if random.random() < 1 / 60:
+            if random.random() < 0.25:
+                self.set_direction(0, 0)
+            else:
+                rand_direct = cool_math.rand_direction()
+                self.set_direction(rand_direct[0], rand_direct[1])
 
     def start_chasing(self):
         self.start_chasing_time = global_state.tick_counter
@@ -152,9 +156,20 @@ class SmartEnemy(Enemy):
         self.start_chasing()
 
 
-class Skorg(Enemy):
+class Zombie(SmartEnemy):
     def __init__(self):
-        Enemy.__init__(self, 64, 64)
+        SmartEnemy.__init__(self, 16, 48)
+
+    def sprite(self):
+        return images.BROWN_GUY
+
+    def death_sprite(self, cause=None):
+        return images.BROWN_GUY_DYING
+
+
+class Skorg(SmartEnemy):
+    def __init__(self):
+        SmartEnemy.__init__(self, 48, 48)
 
     def sprite(self):
         return images.SKORG
@@ -165,7 +180,7 @@ class Skorg(Enemy):
 
 class DodgeEnemy(SmartEnemy):
     def __init__(self):
-        SmartEnemy.__init__(self)
+        SmartEnemy.__init__(self, 16, 48)
         self.is_up = True
         self.time_since_last_swap = 0
 

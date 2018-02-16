@@ -40,6 +40,7 @@ BLUE_GUY_DOWN       = create("blue_guy_down", [R(80 + i*16, 128, 16, 32) for i i
 BLUE_GUY_MIDDLE     = create("blue_guy_middle", [R(112, 128, 16, 32)])
 BROWN_GUY           = create("brown_guy", [r(10, 0, 1, 2), r(11, 0, 1, 2)])
 SKORG               = create("skorg", [R(224, 160, 32, 32), R(256, 160, 32, 32), R(224, 160, 32, 32), R(288, 160, 32, 32)])
+SKORG_CROUCH        = create("skorg_crouch", [R(224, 160, 32, 32), R(224, 192, 32, 32), R(256, 192, 32, 32)])
 WHITE_WALL          = create("white_wall", [r(7, 1, 1, 1)])
 WHITE_WALL_SMOL     = create("white_wall_small", [R(88, 16, 8, 8)])
 WHITE_WALL_FANCY    = create("white_wall_fancy", [R(128, 160, 16, 16)])

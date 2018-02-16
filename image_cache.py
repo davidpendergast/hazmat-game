@@ -19,7 +19,7 @@ def wipe_caches():
     BIG_OL_IMG_CACHE.clear()
 
 
-def refresh_caches(too_old_thresh_secs=10):
+def refresh_caches(too_old_thresh_secs=2):
     thresh_ticks = too_old_thresh_secs * 60
     cur_time = global_state.tick_counter
     to_remove = list()
