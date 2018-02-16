@@ -180,7 +180,8 @@ def get_window_icon():
 def reload_sheet():
     print("INFO\tloading sprite sheets...")
     actual_size = pygame.image.load("res/art_n_stuff.png")
-    sprite_sheet = pygame.transform.scale2x(actual_size)
+    size2x = (actual_size.get_width() * 2, actual_size.get_height() * 2)
+    sprite_sheet = pygame.transform.scale(actual_size, size2x)
     image_cache.SHEETS["normal"] = sprite_sheet
     image_cache.SHEETS["green_ghosts"] = image_util.dye_sheet(sprite_sheet, (0, 255, 0), alpha=100)
     image_cache.SHEETS["red_ghosts"] = image_util.dye_sheet(sprite_sheet, (255, 0, 0), alpha=100)
