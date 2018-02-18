@@ -2,6 +2,7 @@ import entities
 import decorations
 import images
 import enemies
+import tracks
 
 ALL_ENTITIES = {}  # id -> lambda: Entity
 ALL_IDS_SORTED = []
@@ -38,6 +39,7 @@ def init_entities():
     _put("white_wall_small", lambda: entities.Wall(16, 16, images.WHITE_WALL_SMOL))
     _put("chain_wall_small", lambda: entities.Wall(16, 16, images.CHAIN_SMOL))
     _put("platform", lambda: entities.Platform(16*4))
+    _put("track_piece", lambda: tracks.TrackPiece())
 
     _put("reference_entity", lambda: entities.ReferenceEntity(ref_id=None))
 

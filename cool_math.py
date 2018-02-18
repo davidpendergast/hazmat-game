@@ -2,8 +2,29 @@ import math
 import random
 
 
-DIRECTIONS = ((-1, 0), (1, 0), (0, -1), (0, 1))
-DIRECTIONS_WITH_DIAG = ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1))
+class Dir:
+    LEFT = (-1, 0)
+    RIGHT = (1, 0)
+    UP = (0, -1)
+    DOWN = (0, 1)
+    UP_LEFT = (-1, -1)
+    DOWN_LEFT = (-1, 1)
+    UP_RIGHT = (1, -1)
+    DOWN_RIGHT = (1, 1)
+
+    ZERO = (0, 0)
+
+    CARDINALS = (LEFT, RIGHT, UP, DOWN)
+    DIAGS = (UP_LEFT, UP_RIGHT, DOWN_RIGHT, DOWN_LEFT)
+    ALL_DIRS = CARDINALS + DIAGS
+
+
+def get_dir(idx):
+    return Dir.ALL_DIRS[idx]
+
+
+def dir_idx(direction):
+    return Dir.ALL_DIRS.index(direction)
 
 
 def dist(v1, v2):

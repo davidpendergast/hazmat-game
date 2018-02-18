@@ -270,7 +270,7 @@ class Wall(Entity):
                 r[1] = rect[1] + i * thickness
 
         def neighbors(r):
-            for d in cool_math.DIRECTIONS_WITH_DIAG:
+            for d in cool_math.Dir.ALL_DIRS:
                 yield (r[0] + int(r[2]/2) + d[0]*r[2], r[1] + int(r[3]/2) + d[1]*r[3])
 
         border_r = [0, 0, thickness, thickness]
@@ -966,7 +966,7 @@ class EntityCollection:
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
                      "health_machine", "wall", "overlay", "player", "interactable", "light_source",
-                     "level_door", "door", "zone", "instakill", "spawner", "reference", "platform", "solid"}
+                     "level_door", "door", "zone", "instakill", "spawner", "reference", "platform", "solid", "track"}
 
 
 def validate_category(category):

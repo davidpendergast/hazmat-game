@@ -133,7 +133,7 @@ class SmartEnemy(Enemy):
     def do_chase_behavior(self, world):
         p = world.player()
         if p is None:
-            return2
+            return
         direction = cool_math.sub(p.center(), self.center())
         direction = cool_math.normalize(direction)
         self.set_direction(direction[0], direction[1])

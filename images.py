@@ -1,6 +1,7 @@
 import pygame
 import random
 
+from cool_math import Dir
 import global_state
 import image_cache
 import image_util
@@ -91,6 +92,23 @@ ACID_SLUG_D_R       = create("acid_slug_d_r", [R(256, 144 + i*8, 16, 8) for i in
 ACID_SLUG_L_R       = create("acid_slug_l_r", [R(240 + i*8, 144, 8, 16) for i in range(0, 2)])
 ACID_SLUG_R_R       = create("acid_slug_r_r", [R(272 + i*8, 144, 8, 16) for i in range(0, 2)])
 
+TRACK_JOINT         = create("track_joint", [R(0, 192, 8, 8)])
+TRACK_L             = create("track_l", [R(0, 176, 8, 8)])
+TRACK_R             = create("track_r", [R(8, 176, 8, 8)])
+TRACK_U             = create("track_u", [R(16, 176, 8, 8)])
+TRACK_D             = create("track_d", [R(24, 176, 8, 8)])
+TRACK_DL            = create("track_dl", [R(0, 184, 8, 8)])
+TRACK_UR            = create("track_ur", [R(8, 184, 8, 8)])
+TRACK_UL            = create("track_ul", [R(16, 184, 8, 8)])
+TRACK_DR            = create("track_dr", [R(24, 184, 8, 8)])
+TRACKS              = {Dir.LEFT: TRACK_L,
+                       Dir.RIGHT: TRACK_R,
+                       Dir.UP: TRACK_U,
+                       Dir.DOWN: TRACK_D,
+                       Dir.DOWN_LEFT: TRACK_DL,
+                       Dir.DOWN_RIGHT: TRACK_DR,
+                       Dir.UP_RIGHT: TRACK_UR,
+                       Dir.UP_LEFT: TRACK_UL}
 
 PLAYER_IDLE         = create("player_idle", [R(176, 32, 16, 32), R(192, 32, 16, 32)])
 PLAYER_GUN          = create("player_gun", [R(208 + 32*i, 32, 24, 32) for i in range(0, 3)], tpf=10)
