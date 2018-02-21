@@ -44,14 +44,16 @@ class Actor(Entity):
 
         if self.health <= 0:
             self.is_alive = False
-            death_spr = self.death_sprite()
-            if death_spr is not None:
-                death_overlay = Overlay(death_spr)
-                death_overlay.set_center_x(self.center()[0])
-                death_overlay.set_y(self.get_y() + self.height() - death_spr.height())
-                death_overlay.with_lifespan(cycles=1)
-                world.add_entity(death_overlay)
-            return
+            self.on_death(world)
+
+    def on_death(self, world):
+        death_spr = self.death_sprite()
+        if death_spr is not None:
+            death_overlay = Overlay(death_spr)
+            death_overlay.set_center_x(self.center()[0])
+            death_overlay.set_y(self.get_y() + self.height() - death_spr.height())
+            death_overlay.with_lifespan(cycles=1)
+            world.add_entity(death_overlay)
 
     def apply_physics(self):
         self.set_x(self._x + self.vel[0])

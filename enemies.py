@@ -1,4 +1,5 @@
 import random
+import math
 
 import pygame
 
@@ -50,12 +51,17 @@ class Enemy(actors.Actor):
 
         self.do_ai_behavior(input_state, world)
 
+        self.update_vel()
         self.apply_gravity()
         self.apply_physics()
 
     def do_ai_behavior(self, input_state, world):
         self.vel[0] = self.current_dir[0] * self.speed
         self.vel[1] = self.current_dir[1] * self.speed
+
+    def update_vel(self):
+        new_vel_x = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
+        self.set_vel_x(new_vel_x)
 
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
@@ -96,8 +102,6 @@ class DumbEnemy(Enemy):
             else:
                 rand_direct = cool_math.rand_direction()
                 self.set_direction(rand_direct[0], rand_direct[1])
-        new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
-        self.set_vel_x(new_vel)
 
 
 class SmartEnemy(Enemy):
@@ -126,9 +130,6 @@ class SmartEnemy(Enemy):
             self.do_chase_behavior(world)
         else:
             self.do_non_chase_behavior(world)
-
-        new_vel = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
-        self.set_vel_x(new_vel)
 
     def do_chase_behavior(self, world):
         p = world.player()
@@ -159,12 +160,74 @@ class SmartEnemy(Enemy):
 class Zombie(SmartEnemy):
     def __init__(self):
         SmartEnemy.__init__(self, 16, 48)
+        self.health = 3
 
     def sprite(self):
         return images.BROWN_GUY
 
     def death_sprite(self, cause=None):
         return images.BROWN_GUY_DYING
+
+    def on_death(self, world):
+        Enemy.on_death(self, world)
+
+        pos = self.center()
+
+        flappy_left = FlappyEnemy()
+        flappy_left.set_direction(-1, 0)
+        flappy_left.set_center(pos[0], pos[1])
+        world.add_entity(flappy_left)
+
+        flappy_right = FlappyEnemy()
+        flappy_right.set_center(pos[0], pos[1])
+        flappy_right.set_direction(1, 0)
+        world.add_entity(flappy_right)
+
+
+class FlappyEnemy(Enemy):
+    def __init__(self):
+        Enemy.__init__(self, 16, 24)
+        self.has_gravity = False
+        self.speed = 1
+        self.health = 1
+        self.current_dir[0] = -1
+        self.is_falling = False
+        self.fall_timer = 0
+        self.bob_offset = random.random() * 6.28
+
+    def sprite(self):
+        return images.FLAPPY_GUY
+
+    def sprite_offset(self):
+        spr = self.sprite()
+        w = self.get_rect().width
+        h = self.get_rect().height
+        return [(w - spr.width()) / 2, (h - spr.height()) / 2]
+
+    def death_sprite(self, cause=None):
+        return images.FLAPPY_GUY_DYING
+
+    def do_ai_behavior(self, input_state, world):
+        if self.current_dir[0] <= 0 and self.is_left_walled:
+            self.current_dir[0] = 1
+        elif self.current_dir[1] >= 0 and self.is_right_walled:
+            self.current_dir[0] = -1
+
+        if self.is_falling:
+            self.fall_timer += 1
+            if self.is_grounded or self.fall_timer >= 45:
+                self.is_falling = False
+                self.fall_timer = 0
+        else:
+            val = math.cos(global_state.tick_counter / 60.0 + self.bob_offset)
+            vel_y = -1 if val < -0.65 else 0 if val < 0.65 else 1
+            self.vel[1] = cool_math.tend_towards(vel_y, self.vel[1], 0.1)
+
+        self.has_gravity = self.is_falling
+
+    def deal_damage(self, damage, source=None, direction=None):
+        Enemy.deal_damage(self, damage, source=source, direction=direction)
+        self.is_falling = True
 
 
 class Skorg(SmartEnemy):

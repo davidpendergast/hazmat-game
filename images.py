@@ -40,6 +40,7 @@ BLUE_GUY_UP         = create("blue_guy", [R(48 + i*16, 128, 16, 32) for i in ran
 BLUE_GUY_DOWN       = create("blue_guy_down", [R(80 + i*16, 128, 16, 32) for i in range(0, 2)])
 BLUE_GUY_MIDDLE     = create("blue_guy_middle", [R(112, 128, 16, 32)])
 BROWN_GUY           = create("brown_guy", [r(10, 0, 1, 2), r(11, 0, 1, 2)])
+FLAPPY_GUY          = create("flappy_guy", [R(144, 0, 16, 8), R(144, 8, 16, 8)])
 SKORG               = create("skorg", [R(224, 160, 32, 32), R(256, 160, 32, 32), R(224, 160, 32, 32), R(288, 160, 32, 32)])
 SKORG_CROUCH        = create("skorg_crouch", [R(224, 160, 32, 32), R(224, 192, 32, 32), R(256, 192, 32, 32)])
 WHITE_WALL          = create("white_wall", [r(7, 1, 1, 1)])
@@ -238,4 +239,5 @@ SLUG_DYING_U        = image_util.create_death_animation(ACID_SLUG_U_L,  sheet, "
 SLUG_DYING_R        = image_util.create_death_animation(ACID_SLUG_R_L,  sheet, "acid_slug_dying_r", 4, 6)
 SLUG_DYING_D        = image_util.create_death_animation(ACID_SLUG_D_L,  sheet, "acid_slug_dying_d", 4, 6)
 SLUG_DYING_L        = image_util.create_death_animation(ACID_SLUG_L_L,  sheet, "acid_slug_dying_l", 4, 6)
+FLAPPY_GUY_DYING    = image_util.create_death_animation(FLAPPY_GUY,     sheet, "flappy_guy_dying", 4, 6)
 print("INFO\tdone creating death animations")
