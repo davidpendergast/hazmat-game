@@ -70,6 +70,12 @@ class Entity:
         self._y = y
         self.rect.y = round(y)
 
+    def shift_x(self, dx):
+        self.set_x(self._x + dx)
+
+    def shift_y(self, dy):
+        self.set_y(self._y + dy)
+
     def set_w(self, w):
         self.rect.width = w
 

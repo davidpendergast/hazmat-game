@@ -56,8 +56,8 @@ class Actor(Entity):
             world.add_entity(death_overlay)
 
     def apply_physics(self):
-        self.set_x(self._x + self.vel[0])
-        self.set_y(self._y + self.vel[1])
+        self.shift_x(self.vel[0])
+        self.shift_y(self.vel[1])
 
     def apply_gravity(self):
         if self.has_gravity:
@@ -97,9 +97,9 @@ class Player(Actor):
         self.crouch_height = 32
         Actor.__init__(self, 16, self.full_height)
         self.categories.update(["player"])
-        self.speed = 3
+        self.speed = 4
         self.crouch_speed = 1.25
-        self.max_slide_speed = 0.75
+        self.max_slide_speed = 1
 
         self.move_accel = 0.5
 

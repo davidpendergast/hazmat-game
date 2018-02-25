@@ -323,8 +323,7 @@ white_wall, 288, -96
 white_wall, 288, 64
 white_wall_small, 304, -304
 white_wall_small, 304, -320
-white_wall_small, 32, -112
-white_wall_small, 32, -128
+white_wall, 32, -128
 white_wall, 32, -256
 white_wall, 32, -448
 chain_wall_small, 32, 112
@@ -361,8 +360,6 @@ white_wall, 448, -32
 white_wall, 448, -384
 white_wall, 448, 64
 white_wall_small, 464, -352
-white_wall_small, 48, -112
-white_wall_small, 48, -128
 chain_wall_small, 48, 96
 white_wall, 480, -32
 white_wall, 480, -352
