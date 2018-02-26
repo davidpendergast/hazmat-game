@@ -9,7 +9,7 @@ import global_state
 import cool_math
 import settings
 
-CHUNK_SIZE = 96
+CHUNK_SIZE = 32 * 8
 
 AMBIENT_DARKNESS = 200
 
@@ -194,10 +194,19 @@ class World:
             return self.chunks[key]
 
     def get_chunks_to_update(self):
-        return [c for c in self.chunks.values()]
+        screen_rect = self.get_screen_rect()
+        return self.get_chunks_in_rect(screen_rect, and_above_and_left=True)
+
+    def update_all_wall_outlines(self, input_state):
+        """This is fairly expensive to do on the fly, so this should be called during level loading."""
+        for chunk in self.chunks.values():
+            walls = chunk.entities.get_all(category="wall")
+            for w in walls:
+                w.update(input_state, self)
 
     def update_all(self, input_state):
         updating_chunks = self.get_chunks_to_update()
+
         for chunk in updating_chunks:
             for entity in chunk.entities:
                 entity.update(input_state, self)
@@ -270,10 +279,7 @@ class World:
                 chunk.mark_dirty()
 
     def draw_all(self, screen):
-        screen_rect = [
-            self.camera[0], self.camera[1],
-            global_state.WIDTH, global_state.HEIGHT
-        ]
+        screen_rect = self.get_screen_rect()
         chunks_to_draw = self.get_chunks_in_rect(screen_rect)
 
         def sortkey(c):
@@ -312,6 +318,10 @@ class World:
                 #    DUMMY_CHUNK.rect.x = key[0]
                 #    DUMMY_CHUNK.rect.y = key[1]
                 #    DUMMY_CHUNK.draw_darkness(self, screen, offset)
+
+    def get_screen_rect(self):
+        return (self.camera[0], self.camera[1],
+                global_state.WIDTH, global_state.HEIGHT)
 
     def add_entity(self, entity):
         if entity.is_player():

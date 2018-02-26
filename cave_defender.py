@@ -87,6 +87,8 @@ class Hate:
 
             image_cache.wipe_caches()
 
+            self.active_world.update_all_wall_outlines(self.input_state)
+
         player_dead = self.active_world.time_since_player_death() > settings.WAIT_TICKS_AFTER_DEATH
         if player_dead and not gs.hud.is_absorbing_inputs():
             gs.hud.set_active_menu(menus.DEATH_MENU)

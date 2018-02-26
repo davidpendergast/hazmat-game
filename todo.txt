@@ -111,7 +111,6 @@ Light
 
     
 Optimizations
-    + remove copy() from Entity.get_rect()
 
 
 Maintenence
@@ -120,13 +119,15 @@ Maintenence
 
     
 Bugs
-    + sprites aren't always being drawn pixel perfect, not sure why
-    ? can't jump while crouch-walking
-        maybe ok, kinda awkward to input anyways
-    + light entering nonexistant chunks is not rendered
+    X can't jump while crouch-walking
+        this is actually a problem with my keyboard, not the game
+    X light entering nonexistant chunks is not rendered
+        fixed by having nonchunks be solid black
     + can't turn around if standing in a 0.5 x 0.5 hole
-    + knockback shouldn't play walking sprite
+    X knockback shouldn't play walking sprite
+        fixed by having knockback force you airborn lol
     + crouch walking into a wall causes all kinds of sprite jitteriness
+    + puzzle terminal textbox makes it difficult to activate puzzle
 
 
 Level 1-1
