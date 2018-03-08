@@ -2,8 +2,6 @@ import entities
 import cool_math
 import images
 
-import math
-
 
 class TrackPiece(entities.Entity):
     def __init__(self):

@@ -13,6 +13,11 @@ Player Mechanics
     + delay before sliding animation to prevent janky one framers on corner clips
     ? actionstates instead of booleans
     + walking off edge while crouching snaps player into wallslide
+    + shorthopping
+    + shoot button should do something in the air
+        shooting diagonally downward? like sheik? lol
+            that could actually work..
+
 
 
 Start Menu
@@ -29,11 +34,15 @@ End Game
 Game Mechanics
 
 Enemies
+    + make skorg teleport randomly
+        at random times, will start crouching, then teleport to a random onscreen position (on a wall/ground
+        boundary to avoid leaving map)
+        + animations for teleporting (could just use death anim and reverse death anim)
+    + shooting enemy
+        walks on ground, if close to player, runs away, if far, chases
+        stops, aims (with laser sight), pauses, shoots
     + jumper
         jumps randomly, and when player gets near
-    + flying
-        not sure how it would pathfind, or how player could really kill it
-        ghost-like enemy?
 
 Entities
     + compulsory terminal

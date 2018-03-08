@@ -87,6 +87,7 @@ class Enemy(actors.Actor):
 class DumbEnemy(Enemy):
     def __init__(self):
         Enemy.__init__(self, 16, 48)
+        self._reverse_countdown = 0
 
     def sprite(self):
         return images.PURPLE_GUY
@@ -95,13 +96,21 @@ class DumbEnemy(Enemy):
         return images.PURPLE_GUY_DYING
 
     def do_ai_behavior(self, input_state, world):
-        # change directions approx every second
-        if random.random() < 1 / 60:
-            if random.random() < 0.25:
-                self.set_direction(0, 0)
-            else:
-                rand_direct = cool_math.rand_direction()
-                self.set_direction(rand_direct[0], rand_direct[1])
+        dir_x = self.current_dir[0]
+        if dir_x != 1 and dir_x != -1:
+            dir_x = -1
+            self.set_direction(dir_x, 0)
+
+        if (dir_x < 0 and self.is_left_walled) or (dir_x > 0 and self.is_right_walled):
+            self.set_direction(-dir_x, 0)
+            self._reverse_countdown = 20
+
+        if self._reverse_countdown <= 0:
+            if len(world.get_entities_in_rect(self.get_rect(), category="reverse", limit=1)) > 0:
+                self.set_direction(-dir_x, 0)
+                self._reverse_countdown = 20
+        else:
+            self._reverse_countdown -= 1
 
 
 class SmartEnemy(Enemy):

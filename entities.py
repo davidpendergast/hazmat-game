@@ -778,7 +778,7 @@ class Zone(Entity):
         cached_img = image_cache.get_cached_image(key)
         if cached_img is None:
             cached_img = pygame.Surface(self.size(), pygame.SRCALPHA)
-            cached_img.set_alpha(128)
+            cached_img.set_alpha(64)
             cached_img.fill(self.debug_color)
             image_cache.put_cached_image(key, cached_img)
         dest = (self.get_x() + offset[0], self.get_y() + offset[1])
@@ -832,6 +832,18 @@ class MessageZone(Zone):
         if actor.is_player():
             if global_state.hud.is_showing_text() and global_state.hud.text_queue[0] == self.message:
                 global_state.hud.stop_displaying_text()
+
+
+class Reverse(Entity):
+    """
+    Signals to enemies and platforms that they should turn around.
+    """
+    def __init__(self):
+        Entity.__init__(self, 16, 16)
+        self.categories.update(["reverse"])
+
+    def draw(self, screen, offset=(0, 0), modifier=None):
+        pygame.draw.rect(screen, (255, 128, 0), self.get_rect().move(offset[0], offset[1]), 2)
 
 
 def _safe_remove(item, collection, print_err=False):
@@ -971,7 +983,7 @@ class EntityCollection:
 
 _INVALIDS = set()
 _VALID_CATEGORIES = {"ground", "actor", "enemy", "decoration", "terminal", "puzzle_terminal",
-                     "health_machine", "wall", "overlay", "player", "interactable", "light_source",
+                     "health_machine", "wall", "overlay", "player", "interactable", "light_source", "reverse",
                      "level_door", "door", "zone", "instakill", "spawner", "reference", "platform", "solid", "track"}
 
 
