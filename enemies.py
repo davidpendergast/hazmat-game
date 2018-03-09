@@ -63,6 +63,10 @@ class Enemy(actors.Actor):
         new_vel_x = cool_math.tend_towards(self.current_dir[0] * self.speed, self.vel[0], 0.3)
         self.set_vel_x(new_vel_x)
 
+        if not self.has_gravity:
+            new_vel_y = cool_math.tend_towards(self.current_dir[1] * self.speed, self.vel[1], 0.3)
+            self.set_vel_y(new_vel_y)
+
     def touched_player(self, player, world):
         v = cool_math.sub(player.center(), self.center())
         v = cool_math.normalize(v)
@@ -82,6 +86,10 @@ class Enemy(actors.Actor):
     def set_direction(self, x, y):
         self.current_dir[0] = x
         self.current_dir[1] = y
+
+    def with_dir(self, x, y):
+        self.set_direction(x, y)
+        return self
 
 
 class DumbEnemy(Enemy):
@@ -283,6 +291,60 @@ class DodgeEnemy(SmartEnemy):
             return [r[0], r[1]+int(r[3]/2), r[2], int(r[3]/2)]
 
 
+class SpikyEnemy(Enemy):
+    def __init__(self):
+        Enemy.__init__(self, 32, 32)
+        self.speed = 0.75
+        self.health = 2
+        self._reverse_countdown = 0
+        self.is_top_walled = False
+        self.has_gravity = False
+
+    def sprite(self):
+        return images.SPIKY_GUY
+
+    def sprite_offset(self):
+        return (0, 0)
+
+    def death_sprite(self, cause=None):
+        return images.SPIKY_GUY_DYING
+
+    def _update_status_tags(self, world, input_state):
+        Enemy._update_status_tags(self, world, input_state)
+        up_sliver = cool_math.sliver_adjacent(self.get_rect(), (0, -1), 2)
+        self.is_top_walled = len(world.get_entities_in_rect(up_sliver, category="wall", limit=1)) > 0
+
+    def do_ai_behavior(self, input_state, world):
+        if self._reverse_countdown > 0:
+            self._reverse_countdown -= 1
+        else:
+            x_dir = self.current_dir[0]
+            y_dir = self.current_dir[1]
+
+            did_reverse = False
+            if (x_dir < 0 and self.is_left_walled) or (x_dir > 0 and self.is_right_walled):
+                x_dir = -x_dir
+                did_reverse = True
+
+            if (y_dir < 0 and self.is_top_walled) or (y_dir > 0 and self.is_grounded):
+                y_dir = -y_dir
+                did_reverse = True
+
+            if not did_reverse and len(world.get_entities_in_rect(self.get_rect(), category="reverse", limit=1)) > 0:
+                x_dir = -x_dir  # ideally one of these directions would be zero
+                y_dir = -y_dir
+                did_reverse = True
+
+            if did_reverse:
+                self._reverse_countdown = 20
+                self.set_direction(x_dir, y_dir)
+
+    def touched_player(self, player, world):
+        v = cool_math.sub(player.center(), self.center())
+        v = cool_math.normalize(v)
+        player.deal_damage(10, source=self, direction=v)  # basically an insta-kill
+
+
 class StickyEnemy(Enemy):
     def __init__(self, clockwise=True):
         Enemy.__init__(self, 24, 24)
@@ -354,7 +416,7 @@ class StickyEnemy(Enemy):
     def _update_status_tags(self, world, input_state):
         Enemy._update_status_tags(self, world, input_state)
         up_sliver = cool_math.sliver_adjacent(self.get_rect(), (0, -1), 2)
-        self.is_top_walled = len(world.get_entities_in_rect(up_sliver, category="wall")) > 0
+        self.is_top_walled = len(world.get_entities_in_rect(up_sliver, category="wall", limit=1)) > 0
 
     def update(self, input_state, world):
         actors.Actor.update(self, input_state, world)

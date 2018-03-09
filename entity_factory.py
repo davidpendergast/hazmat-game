@@ -45,7 +45,6 @@ def init_entities():
 
     _put("acid_top", lambda: entities.KillBlock(images.ACID_TOP_HALF, hitbox=[0, 16, 32, 16]).with_light_level(80))
     _put("acid_full", lambda: entities.KillBlock(images.ACID_FULL).with_light_level(128))
-    _put("spikes", lambda: entities.KillBlock(images.SPIKY_GUY).with_light_level(128))
     # _put("acid_cube_small", lambda: entities.KillBlock(images.ACID_CUBE_SMALL).with_light_level(80))
 
     _put("breakable_white_wall_spawner", _spawner(lambda: entities.BreakableWall(images.WHITE_WALL_CRACKED, images.WHITE_WALL_BREAKING)))
@@ -68,6 +67,7 @@ def init_entities():
     _put("enemy_dodger", _spawner(lambda: enemies.DodgeEnemy()))
     _put("enemy_skorg", _spawner(lambda: enemies.Skorg()))
     _put("enemy_flappy", _spawner(lambda: enemies.FlappyEnemy()))
+    _put("enemy_spiky_vert", _spawner(lambda: enemies.SpikyEnemy().with_dir(0, 1)))
 
     print("INFO\tfinished initializing ", len(ALL_ENTITIES), " entities")
 

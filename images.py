@@ -235,6 +235,7 @@ RED_GUY_DYING       = image_util.create_death_animation(RED_GUY,        sheet, "
 BLUE_GUY_DYING      = image_util.create_death_animation(BLUE_GUY_UP,    sheet, "blue_guy_dying", 4, 6)
 BROWN_GUY_DYING     = image_util.create_death_animation(BROWN_GUY,      sheet, "brown_guy_dying", 4, 6)
 SKORG_DYING         = image_util.create_death_animation(SKORG,          sheet, "skorg_dying", 4, 6)
+SPIKY_GUY_DYING     = image_util.create_death_animation(SPIKY_GUY,      sheet, "spiky_dying", 4, 6)
 SLUG_DYING_U        = image_util.create_death_animation(ACID_SLUG_U_L,  sheet, "acid_slug_dying_u", 4, 6)
 SLUG_DYING_R        = image_util.create_death_animation(ACID_SLUG_R_L,  sheet, "acid_slug_dying_r", 4, 6)
 SLUG_DYING_D        = image_util.create_death_animation(ACID_SLUG_D_L,  sheet, "acid_slug_dying_d", 4, 6)
